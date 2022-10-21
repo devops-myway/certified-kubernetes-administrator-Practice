@@ -39,13 +39,14 @@ Note: For installing Weave Net (Add-on), you should make sure the following port
 ##### step0.1: Installing a container runtime
 --------------------------------------------------
 download the Containerd runtime with the command
-
+´´´´´´´´sh
 sudo swapoff -a
 sudo apt update
 sudo apt upgrade
 sudo apt-get install wget
 sudo apt-get install curl
 
+´´´´´´
 ##### Step 1: Installing containerd from the official binaries
 ----------
 
