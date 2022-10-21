@@ -37,16 +37,16 @@ Note: For installing Weave Net (Add-on), you should make sure the following port
 - Swap disabled. You MUST disable swap in order for the kubelet to work properly
 
 ##### step0.1: Installing a container runtime
---------------------------------------------------
+-------------------------------------------------
 download the Containerd runtime with the command
-´´´´´´´´sh
+``````sh
 sudo swapoff -a
 sudo apt update
 sudo apt upgrade
 sudo apt-get install wget
 sudo apt-get install curl
 
-´´´´´´
+``````
 ##### Step 1: Installing containerd from the official binaries
 ----------
 
