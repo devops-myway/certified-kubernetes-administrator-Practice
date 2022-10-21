@@ -1,11 +1,11 @@
 ##### Documentation Links: This is everything you need to know about starting a cluster using the documentation with Kubeadm
 
-https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/
-https://kubernetes.io/docs/reference/ports-and-protocols/
-https://kubernetes.io/docs/setup/production-environment/container-runtimes/#containerd
-https://github.com/containerd/containerd/blob/main/docs/getting-started.md
-https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/
-https://www.weave.works/docs/net/latest/kubernetes/kube-addon/
+- https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/
+- https://kubernetes.io/docs/reference/ports-and-protocols/
+- https://kubernetes.io/docs/setup/production-environment/container-runtimes/#containerd
+- https://github.com/containerd/containerd/blob/main/docs/getting-started.md
+- https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/
+- https://www.weave.works/docs/net/latest/kubernetes/kube-addon/
 
 
 ##### Step 0.0: Before we begin be sure of the below setup
