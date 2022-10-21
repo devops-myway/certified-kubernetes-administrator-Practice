@@ -1,4 +1,4 @@
-##### Documentation Links:
+##### Documentation Links: This is everything you need to know about starting a cluster using the documentation with Kubeadm
 
 https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/
 https://kubernetes.io/docs/reference/ports-and-protocols/
@@ -10,12 +10,12 @@ https://www.weave.works/docs/net/latest/kubernetes/kube-addon/
 
 ##### Step 0.0: Before we begin be sure of the below setup
 -----------------
-- Use Linux distributions based on Debian and Red Hat 2x worker nodes and 1 control plane
-- 2 GB or more of RAM per machine or 2 CPUs or more
-- Certain ports are open on your machines
+- Use Linux distributions based on Debian via Ec2 instances and ssh (login) with 2x worker nodes and 1 control plane
+- 2 GB or more of RAM or 2 CPUs or more for the Instances or machines
+- Certain ports are open on your machines and this should be at security Group levels
 Check required ports: https://kubernetes.io/docs/reference/ports-and-protocols/
 
-#### Control plane
+#### Control plane- master Security Group
 
 |Protocol	 |Direction	|Port Range	|Purpose	|Used By
 |-------|-----------|-------|---------------|----------|
@@ -25,20 +25,22 @@ Check required ports: https://kubernetes.io/docs/reference/ports-and-protocols/
 |TCP	|Inbound	|10259	|kube-scheduler	|Self
 |TCP	|Inbound	|10257	|kube-controller-manager	|Self
 
-#### Worker node(s)
+#### Worker node(s) - Security Group
 
 |Protocol|	Direction|	Port Range|	Purpose|	Used By
 |---------|----------|------------|-------|---------|
 |TCP	|Inbound	|10250	|Kubelet API	|Self, Control plane
 |TCP	|Inbound	|30000-32767	|NodePort Services|	All
 
-Note: For installing Weave Net (Add-on), you should make sure the following ports are not blocked by your firewall: TCP 6783 and UDP 6783/6784.
+###### Note:
+For installing Weave Net (Add-on), you should make sure the following ports are not blocked by your firewall:
+Open Both Master and Workers security Groups to TCP 6783 and ignore the UDP 6783/6784.
 
-- Swap disabled. You MUST disable swap in order for the kubelet to work properly
+- Swap disabled. You MUST disable swap in order for the kubelet to work properly and this is done as below
 
 ##### step0.1: Installing a container runtime
 -------------------------------------------------
-download the Containerd runtime with the command
+download the Containerd runtime with the command and use a simple shell script to execute this task with permissions
 ``````sh
 sudo swapoff -a
 sudo apt update
