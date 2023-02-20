@@ -5,7 +5,7 @@ https://kubernetes.io/docs/reference/access-authn-authz/authentication/
 -------Notes:
 Service accounts are usually created automatically by the API server and associated with pods running in the cluster through the Serviceccount. The default ServiceAccount that lives in the default namespace. Any Pod that doesn’t explicitly assign a ServiceAccount uses the default ServiceAccount.
 
-Kubernetes uses a ServiceAccount to authenticate the Helm service or some service applications running inside of a pod, with the API  authentication server through antoken. This ServiceAccount can be assigned to a Pod and mapped to RBAC rules.
+Kubernetes uses a ServiceAccount to authenticate the Helm service or some service applications running inside of a pod, with the API  authentication server through a token. This ServiceAccount can be assigned to a Pod and mapped to RBAC rules.
 
 #### Step 1: Create a new Service Account and assign a role: imaparatively
 ```sh

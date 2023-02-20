@@ -1,58 +1,118 @@
+https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/
+
 ###### Note:
-Kubernetes namespaces allow multiple clusters to share a single physical cluster.
+- Kubernetes uses namespaces to organize objects in the cluster.
+- You can think of each namespace as a folder that holds a set of objects.
+- Resource limitation through quota can be implemented at a Namespace level also
+- Use namespaces to separate customer environments within one Kubernetes cluster
+- By default, the kubectl command-line tool interacts with the default namespace.
+- If you want to use a different namespace, you can pass kubectl the --namespace flag.
+- For example, kubectl --namespace=mystuff references objects in the mystuff namespace.
+- If you want to interact with all namespaces - for example, to list all Pods in your cluster you can pass the --all-namespaces flag
 
-They allow you to easily divide clusters into sub-clusters,that can still communicate with one another.
-By remaining isolated within a namespace, a team’s infrastructure is better protected against outages and malicious threats.
+Four namespaces are defined when a cluster is created:
 
-- Namespaces are also useful for defining specialized sets of permissions—especially those pertaining to Role-Based Access Control (RBAC).
-- Developers can use namespaces to separate test and production environments.
+default: this is where all the Kubernetes resources are created by default
+kube-node-lease: an administrative namespace where node lease information is stored - may be empty and/or non-existing
+kube-public: a namespace that is world-readable. Generic information can be stored here but it's often empty
+kube-system: contains all infrastructure pods
 
-- A Kubernetes administrator may creatively use namespaces to form groups with shared permissions and roles
-
-- You may also use namespaces for smart resource management. Admins can define quotas for resource usage and distribution.
-
-- namespaces are useful for boosting performance across your clusters.\
-
-Kube-system:
-is the namespace for objects and service accounts with high-level privileges within Kubernetes.
-Kubernetes itself owns this namespace, which specifically contains vital components like kube-dns, kube-proxy, kubernetes-dashboard, and more. don’t poke around heavily in kube-system.
-
-kube-public:
-Contains information deemed insensitive and therefore accessible to all inquiring users
-
-##### How to Manually Generate a Namespace With Kubectl
+##### List available namespaces
 
 ``````sh
-kubectl get namespaces
-
-kubectl create namespace <namespace name>
-
-kubectl apply -f namespace.yml
-
-kubectl delete namespace
+kubectl get ns
+kubectl get all --all-namespaces
 
 ``````
-##### Namespace Tips and Best Practices
+##### To list the pods from a specific namespace
+you can also use --namespace instead of -n
 ``````sh
-kubectl apply -f pod.yaml --namespace=examplenamespace
-
-kubectl get pods --namespace=examplenamespace
+kubectl get pods -n default
 
 ``````
-##### Namespace Communication
-Namespaces are isolated from one another. This means one namespace isn’t discoverable to another.
-there’s a high possibility that services within different namespaces need to communicate,
-for example, if you have two namespaces that contain different users and RBAC policies.
+##### Creating a namespace
+``````sh
+kubectl create ns dev
+kubectl get ns
 
-Whatever the use case, using DNS service discovery can expose your endpoints as required.
+``````
+##### Get details of namespace
+``````sh
+kubectl describe ns default
+kubectl get ns default -o yaml
 
-This allows services to talk effectively by pointing apps toward service names. A service’s DNS pattern might look like this.
+``````
+##### Create resource objects in other namespaces
+``````sh
+[root@controller ~]# cat nginx-app.yml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-app
+  namespace: app
+spec:
+  containers:
+  - name: nginx
+    image: nginx
+    ports:
+    - containerPort: 80
+
+
+kubectl create -f nginx-app.yml
+
+kubectl get pods -n app nginx-app
+
+``````
+##### Using kubectl command to create resource objects in other namespace
+``````sh
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-dev
+spec:
+  containers:
+  - name: nginx
+    image: nginx
+    ports:
+    - containerPort: 80
+
+#We will create this Pod inside "dev" namespace:
+kubectl create -f nginx-dev.yml -n dev
+
+kubectl get pods -n dev
+
+``````
+##### Deleting a Pod using name
+``````sh
+kubectl delete pod nginx-dev
+
+kubectl delete ns dev
+
+kubectl delete pods -n app --all
+
+``````
+##### Assign Resource Quota To Namespace
+assign some resource quota limits to our newly created namespace. This will make sure the pods deployed in this
+namespace will not consume more system resources than mentioned in the resource quota.
 
 ``````sh
+# Create a file named resourceQuota.yaml
+---------
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: mem-cpu-quota
+  namespace: deployment-demo
+spec:
+  hard:
+    requests.cpu: "4"
+    requests.memory: 8Gi
+    limits.cpu: "8"
+    limits.memory: 16Gi
+-------
 
-ExampleService.ExampleNamespace.svc.cluster.local
+kubectl create -f resourceQuota.yaml
 
-#To access a service in another namespace
+kubectl describe ns deployment-demo
 
-LoggingUtility.examplename
 ``````

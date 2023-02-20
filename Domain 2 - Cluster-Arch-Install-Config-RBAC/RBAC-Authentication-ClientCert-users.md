@@ -2,7 +2,10 @@
 
 https://kubernetes.io/docs/reference/access-authn-authz/certificate-signing-requests/#create-certificatesigningrequest
 
-Creating a Subject using Client Certificate Authentication (Cluster Certificate of Authority-CA)
+ Authentication validates the identity of a user. Once the identity is validated, authorization is used to check whether the user has the privileges to perform the desired action.
+401 Unauthorized response status: the client request has not been completed because it lacks valid authentication credentials for the requested resource
+403 response code: that a client is forbidden from accessing a valid URL - Authorization module
+
 --------------
 ##### Read Below: RBAC High-Level Overview
 
@@ -21,7 +24,7 @@ RBAC consists of three key building blocks which are below terminologies:
 - Subject
 The user, groups, and serviceaccount that wants to access a resource. Calls to the API server with a user need to be authenticated.
 Users and groups are not stored in etcd, the Kubernetes database, and are meant for processes running outside of the cluster.
-Service accounts exists as objects in Kubernetes and are used by processes running inside of the cluster
+Service accounts exists as objects in Kubernetes and are used by processes running inside of the cluster.
 
 - Resource
 The Kubernetes API resource type (e.g., a Deployment,secrets,confgimaps,pods or node)
@@ -29,12 +32,34 @@ The Kubernetes API resource type (e.g., a Deployment,secrets,confgimaps,pods or 
 - Verb
 The operation that can be executed on the resource (e.g., creating a Pod or deleting a Service)
 
+CSRs(certificate signing Requests) need to be signed by the Certification Authority (CA) which in this case is Kubernetes Master node. You need access to the folllwing files on kubernetes master.
 When using kubeadm to install a cluster, the API server is configured with the option:
 
 --client-ca-file=/etc/kubernetes/pki/ca.crt
+or 
 
-##### Steps for Creating a Subject/User accounts and groups Authentication with Openssl with X.509 client certificate
-First, this user e.g (dev-tom) must have a certificate issued by the Kubernetes cluster, and then present that certificate to the Kubernetes API server.
+/etc/kubernetes/pki (kubeadm)    to get the certificate Authority File location
+###### To access our API server
+``````sh
+kubectl config view | grep server
+curl https://192.168.43.48:6443
+
+``````
+###### To verify which one is your cert and which one is key, use the following command:
+``````sh
+# /etc/kubernetes/pki (kubeadm) 
+
+$ file ca.pem
+ca.pem: PEM certificate
+
+
+$ file ca-key.pem
+ca-key.pem: PEM RSA private key
+
+``````
+
+##### Steps for Creating a Subject/Normal User accounts and groups Authentication with Openssl with X.509 client certificate
+A few steps are required in order to get a normal user to be able to authenticate and invoke an API. This user must have a certificate issued by the Kubernetes cluster, and then present that certificate to the Kubernetes API.
 
 ##### Step 0.0: Steps to creating a user/subject using client certificate to authenticate against our API server
 --------------------
@@ -48,25 +73,28 @@ mkdir cert && cd cert
 #### Step1: Generate a PKI private key (ca.key or dev-tom.key) with 2048bit:
 ----------------------------------
 ``````sh
-# Create a private key
+# Create a private key using openSSL -help commands, openSSL genrsa -help command
+
 $ openssl genrsa -out myuser.key 2048
 ls
-cat ca.key
+cat myuser.key
 
 ``````
 
 ##### Step2: Create a certificate sign request (CSR) in a file with the extension .csr.
 --------------------------------------------------------------------------------------------------
-It is important to set CN and O attribute of the CSR. The -subj option provides the
+It is important to set CN - Common Name and O - Organization attribute of the CSR. The -subj "/CN=username , /O=group or team" option provides the
 username (CN) and the group (O).
 ``````sh
+# using openSSL req -help command
+
 openssl req -new -key myuser.key -out myuser.csr -subj "/CN=myuser/O=cka-study"
 ls
-
+cat myuser.csr
 ``````
 #### Step 2.1: Decode the csr
 ```sh
-# add the csr content to your request section of the file below
+# add the csr content to your request section of the file below at spec.request:
 cat myuser.csr | base64 | tr -d '\n'
 
 ```
@@ -123,7 +151,7 @@ Retrieve the certificate from the CSR.
 The certificate value is in Base64-encoded format under status.certificate.
 
 ``````sh
-kubectl get csr/myuser-csr -o yaml
+kubectl get csr myuser-csr -o yaml
 
 ``````
 ##### step 6: Export the issued certificate from the CertificateSigningRequest.
@@ -132,11 +160,13 @@ kubectl get csr/myuser-csr -o yaml
 kubectl get csr myuser-csr -o jsonpath='{.status.certificate}'| base64 -d > myuser.crt
 
 ``````
+#### Add the user to kubeconfig
+
 #### Step 7: Create a new context - use kubectl config --help to Add the user into kubeconfig
 ```sh
 kubectl config set-credentials myuser --client-key=myuser.key --client-certificate=myuser.crt
 ```
-#### Step 8: Set new Context
+#### Step 8: Set new Context, which will hold info about the cluster e.g cluster name, user or svc account and namespaces
 ```sh
 kubectl config set-context myuser --cluster=kubernetes --user=myuser
 ```
