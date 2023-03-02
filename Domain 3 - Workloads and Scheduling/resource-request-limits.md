@@ -121,19 +121,21 @@ template:
 kubectl create namespace quota-example
 ---
 [root@controller ~]# cat ns-quota-limit.yml
+
 apiVersion: v1
 kind: ResourceQuota
 metadata:
-  name: resource-quota
-  namespace: quota-example
+  name: mem-cpu-demo
 spec:
   hard:
-    limits.cpu: 1
-
+    requests.cpu: 2
+    requests.memory: 1Gi
+    limits.cpu: 3
+    limits.memory: 2Gi
 ---
-kubectl apply -f ns-quota-limit.yml
+kubectl apply -f resourcequota.yaml --namespace=mynamespace
 
-kubectl describe ns quota-example
+kubectl get resourcequota -n mynamespace
 
 
 ``````

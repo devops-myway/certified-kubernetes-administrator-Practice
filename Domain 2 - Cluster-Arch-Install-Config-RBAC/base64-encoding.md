@@ -22,21 +22,3 @@ echo 'bGludXhoaW50LmNvbQo=' | base64 --decode
 echo 'bGludXhoaW50LmNvbQo=' | base64 -d
 
 ``````
-
-##### Example#3: Encoding text file
-Create a text file named, ‘sample.txt’ with the following text that will be encoded by using base64.
-
-``````sh
-base64 sample.txt
-
-base64 sample.txt > encodedData.txt
-cat encodedData.txt
-``````
-
-##### Example#4: Decoding text file
-command will decode the content of the encodedData.txt file and print the output in the terminal
-
-``````sh
-base64 -d encodedData.txt
-
-``````

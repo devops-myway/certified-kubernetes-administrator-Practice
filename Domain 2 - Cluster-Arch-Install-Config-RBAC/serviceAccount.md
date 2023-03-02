@@ -43,15 +43,6 @@ kubectl get secret default-token-srs4v -o yaml
 
 ``````
 
-
-##### Understanding ServiceAccount resource
-
-- ServiceAccounts (db, argocd, sqs, http clients, web servers etc) are resources just like Pods, Secrets, ConfigMaps, and so on, and are scoped to individual namespaces. a pod can only use a ServiceAccount from the same namespace.
-- A default ServiceAccount is automatically created for each namespace (that’s the one your pods have used all along).
-- Every Pod uses the default ServiceAccount to contact the API server.
-- This default ServiceAccount allows a resource to get information from the API server. The API server obtains this information from the system-wide authorization plugin configured by the cluster administrator. One of the available authorization plugins is the role-based access control (RBAC) plugin.
-- Service accounts come with a secret which contains the API credentials
-
 #### Creating ServiceAccount resource
 A default ServiceAccount is automatically created for each namespace. You can list ServiceAccounts like you do other resources:
 serviceaccount is sa for short
@@ -104,7 +95,6 @@ spec:
 #### Assign ServiceAccount to a Pod
 After you have created ServiceAccount, you can start assigning them to respective pods.
 You can use spec.serviceAccountName field in the pod definition to assign a ServiceAccount. Here I am creating a simple nginx pod using our user1 ServiceAccount.
-To confirm that the custom ServiceAccount’s token is mounted into the two containers, you can compare the content of token from /var/run/secrets/kubernetes.io/serviceaccount/token within the Pod and the secret token part of user1 ServiceAccount i.e. user1-token-jg85r
 
 ``````sh
 [root@controller ~]# cat nginx.yaml
