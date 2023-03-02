@@ -6,9 +6,7 @@ install containerd using the apt command.
 ``````sh
 
 sudo apt update
-
 sudo apt install -y containerd
-
 sudo systemctl status containerd
 
 ``````

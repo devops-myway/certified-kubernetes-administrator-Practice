@@ -23,7 +23,7 @@ known_hosts = machines that you trust or remote machine or ec2 instances or serv
 # Generating an SSH Key Pair
 
 ``````sh
-ssh-keygen     # Generating public/private rsa key pair.
+ssh-keygen --help     # Generating public/private rsa key pair.
 
 ssh-keygen -t rsa -C "azure-vm-key"    #Generating public/private rsa key pair, located in the .ssh hidden directory within your user’s home directory
 

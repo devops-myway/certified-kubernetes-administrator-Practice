@@ -36,17 +36,13 @@ cat public-key.pem
 
 - Writing a CSR is the most crucial part of generating a certificate. If your CSR is not proper then:
 - RootCA may fail to sign the certificate
-- Your MTLS authentication will not work with TCP handshake error
-- You will end up creating multiple certificates for each host if you are not familiar with SAN
 - Your X.509 extensions will not be properly added
 
 #### Important points to consider when creating CSR
 - The openssl command will by default consider /etc/pki/tls/openssl.cnf as the configuration file unless you specify your own configuration file using -config
 - The req_distinguished_name field is used to get the details which will be asked while generating the CSR. You can alter this section inside the openssl.cnf and add the default values, modify the conditions such as min and max allowed characters etc
 - There are different policy sections available in the openssl.cnf. The policy_anything is normally used for self-signed certificates where all the fields except commonName are optional.
-- commonName is used for MTLS communications. The commonName must match the HOSTNAME or FQDN of the server on the server certificate and client on the client certificate.
 - The Common Name is considered as the most important field of any Certificate and must be filled cautiously, especially when generating server or client certificate
-- To consider High Availability and Load balancing, in IT organizations we use single FQDN mapped to multiple IP Addresses so in such case we prefer to use SAN certificates
 
 #### Generate my RootCA certificate or Create Certificate Authority Certificate.
 
@@ -54,7 +50,7 @@ Generate a private key for the rootCA certificate, we will use this private key 
 
 ``````sh
  openssl genrsa -out ca.key 4096
-
+ or
   openssl genrsa -out cakey.pem 4096
 
  openssl req -new -x509 -days 365 -key cakey.pem -out cacert.pem
@@ -86,7 +82,7 @@ Openssl takes your signing request (csr) and makes a one-year valid signed serve
 
 to connect to our web server using the client certificates. Use --key to define the client key file, --cert to define the client certificate and --cacert to define the CA certificate we used to sign the certificates followed by the web server address.
 
---key client.key.pem
+--key client.key
 --cert client.cert.pem
 
 ``````sh

@@ -1,3 +1,5 @@
+
+
 #### Introducing kubectl configuration
 kubectl uses this configuration file to determine where and how to issue requests to the API server.
 By default, this file is located at $HOME/kube/config
@@ -32,19 +34,19 @@ $ kubectl config set-cluster my-cluster --server=127.0.0.1:8087
 
 ``````
 ##### Defining Users
-use x508 client certificates to authenticate our user. Kubernetes has no User Objects.
+use x509 client certificates to authenticate our user. Kubernetes has no User Objects.
 User account consists of an authorized certificate that is completed with some authorization as defined in RBAC.
 ##### Step 1: Create User with private key
 First we will create a normal user "user1" which will be part of wheel group
 ``````sh
-openssl genrsa -out user1.key.pem 2048
+openssl genrsa -out user1.key 2048
 
 ``````
 
 ##### Step 2: Certificate Signing Request 
 
 ``````sh
-openssl req -new -key user1.key.pem -out user1.csr -subj "/CN=user1/O=dev"
+openssl req -new -key user1.key -out user1.csr -subj "/CN=user1/O=dev"
 
 ``````
 ##### Step 3: create the certificate
@@ -87,7 +89,7 @@ users:
     client-key-data: REDACTED
 
 ----------- #set user1 credentials to config file
-kubectl config set-credentials user1 --client-certificate=user1.crt --client-key=user1.key.pem
+kubectl config set-credentials user1 --client-certificate=user1.crt --client-key=user1.key
 kubectl config get-users
 
  kubectl config view  # verify the kubernetes config file
