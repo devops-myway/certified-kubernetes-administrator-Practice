@@ -1,6 +1,6 @@
 ##### Documentation Link
 
--  https://kubernetes.io/docs/tasks/administer-cluster/configure-upgrade-etcd/
+https://kubernetes.io/docs/tasks/administer-cluster/configure-upgrade-etcd/
 
 -----------------------------------
 ##### Here is what you should know about etcd backup.

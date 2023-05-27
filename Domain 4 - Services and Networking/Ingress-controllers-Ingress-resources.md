@@ -1,24 +1,32 @@
 
 https://kubernetes.github.io/ingress-nginx/user-guide/multiple-ingress/
+https://loft.sh/blog/kubernetes-nginx-ingress-10-useful-configuration-options/
 
 
 ####  Overview on Kubernetes Ingress
 
 Kubernetes offers an ingress resource and controller that is designed to expose Kubernetes services to the outside world. It can do the following:
 
-Provide an externally visible URL to your service
-Load balance traffic
-Terminate SSL
-Provide name-based virtual hosting
+- Provide an externally visible URL to your service
+- Load balance traffic
+- Terminate SSL
+- Provide name-based virtual hosting
 
 Ingresses do not work like other Services in Kubernetes. Just creating the Ingress itself will do nothing. You need two additional components:
 
-- An Ingress controller: you can choose from many implementations, built on tools such as Nginx or HAProxy. https://kubernetes.io/docs/concepts/services-networking/ingress-controllers/
+- An Ingress controller: Ingress controllers do not come installed in a Kubernetes cluster by default, so you have to set one up yourself, built on tools such as Nginx or HAProxy. https://kubernetes.io/docs/concepts/services-networking/ingress-controllers/
 The ingress controller is the software component that brings the Ingress object to life.
 
 - Ingress Resource - contains a set of routing rules based on which traffic is routed to a service.
 
 - ClusterIP or NodePort Services or Resource for the intended routes.
+
+##### Ingress Controller Configuration Categories
+The NGINX ingress controller has additional configuration options that can be customized and configured to create a more dynamic application. Basically, this can be done in two waysç
+- Annotations: this option can be used if you want a specific configuration for a particular ingress rule.
+- ConfigMap: this option can be used when you need to set global configurations for the NGINX ingress controller.
+
+Note: annotations take precedence over a ConfigMap.
 
 ##### Enable ingress controller add-on
 
@@ -62,7 +70,16 @@ curl http://172.17.0.34:30745
 
 ##### Create Ingress Rule
 
-Using the kubernetes.io/ingress.class annotation (in deprecation)
+Using the kubernetes.io/ingress.class annotation (in deprecation): there are a few things to note below on the ingress manifest.
+
+- Host: is specified as localhost, so the rule applies to the host. If a host is not specified, then all inbound HTTP traffic goes through the IP address.
+- Path: can consist of multiple rules; in the example above, the path rule points to a Service within the Backend definition.
+- Backend: is a combination of Service and port, as seen above.
+
+Ingress YAML Explanation:
+- ingressClassName: This field is used for the selection of ingress controller, similar to the selector field of services
+https://kubernetes.github.io/ingress-nginx/user-guide/multiple-ingress/
+- service:  denotes the name of the service on which the request has to be forwarded
 
 ``````sh
 
@@ -82,7 +99,7 @@ spec:
             serviceName: nginx
             servicePort: 80
 --
-kubectl create -f nginx-ingress-rule.yml
+kubectl apply -f nginx-ingress-rule.yml
 kubectl get ingress
 
  kubectl get ing nginx-ingress -o yaml
@@ -394,3 +411,14 @@ spec:
 curl -I http://kiada.example.com --resolve kiada.example.com:80:11.22.33.44
 
 ``````
+##### Ingress Controllers
+Ingress controllers in Kubernetes are resources that accept traffic from the internet and load balance it to applications (usually in the form of running pods).
+An Ingress controller is a daemon running in a Pod that watches the /ingresses endpoint on the API server. When a new endpoint is created, the daemon uses the configured set of rules to allow traffic into a service.
+
+There are many Ingress controllers and NGINX Ingress controllers as NGINX-based controllers seem to be the most common.
+NGINX is a general-purpose implementation compatible with most Kubernetes deployments.
+
+##### How to Set Up an NGINX Ingress Controller:
+To run your own NGINX Ingress Controller, you can use the process documented in this:
+https://kubernetes.github.io/ingress-nginx/deploy/
+https://kubernetes.github.io/ingress-nginx/user-guide/multiple-ingress/

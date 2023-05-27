@@ -6,6 +6,75 @@ https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument
 args in Kubernetes overrides CMD in the original docker image.
 command in Kubernetes overrides ENTRYPOINT in the original docker image.
 
+
+```sh
+command: ["/bin/sh","-c"]
+args: ["command one; command two && command three"]
+```
+The command ["/bin/sh", "-c"] : says "run a shell, and execute the following instructions"
+The args are then passed as commands to the shell
+In shell scripting a semicolon separates commands, and && conditionally runs the following command if the first succeed.
+
+##### Setting Command with Array Notation
+The array notation used in the listing is great when the array contains only a few elements, but becomes difficult to read as the number of elements increases.
+In this case, you’re better off using the following notation:
+
+```sh
+spec:
+  containers:
+  - name: kiada
+    image: luksa/kiada:0.4
+    command: ["node", "--cpu-prof", "--heap-prof", "app.js"]
+
+------
+command:
+    - node
+    - --cpu-prof
+    - --heap-prof
+    - app.js
+```
+##### Referring to environment variables that aren’t in the manifest
+you can only use the $(VAR_NAME) syntax in the command and args fields to reference variables that are defined in the pod manifest
+If you are using the bash shell, you can do this by referring to the variable using the syntax $VAR_NAME or ${VAR_NAME} instead of $(VAR_NAME)
+```sh
+containers:
+- name: main
+  image: alpine
+  command:
+  - sh
+  - -c
+  - 'echo "Hostname is $HOSTNAME."; sleep infinity'
+```
+
+#### Multi-Line Script
+If you want to avoid concatenating all commands into a single command with ; or && you can also get true multi-line scripts using a heredoc.
+```sh
+
+command: 
+ - sh
+ - "-c"
+ - |
+   /bin/bash <<'EOF'
+
+   # Normal script content possible here
+   echo "Hello world"
+   ls -l
+   exit 123
+
+   EOF
+```
+```sh
+readinessProbe:
+  exec:
+    command:
+    - sh
+    - -c
+    - |
+      command1
+      command2 && command3
+
+```
+
 ##### newpod.yaml
 
 ```sh
@@ -93,4 +162,82 @@ kubectl apply -f commands.yaml
 ```sh
 kubectl get pods
 kubectl exec -it command4 -- sh
+```
+##### example Pod 2 with Multi-Line Commandss
+```sh
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    run: busybox
+  name: busybox
+spec:
+  containers:
+  - command:
+    - /bin/sh
+    - -c
+    - |
+      echo "running below scripts"
+      i=0; 
+      while true; 
+      do 
+        echo "$i: $(date)"; 
+        i=$((i+1)); 
+        sleep 1; 
+      done
+    name: busybox
+    image: busybox
+```
+```sh
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: multiline
+spec:
+  template:
+    spec:
+      containers:
+      - command:
+        - /bin/bash
+        - -exc
+        - |
+          set +x
+          echo "running below scripts"
+          if [[ -f "if-condition.sh" ]]; then
+            echo "Running if success"
+          else
+            echo "Running if failed"
+          fi
+        name: ubuntu
+        image: ubuntu
+      restartPolicy: Never
+  backoffLimit: 1
+```
+#### using secret example
+```sh
+apiVersion: v1
+kind: Secret 
+metadata:
+  name: secret-script
+type: Opaque
+data:
+  script_text: <<your script in b64>>
+
+```
+```sh
+....
+containers:
+    - name: container-name
+      image: image-name
+      command: ["/bin/bash", "/your_script.sh"]
+      volumeMounts:
+        - name: vsecret-script
+          mountPath: /your_script.sh
+          subPath: script_text
+....
+  volumes:
+    - name: vsecret-script
+      secret:
+        secretName: secret-script
+
 ```

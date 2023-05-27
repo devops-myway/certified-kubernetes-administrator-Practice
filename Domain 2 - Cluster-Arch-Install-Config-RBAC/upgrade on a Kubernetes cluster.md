@@ -1,6 +1,6 @@
 ##### Documentation Link
 
-- https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/kubeadm-upgrade/
+https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/kubeadm-upgrade/
 
 ##### Ugrading and updating a version kubernetes cluster: 
 --------------------------------------------------

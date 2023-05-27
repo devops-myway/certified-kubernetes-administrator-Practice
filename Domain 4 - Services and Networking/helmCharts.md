@@ -1,23 +1,7 @@
 
 ##### Overview on Helm
-
-- Helm is an open source tool that streamlines installtion and management of Kubernetes applications or a Package Manager: https://helm.sh/
-- Think of Helm like APT/YUM/DNF package managers for Kubernetes. You can run Helm anywhere, laptop, CI/CD etc
-- Helm uses a packaging format called charts, a Chart is a collection of files that describe Kubernetes resources declaratively.
-- Helm relies on repositories to provide widespread access to charts  https://artifacthub.io/
-- Helm v3 is based on a client-only architecture. It connects to the Kubernetes API the same way as kubectl does, by using a kubeconfig file containing the Kubernetes cluster connection settings.
-- No expertise of kubernetes deployment needed as Helm hides Kubernetes domain complexities
-- Desried configuration can be passed at runtime as key-value
-- Same workloads can be deployed multiple times and easy to share
-- Heml tracks deployment making it easy to update and rollback
-- Became a CNCF project in mid 2018
-
-##### Four Keywords
-
-- Helm: While helm is the name of the project, the command lune client is also named helm. By convention, when speaking of the project, Heml is capitalized. When speaking of helm is in lowercase.
-- Chart: It contains all of the resource definitions necessary to run an application, tool, or service inside of a Kubernetes cluster. A chart is basically a package pre-configured Kubertenes resources.
-- Release: An instance of a chart running in a Kubernetes cluster and same chart can be deployed multiple times.
-- Repository: Place where charts reside and can be shared with others: https://artifacthub.io/
+https://helm.sh/docs/intro/install/
+https://artifacthub.io/
 
 ##### Download and Install Helm
 
@@ -39,19 +23,19 @@ helm –h
 ``````
 ##### Helm commands cheatsheet
 
-helm repo add	                                   Adds a Helm chart repository to the local cache list, after which we can reference it to pull charts from the repository
-helm repo update	                               Gets the latest information about chart repositories; the information is stored locally.
-helm search repo	                               Searches for charts in the given repositories.
-helm pull	                                       Downloads a given chart from the chart repository.
-helm upgrade -i	                                   This will upgrade existing deployment of specific release:  helm upgrade <RELEASE NAME> <CHART NAME>
-helm rollback                                      This will rollback a helm deployment to a specific revision number:  helm rollback <RELEASE NAME> <CHART NAME>
-helm ls	                                           Lists releases in the current namespace. If the -A flag is provided, it will list all the namespaces.
-helm history	                                   Prints historical revisions for a given release: helm history <RELEASE NAME>
-helm template	                                   Renders chart templates locally and displays the output.
-helm create	                                       Creates a chart. This command will create the entire directory structure with all the files required to deploy e.g nginx
-helm lint	                                       Validates a chart
-helm plugin	                                       Installs, lists, updates, and uninstalls Helm plugins.
-helm install                                       helm install <RELEASE NAME> <CHART NAME>
+helm repo add	             Adds a Helm chart repository to the local cache list, after which we can reference it to pull charts from the repository
+helm repo update	            Gets the latest information about chart repositories; the information is stored locally.
+helm search repo	              Searches for charts in the given repositories.
+helm pull	                     Downloads a given chart from the chart repository.
+helm upgrade -i	             This will upgrade existing deployment of specific release:  helm upgrade <RELEASE NAME> <CHART NAME>
+helm rollback                This will rollback a helm deployment to a specific revision number:  helm rollback <RELEASE NAME> <CHART NAME>
+helm ls	                     Lists releases in the current namespace. If the -A flag is provided, it will list all the namespaces.
+helm history	                 Prints historical revisions for a given release: helm history <RELEASE NAME>
+helm template	                      Renders chart templates locally and displays the output.
+helm create	                  Creates a chart. This command will create the entire directory structure with all the files required to deploy e.g nginx
+helm lint	                           Validates a chart
+helm plugin	                         Installs, lists, updates, and uninstalls Helm plugins.
+helm install                        helm install <RELEASE NAME> <CHART NAME>
 ##### 4.1 Adding a repo
 
 The helm repo add command will add a repository named bitnami that points to the URL https://charts.bitnami.com/bitnami.
@@ -72,7 +56,7 @@ helm search repo drupal --version
 ##### Installing a Package (Chart)
 At very minimum, installing a chart in Helm requires just two pieces of information:
 
-- the name of the installation called release name
+- the name of the installation called release name- running chart
 - the chart you want to install from repo
 
 helm install <RELEASE NAME> <CHART NAME>
@@ -121,12 +105,18 @@ mychart/
 ``````
 ##### 5.2 Understanding helm chart’s structure
 
-- Chart.yaml: The Chart.yaml file contains metadata and some functionality controls for the chart.
-- charts: The folder where dependent sub-charts get stored.
-- templates: Templates used to generate Kubernetes manifests are stored in the templates directory.
-- NOTES.txt: This file is a special template. When a chart is installed, the NOTES.txt template is rendered and displayed rather than being installed into a cluster.
-- tests: Templates can include tests that are not installed as part of the install or upgrade commands. This chart includes a test that is used by the helm test command.
-- values.yaml: Default values passed to the templates when Helm is rendering the manifests are in the values.yaml file. When you instantiate a chart, these values can be overridden.
+- Chart.yaml:
+  The Chart.yaml file contains metadata and some functionality controls for the chart.
+- charts:
+   The folder where dependent sub-charts get stored.
+- templates:
+   Templates used to generate Kubernetes manifests are stored in the templates directory.
+- NOTES.txt:
+   This file is a special template. When a chart is installed, the NOTES.txt template is rendered and displayed rather than being installed into a cluster.
+- tests: 
+  Templates can include tests that are not installed as part of the install or upgrade commands. This chart includes a test that is used by the helm test command.
+- values.yaml:
+   Default values passed to the templates when Helm is rendering the manifests are in the values.yaml file. When you instantiate a chart, these values can be overridden.
 
 ##### 5.3 Modifying the chart’s values
 
@@ -275,7 +265,7 @@ replicas: {{ $replicas }}
 image: {{ $image }}
 
 ``````
-##### 7. Rnage with $key $ value to iterate all over the values
+##### 7. Range with $key $ value to iterate all over the values
 
 ``````sh
 values.yaml
