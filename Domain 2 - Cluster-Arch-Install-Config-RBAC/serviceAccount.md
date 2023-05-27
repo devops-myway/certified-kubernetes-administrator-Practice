@@ -1,3 +1,6 @@
+https://kubernetes.io/docs/reference/access-authn-authz/authentication/#users-in-kubernetes
+
+https://www.containiq.com/post/kubernetes-rbac
 
 
 #### Overview on Kubernetes Service Accounts- Notes
@@ -13,13 +16,16 @@ The reason behind the above behaviour is that whenever we create a new namespace
 When a pod has no service account in its manifest and is deployed to that namespace, that pod will be assigned the default service account.
 
 ###### What is a service account?
+Service accounts are usually created automatically by the API server and associated with pods running in the cluster through the ServiceAccount Admission Controller.
+Bearer tokens are mounted into pods at well known locations, and allow in cluster processes to talk to the API server.
+Accounts may be explicitly associated with pods using the serviceAccountName field of a PodSpec. 
+NOTE: serviceAccountName is usually omitted because this is done automatically.
+The created secret holds the public CA of the API server and a signed JSON Web Token (JWT).
 
-To understand what a service account is? we will examine the default service account created in the default namespace of a Kubernetes cluster.
-To get the service account in the default namespace run the command and To see more details about this service account run the command:
 ``````sh
 kubectl get serviceaccount -n default
 
-kubectl get serviceaccount default -n default -o yaml
+kubectl get serviceaccount default -n default -oyaml
 ----
 apiVersion: v1
 kind: ServiceAccount
@@ -31,6 +37,22 @@ metadata:
   uid: 8843bb73-e090-4d48-9cd6-6d8717740af1
 secrets:
 - name: default-token-srs4v
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  namespace: default
+spec:
+  replicas: 3
+  template:
+    metadata:
+    # ...
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.7.9
+        serviceAccountName: bob-the-bot
 
 ``````
 The above shows that this service account has a set of credentials mounted in a secret volume.

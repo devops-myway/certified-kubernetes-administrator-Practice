@@ -1,6 +1,6 @@
 https://wangwei1237.github.io/Kubernetes-in-Action-Second-Edition/docs/Exposing_pods_via_services.html
 
-##### Create Kubernetes Service
+##### Exposing Services to External Clients
 
 A Kubernetes Service is an object you create to provide a single, stable access point to a set of pods that provide the same service.
 
@@ -12,11 +12,11 @@ Add labels to Pod objects and specify the label selector in the Service object. 
 
 #### Understanding different Kubernetes Service Types
 
-ClusterIP: It is the default type, but it provides internal access only.
+ClusterIP: It exposes the service within the Kubernetes cluster. This Service is only reachable from within the cluster. It can not be accessed from outside the cluster.
 
-NodePort: which allocates a specific node port which needs to be opened on the firewall. That means that by using these node ports, external users, as long as they can reach out to the nodes' IP addresses, are capable of reaching out to the Service.
+NodePort: It will expose the service on a static port on the deployed node. This service can be accessed from outside the cluster using the NodeIP:Nodeport.
 
-LoadBalancer: currently only implemented in public cloud. So if you're on Kubernetes in Azure or AWS, you will find a load balancer.
+LoadBalancer: Exposes the Service externally using a cloud provider's load balancer, this creates a Public IP on the Cloud provider
 
 ExternalName: which is a relatively new object that works on DNS names and redirection is happening at the DNS level.
 Service without selector: which is used for direct connections based on IP port combinations without an endpoint. And this is useful for connections to a database or between namespaces.
@@ -29,46 +29,60 @@ The easiest way to create a service is through kubectl expose
 kubectl create deployment nginx-lab-1 --image=nginx --replicas=3 --dry-run=client -o yaml > nginx-lab-1.yml
 
 ---- # modify few sections and following is my final template file to create a new deployment nginx-lab-1 with a label app=dev and 3 replicas.
-[root@controller ~]# cat nginx-lab-1.yml
+[root@controller ~]# cat my-deployment.yml
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  labels:
-    app: dev
-  name: nginx-lab-1
+  name: nginx
 spec:
-  replicas: 3
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
-      app: dev
-  template:
+      app: nginx
+  replicas: 3 
+  template: 
     metadata:
       labels:
-        app: dev
+        app: nginx
     spec:
       containers:
-      - image: nginx
-        name: nginx
+      - name: nginx
+        image: nginx
+        ports:
+        - containerPort: 80
 
 ------ # cat quote for pod
 apiVersion: v1
 kind: Service
 metadata:
-  name: quote
+  name: nginx
+  namespace: default
+  labels:
+    app: nginx
 spec:
-  type: ClusterIP
-  selector:
-    app: quote
+  externalTrafficPolicy: Local
   ports:
   - name: http
     port: 80
-    targetPort: 80
     protocol: TCP
+    targetPort: 80
+  selector:    
+    app: nginx
+  type: NodePort
 --
-kubectl create -f nginx-lab-1.yml
-
+kubectl apply -f nginx-lab-1.yml
 kubectl get pods
+kubectl get deployment | grep nginx
+kubectl get replicaset | grep nginx
+---
+kubectl apply -f my-service.yml
+kubectl get service | grep nginx
+kubectl describe service nginx
 
+--
+ the nginx application can be accessed through this service on NodeIp:NodePort
 ``````
 ###### To create the service, you’ll tell Kubernetes to expose the Deployment you created earlier, here port 80 is the default port on which our nginx application would be listening on.
 ``````sh
@@ -194,6 +208,7 @@ kubectl describe service nginx-deploy
 looking at the INTERNAL-IP and EXTERNAL-IP columns
 ``````sh
 kubectl get nodes -o wide
+curl http://node_ip_address:32096
 
 curl 172.18.0.4:30080
 

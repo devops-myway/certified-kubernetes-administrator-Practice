@@ -6,7 +6,7 @@
 ##### Step 0.0: Before we begin be sure of the below setup
 -----------------
 - Use Linux distributions based on Debian via Ec2 instances and ssh (login) with 2x worker nodes and 1 control plane (master node)
-- 2 GB or more of RAM or 2 vCPUs or more for the Instances or machines
+- 4 GB or more of RAM or 2 vCPUs or more for the Instances or machines
 - Certain ports are open on your machines and this should be at security Group levels
 - Check required ports: https://kubernetes.io/docs/reference/ports-and-protocols/
 ##### Note:
@@ -19,7 +19,7 @@ sudo apt update and sudo apt upgrade
 cat /etc/os-release
 sudo apt install net-tools
 ifconfig -a
-###### Move to the ssh_folder directory and move the .pem public key 
+###### Move to the ssh_folder directory and move the .pem public key
     mv cluster-keypair.pem ~/.ssh
     chmod 400 ~/.ssh/k8s-node.pem
 ``````
@@ -29,7 +29,9 @@ ifconfig -a
 ``````
 ##### set host names of nodes- Setup /etc/hosts file
 ``````sh
-    sudo nano /etc/hosts
+    sudo nano /etc/hosts 
+    or 
+    sudo vim /etc/hosts
 ``````
 ##### get priavate ips of each node and add this to each server
 ``````sh
@@ -96,9 +98,96 @@ sudo apt update
 sudo apt upgrade
 
 ``````
-##### Step2: Install and configure prerequisites: Forwarding IPv4 and letting iptables see bridged traffic- ALL NODES
+
+##### step2.1: Installing a container runtime CRI - using containerd - ALL NODES
+
+Note: The containerd.io packages in DEB and RPM formats are distributed by Docker (not by the containerd project).
+The containerd.io package contains runc too, but does not contain CNI plugins.
+See the Docker documentation for how to set up apt-get or dnf to install containerd.io packages:
+containerd:
+https://github.com/containerd/containerd/blob/main/docs/getting-started.md
+
+goto Option 2: From apt-get or dnf
+click ubuntu: https://docs.docker.com/engine/install/ubuntu/
+
+###### Installing CRI with containerd.io package mgr
+
+# Install containerd which is simple and faster
+sudo apt-get update
+sudo apt-get -y install containerd
+
+------------------------
+##### installing using docker repo on ubuntu as below
+
+``````sh
+#! /bin/bash
+
+#Uninstall old versions
+sudo apt-get remove docker docker-engine docker.io containerd runc
+#Install using the repository
+sudo apt-get update
+sudo apt-get install \
+    ca-certificates \
+    curl \
+    gnupg \
+    lsb-release
+
+# Add Docker’s official GPG key:
+sudo mkdir -m 0755 -p /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+
+#Use the following command to set up the repository:
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+# Then, install the package "containerd.io" as the Containerd Container Runtime.
+sudo apt-get update
+sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+sudo systemctl start containerd
+sudo systemctl enable containerd
+sudo systemctl status containerd
+
+``````
+#### Step4: Goto Advanced topics - Containerd configuration for Kubernetes
+containerd uses a configuration file config.toml for handling its demons.
+When installing containerd using official binaries, you will not get the configuration file.
+So, generate the default configuration file using the below commands.
+
+sudo cat /etc/containerd/config.toml    verify if cri is disabled, else do below steps.
+disabled_plugins = ["cri"]  and this has directory has to be removed and manually created.
+disabled_plugins = []       after manual generation of the config.toml file
+
+containerd uses a configuration file located in /etc/containerd/config.toml
+The default configuration can be generated via containerd config default > /etc/containerd/config.toml
+``````sh
+sudo rm -rf /etc/containerd/config.toml   # check if this file exist and rm the existing one from docker and create a new default config.toml file
+sudo mkdir -p /etc/containerd
+sudo containerd config default | sudo tee /etc/containerd/config.toml 
+sudo cat /etc/containerd/config.toml   # verify again for cri removed from disabled plugin  disabled_plugins = []
+``````
+##### Step5: Configuring the systemd cgroup driver
+---------
+To use the systemd cgroup driver in /etc/containerd/config.toml with runc, set
+``````sh
+
+sudo vi /etc/containerd/config.toml
+
+ [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+ SystemdCgroup = true
+
+``````
+##### Step6: If you apply this change, make sure to restart containerd:
+---------
+``````sh
+sudo systemctl restart containerd
+sudo systemctl status containerd
+
+``````
+##### Step2: Install and configure prerequisites
 ----------
-create a shell script e.g install-contanerd.sh with
+create a shell script e.g install-cont.sh with
 #! /bin/bash
 chmod u+x install-contanerd.sh
 
@@ -128,69 +217,6 @@ sudo lsmod | grep overlay
 sysctl net.bridge.bridge-nf-call-iptables net.bridge.bridge-nf-call-ip6tables net.ipv4.ip_forward
 
 ``````
-##### step2.1: Installing a container runtime - using containerd - ALL NODES
-
-Note: The containerd.io packages in DEB and RPM formats are distributed by Docker (not by the containerd project).
-See the Docker documentation for how to set up apt-get or dnf to install containerd.io packages:
-containerd:
-https://github.com/containerd/containerd/blob/main/docs/getting-started.md
-
-goto Option 2: From apt-get or dnf
-click ubuntu: https://docs.docker.com/engine/install/ubuntu/
-
-``````sh
-#! /bin/bash
-
-#Uninstall old versions
-sudo apt-get remove docker docker-engine docker.io containerd runc
-#Install using the repository
-sudo apt-get update
-sudo apt-get install \
-    ca-certificates \
-    curl \
-    gnupg \
-    lsb-release
-
-# Add Docker’s official GPG key:
-sudo mkdir -m 0755 -p /etc/apt/keyrings
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-
-#Use the following command to set up the repository:
-echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-
-# Install Docker Engine by also removing docker-compose if you want
-sudo apt-get update
-sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-
-``````
-#### Step4: Configure Containerd - Customizing containerd
-containerd uses a configuration file located in /etc/containerd/config.toml
-
-``````sh
-sudo mkdir -p /etc/containerd
-sudo containerd config default | sudo tee /etc/containerd/config.toml 
-
-``````
-##### Step5: Configuring the systemd cgroup driver
----------
-To use the systemd cgroup driver in /etc/containerd/config.toml with runc, set
-``````sh
-
-sudo nano /etc/containerd/config.toml
-
- [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
- SystemdCgroup = true
-
-``````
-##### Step6: If you apply this change, make sure to restart containerd:
----------
-``````sh
-sudo systemctl restart containerd
-sudo systemctl status containerd
-
-``````
 ##### Install core Binaries: kubeadm, kubelet and kubectl - All NODES
 
 You will install these packages on all of your machines:
@@ -202,17 +228,16 @@ You will install these packages on all of your machines:
 
 ``````sh
 # Create a simple bash file and chmod u+x bashfile.sh
-#! /bin/bash
 
-#Update the apt package index and install packages needed to use the Kubernetes apt repository
+#! /bin/bash
 sudo apt-get update
 sudo apt-get install -y apt-transport-https ca-certificates curl
 
-# The below keyrings directory will be created if you install containerd from official docker repository
+# Always sudo into /etc/apt/keyrings directory to verify if the location exit after installation of containerd.
 #sudo mkdir -p /etc/apt/keyrings
-#Download the Google Cloud public signing key:
-sudo curl -fsSLo /etc/apt/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
-
+#Download the Google Cloud public signing key: the below wasnt working so it has been updated.
+# curl -fsSLo /etc/apt/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
+curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-archive-keyring.gpg
 #Add the Kubernetes apt repository:
 echo "deb [signed-by=/etc/apt/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
 
@@ -240,16 +265,17 @@ kubectl get nodes
 ``````
 
 ##### Step9: Installing a Pod Network add-on or Container Network Interface - CNI - ONLY CONTROL PLANE
+You can install a Pod network add-on with the following command on the control-plane node or a node that has the kubeconfig credentials:
+See a list of add-ons that implement the Kubernetes networking model: https://kubernetes.io/docs/concepts/cluster-administration/addons/#networking-and-network-policy
+
 Add TCP 6783 to the secrutiy groups of the all nodes.
 You must deploy a Container Network Interface (CNI) based Pod network add-on so that your Pods can communicate with each other.
 Cluster DNS (CoreDNS) will not start up before a network is installed.
 We will use weave-net networking plugin for our Kubernetes Cluster. You must permit traffic to flow through TCP 6783 and UDP 6783/6784 on all the nodes, which are Weave’s control and data ports.
 Once a Pod network has been installed, you can confirm that it is working by checking that the CoreDNS Pod is Running in the output of: 
-kubectl get pods --all-namespaces
+
 
 ``````sh
-
-kubectl apply -f <add-on.yaml>
 
 kubectl apply -f https://github.com/weaveworks/weave/releases/download/v2.8.1/weave-daemonset-k8s.yaml
 
@@ -263,8 +289,6 @@ kubectl get pods --all-namespaces -o wide
 sudo kubeadm token list
 sudo kubeadm token create  #if the token expired
 
-kubeadm join --token <token> <control-plane-host>:<control-plane-port> --discovery-token-ca-cert-hash sha256:<hash>
-
 sudo kubeadm join 172.31.29.2:6443 --token 8mg8tb.u2l510xf7kse98u0 \
         --discovery-token-ca-cert-hash sha256:65f5391c70d01b9dc49e90708129cdbffad07ad28d6fd53a9cbe14e925ad7409
 
@@ -275,6 +299,7 @@ sudo kubeadm join 172.31.29.2:6443 --token 8mg8tb.u2l510xf7kse98u0 \
 kubectl get nodes
 kubectl run nginx --image=nginx
 kubectl get pods -o wide
-kubectl get pods --all-namespaces -o wide
+kubectl get pods --all-namespaces -owide
 
 ``````
+
