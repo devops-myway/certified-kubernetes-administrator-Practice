@@ -3,14 +3,12 @@
 https://helm.sh/docs/intro/install/
 https://artifacthub.io/
 
-##### Download and Install Helm
+##### Download and Install Helm - From Apt (Debian/Ubuntu)
 
 - Helm provides a single command-line client that is capable of performing all of the main Helm tasks
 https://helm.sh/docs/intro/install/
 
 ``````sh
-From Apt (Debian/Ubuntu)
-
 curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg > /dev/null
 sudo apt-get install apt-transport-https --yes
 echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
@@ -18,7 +16,6 @@ sudo apt-get update
 sudo apt-get install helm
 
 helm version
-
 helm –h
 ``````
 ##### Helm commands cheatsheet
@@ -36,6 +33,7 @@ helm create	                  Creates a chart. This command will create the enti
 helm lint	                           Validates a chart
 helm plugin	                         Installs, lists, updates, and uninstalls Helm plugins.
 helm install                        helm install <RELEASE NAME> <CHART NAME>
+
 ##### 4.1 Adding a repo
 
 The helm repo add command will add a repository named bitnami that points to the URL https://charts.bitnami.com/bitnami.
@@ -43,6 +41,7 @@ Once we have added a repository, its index will be locally cached until we next 
 
 ``````sh
 helm repo add bitnami https://charts.bitnami.com/bitnami
+helm repo update
 
 ``````
 ##### Searching a Chart repository
@@ -56,10 +55,12 @@ helm search repo drupal --version
 ##### Installing a Package (Chart)
 At very minimum, installing a chart in Helm requires just two pieces of information:
 
-- the name of the installation called release name- running chart
+- the name of the installation called release name - running chart
 - the chart you want to install from repo
 
 helm install <RELEASE NAME> <CHART NAME>
+helm install chart-1 .    # with . as our current directory cd ~/charts/application-1
+helm list -A    # list all releases
 
 ``````sh
 # To install the drupal chart we will use:
@@ -161,7 +162,7 @@ we can use the helm lint <CHART NAME> command
 ``````sh
 helm lint mychart
 
-heml list
+helm list
 kubectl get nodes
 kubectl get ns
 

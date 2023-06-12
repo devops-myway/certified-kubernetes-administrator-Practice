@@ -1,26 +1,10 @@
 https://kubernetes.io/docs/reference/access-authn-authz/authentication/#users-in-kubernetes
 
-https://www.containiq.com/post/kubernetes-rbac
-
-
-#### Overview on Kubernetes Service Accounts- Notes
-
-Interaction with a Kubernetes cluster involves communication with the API server. This communication is in the form of requests sent to the API server. When a request is received by the API server it first tries to authenticate the request, if this authentication fails the request is treated as an anonymous request. This means that every process inside or outside the cluster, from a human typing kubectl on his workstation to the kubelet process running on a node must authenticate when making a request to the API server.
-
-Kubernetes has two types of users, normal users and service account users. Service accounts are maintained by the Kubernetes cluster. Service accounts are meant to represent the processes running in pods in the cluster.
-Service accounts on the other hand are tied to a specific namespace. These are created automatically by the API server or manually through API calls. This ensures namespace isolation.
-Whenever we create a pod in a cluster, Kubernetes assigns that pod a service account. This service account identifies the pod process as it interacts with the API server.
-However, assigning a service account to a pod or deployment is optional. This means that if our manifest file doesn’t specify a service account, our pod will be deployed and it will still be able to communicate with the API server.
-
-The reason behind the above behaviour is that whenever we create a new namespace in our cluster, Kubernetes creates a default service account for us in that namespace.
-When a pod has no service account in its manifest and is deployed to that namespace, that pod will be assigned the default service account.
 
 ###### What is a service account?
 Service accounts are usually created automatically by the API server and associated with pods running in the cluster through the ServiceAccount Admission Controller.
 Bearer tokens are mounted into pods at well known locations, and allow in cluster processes to talk to the API server.
-Accounts may be explicitly associated with pods using the serviceAccountName field of a PodSpec. 
-NOTE: serviceAccountName is usually omitted because this is done automatically.
-The created secret holds the public CA of the API server and a signed JSON Web Token (JWT).
+Accounts may be explicitly associated with pods using the serviceAccountName field of a PodSpec.
 
 ``````sh
 kubectl get serviceaccount -n default
@@ -59,7 +43,6 @@ The above shows that this service account has a set of credentials mounted in a 
 In this particular case, the secret is called default-token-srs4v.
 
 To check the content of this secret run this command: We can see that the secret includes a ca.crt file and a token . The ca.crt is the public CA of the API server and the token is a signed JSON Web Token (JWT).
-These secrets are mounted into the pod for in-cluster access to the API server.
 ``````sh
 kubectl get secret default-token-srs4v -o yaml
 
@@ -90,7 +73,7 @@ kind: ServiceAccount
 metadata:
   name: user2
 
-kubectl create -f service-account.yaml
+kubectl apply -f service-account.yaml
 
 kubectl get sa user2 -o yaml
 
@@ -115,11 +98,11 @@ spec:
 
 ``````
 #### Assign ServiceAccount to a Pod
-After you have created ServiceAccount, you can start assigning them to respective pods.
 You can use spec.serviceAccountName field in the pod definition to assign a ServiceAccount. Here I am creating a simple nginx pod using our user1 ServiceAccount.
 
 ``````sh
-[root@controller ~]# cat nginx.yaml
+ cat nginx.yaml
+--- 
 apiVersion: v1
 kind: Pod
 metadata:
@@ -133,7 +116,7 @@ spec:
     ports:
     - containerPort: 80
 
-kubectl create -f nginx.yaml
+kubectl apply -f nginx.yaml
 
 ----
 kubectl exec -it nginx -- awk 1 /var/run/secrets/kubernetes.io/serviceaccount/token
@@ -146,7 +129,8 @@ kubectl describe sa user1 | grep "Tokens:"
 We will create a busybox pod and assign user2 ServiceAccount which we created earlier in this tutorial.
 
 ``````sh
-[root@controller ~]# cat nginx.yaml
+cat nginx.yaml
+---
 apiVersion: v1
 kind: Pod
 metadata:
@@ -160,7 +144,7 @@ spec:
     ports:
     - containerPort: 80
 
-kubectl create -f nginx.yaml
+kubectl apply -f nginx.yaml
 
 ----
 kubectl exec -it nginx -- awk 1 /var/run/secrets/kubernetes.io/serviceaccount/token
@@ -216,7 +200,8 @@ kubectl create sa user3
 #### Create Role
 A Role resource defines what actions can be taken on which resources. I will create a separate role which allows to list the Pods in default namespace:
 ``````sh
-[root@controller ~]# cat list-pods.yaml 
+cat list-pods.yaml
+---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
@@ -231,7 +216,7 @@ rules:
     - list
 
 ---
-kubectl create -f list-pods.yaml 
+kubectl apply -f list-pods.yaml 
 kubectl get roles
 ``````
 #### Create RoleBinding
@@ -239,7 +224,8 @@ A Role defines what actions can be performed, but it doesn’t specify who can p
 To do that, you must bind the Role to a subject, which can be a user(real users), a Service-Account(applications, argo-cd, db, web servers, agents etc), or a group (of users or ServiceAccounts).
 
 ``````sh
-[root@controller ~]# cat list-pods-binding.yaml 
+cat list-pods-binding.yaml 
+---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
@@ -255,14 +241,15 @@ subjects:
     namespace: default
 
 ---
-kubectl create -f list-pods-binding.yaml
+kubectl apply -f list-pods-binding.yaml
 kubectl get rolebindings
 ``````
 #### Create a Pod
 We will create a new pod using user3 ServiceAccount
 
 ``````sh
-[root@controller ~]# cat user3-busybox.yaml 
+cat user3-busybox.yaml 
+---
 apiVersion: v1
 kind: Pod
 metadata:
@@ -280,7 +267,7 @@ spec:
   restartPolicy: Always
 
 ---
-kubectl create -f user3-busybox.yaml
+kubectl apply -f user3-busybox.yaml
 
 ``````
 

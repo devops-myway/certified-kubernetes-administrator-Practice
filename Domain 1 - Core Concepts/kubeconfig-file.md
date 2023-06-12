@@ -54,7 +54,7 @@ openssl req -new -key user1.key -out user1.csr -subj "/CN=user1/O=dev"
 ##### Step 3: create the certificate
 
 ``````sh
-openssl x509 -req -in user1.csr -CA /etc/kubernetes/pki/ca.crt -CAkey /etc/kubernetes/pki/ca.key -CAcreateserial -out user1.crt -days 365
+openssl x509 -req -in user1.csr -CA /etc/kubernetes/pki/ca.crt -CAkey /etc/kubernetes/pki/ca.key -out user1.crt -days 365
 
 ``````
 ##### Step 4:  Create namespace (optional)

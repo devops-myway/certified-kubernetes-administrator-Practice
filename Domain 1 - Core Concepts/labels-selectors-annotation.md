@@ -1,4 +1,7 @@
 
+https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+
+
 ##### Labels -  Maps (aka Dictionaries)
 - Labels are attached to Kubernetes objects and are simple key: value pairs or maps(dictionary).
 - Labels are used to store identifying information about a thing that you might need to query against.
@@ -88,12 +91,13 @@ I have another deployment nginx-deploy on my cluster, so I will assign label tie
 ``````sh
 kubectl label deployment nginx-deploy tier=backend
 
-kubectl get deployments --show-labels
+kubectl get deployments -owide --show-labels
 
 ``````
 #####  Kubernetes labels example use cases - Services and Deployments
 The most common use case for labels is using label selectors in Kubernetes services and deployment objects. A service object targets pods based on label selectors.
 The below specification will create a new service object named "app-service", targeting TCP port 9370 on any pod with the app=MyApp label
+
 ``````sh
 apiVersion: v1
 kind: Service
@@ -101,7 +105,7 @@ metadata:
   name: app-service
 spec:
   selector:
-    app: MyApp
+    app: nginx
   ports:
     - protocol: TCP
       port: 80

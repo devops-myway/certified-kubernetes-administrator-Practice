@@ -35,5 +35,3 @@ set shiftwidth=4            Set shift width to 4 spaces.
 set tabstop=4               Set tab width to 4 columns.
 set expandtab               Use space characters instead of tabs.
 
-
-

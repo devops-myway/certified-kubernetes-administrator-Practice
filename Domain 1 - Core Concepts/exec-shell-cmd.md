@@ -10,9 +10,9 @@ We have two deployments as represented in the following below:
 ``````sh
 kubect create namespace test-ns
 
-kubectl create deployment tomcatinfra – image=saravak/tomcat8 -n test-ns  # kubectl create deployment tomcat-nginx – image=saravak/tomcat8,nginx -n test-ns
+kubectl create deployment tomcatinfra –-image=saravak/tomcat8 -n test-ns  # kubectl create deployment tomcat-nginx – image=saravak/tomcat8,nginx -n test-ns
 
-kubectl create deployment tomcat-nginx – image=saravak/tomcat8,nginx -n test-ns  # Creating a Multi Container deployment
+kubectl create deployment tomcat-nginx –-image=saravak/tomcat8,nginx -n test-ns  # Creating a Multi Container deployment
 ----
 kubectl get deployment -n test-ns
 kubectl get pods -n test-ns
@@ -46,6 +46,6 @@ You need to use the option -i  and -t
 -i  represents that we want kubectl exec to run this interactive session
 -t  represents that kubectl exec should get a terminal ID allotted
 ``````sh
-kubectl exec tomcat-nginx-78d457fd5d-446wx -n test-ns -c tomcat8 -i -t – bash
+kubectl exec tomcat-nginx-78d457fd5d-446wx -n test-ns -c tomcat8 -it – bash
 
 ``````
