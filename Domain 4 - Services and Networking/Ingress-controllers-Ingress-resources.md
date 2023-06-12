@@ -1,38 +1,39 @@
 
 https://kubernetes.github.io/ingress-nginx/user-guide/multiple-ingress/
-https://loft.sh/blog/kubernetes-nginx-ingress-10-useful-configuration-options/
+https://github.com/kubernetes/ingress-nginx/tree/main/charts/ingress-nginx
+https://computingforgeeks.com/deploy-metallb-load-balancer-on-kubernetes/
+https://computingforgeeks.com/deploy-nginx-ingress-controller-on-kubernetes-using-helm-chart/
 
 
 ####  Overview on Kubernetes Ingress
 
-Kubernetes offers an ingress resource and controller that is designed to expose Kubernetes services to the outside world. It can do the following:
+Kubernetes offers ingress which is an API object, that exposes HTTP and HTTPS routes from outside the cluster to services running within the cluster.An Ingress may be configured to: 
 
-- Provide an externally visible URL to your service
-- Load balance traffic
-- Terminate SSL
-- Provide name-based virtual hosting
+- Provide Services with externally-reachable URLs
+- Load balance traffic coming into cluster services
+- Terminate SSL / TLS traffic
+- Provide name-based virtual hosting in Kubernetes
 
 Ingresses do not work like other Services in Kubernetes. Just creating the Ingress itself will do nothing. You need two additional components:
 
-- An Ingress controller: Ingress controllers do not come installed in a Kubernetes cluster by default, so you have to set one up yourself, built on tools such as Nginx or HAProxy. https://kubernetes.io/docs/concepts/services-networking/ingress-controllers/
+1 - An Ingress controller: Ingress controllers do not come installed in a Kubernetes cluster by default, so you have to set one up yourself, built on tools such as Nginx or HAProxy. https://kubernetes.io/docs/concepts/services-networking/ingress-controllers/
 The ingress controller is the software component that brings the Ingress object to life.
 
-- Ingress Resource - contains a set of routing rules based on which traffic is routed to a service.
+2 - Ingress Resource - contains a set of routing rules based on which traffic is routed to a service object.
 
-- ClusterIP or NodePort Services or Resource for the intended routes.
+3 - ClusterIP or NodePort Services objects or Resource for the intended routes.
 
 ##### Ingress Controller Configuration Categories
-The NGINX ingress controller has additional configuration options that can be customized and configured to create a more dynamic application. Basically, this can be done in two waysç
+The NGINX ingress controller has additional configuration options that can be customized and configured to create a more dynamic application. Basically, this can be done in two ways.
 - Annotations: this option can be used if you want a specific configuration for a particular ingress rule.
 - ConfigMap: this option can be used when you need to set global configurations for the NGINX ingress controller.
 
 Note: annotations take precedence over a ConfigMap.
 
 ##### Enable ingress controller add-on
-
-When you want to expose a set of services externally, you create an Ingress object and reference the Service objects in it.
-
-Once the add-on is enabled, you can verify the status of the Pod:
+ Kubernetes adopts a BYOS (Bring-Your-Own-Software) approach to most of its addons and it doesn’t provide a software that does Ingress functions out of the box.
+ You can choose from the:
+https://kubernetes.io/docs/concepts/services-networking/ingress-controllers/
 
 ``````sh
 kubectl get pods -n kube-system
@@ -41,30 +42,242 @@ kubectl get pods -n kube-system
 nginx-ingress-controller-6fc5bcc8c9-wnkfs   1/1     Running   0          111s
 ``````
 
-##### 5. Configure Kubernetes Ingress using Host
+##### Step 1: Deploy Nginx Ingress Controller in Kubernetes - Install without Helm
+Option 1: Install without Helm
+With this method you’ll manually download and run deployment manifests using kubectl command line tool.
+
 ``````sh
-kubectl create deployment nginx --image=nginx
-
-kubectl scale deployment nginx --replicas=3
---
-kubectl get deployments
-
-kubectl get pods
+# Debian / Ubuntu
+sudo apt update
+sudo apt install wget curl git
 ``````
-##### 5.2 Expose the deployment (Create a service)
-``````sh
-kubectl expose deployment nginx --type=NodePort --port=80
+Step 2: Apply Nginx Ingress Controller manifest
+https://kubernetes.github.io/ingress-nginx/deploy/#aws
 
-kubectl get service
+Install ingress on Bare metal clusters:
+Kubernetes clusters deployed on bare metal servers manually, using generic Linux distros (like CentOS, Ubuntu...)
+``````sh
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.0/deploy/static/provider/baremetal/deploy.yaml
 
 ``````
-##### Access the container using external network
+You can update your current context to use nginx ingress namespace:
 ``````sh
-ip a
+kubectl config set-context -h
+kubectl config set-context --current --namespace=ingress-nginx  #add an entry for the namespace to our config file
 
-So my interface IP is 172.17.0.34 which means I can access my nginx server at http://172.17.0.34:30745.
+# Once the ingress controller pods are running, you can cancel the command typing Ctrl+C.
+kubectl get pods -n ingress-nginx -l app.kubernetes.io/name=ingress-nginx --watch
 
-curl http://172.17.0.34:30745
+# If you want to run multiple Nginx Ingress Pods
+kubectl -n ingress-nginx scale deployment ingress-nginx-controller --replicas 2
+kubectl get pods  -n ingress-nginx
+``````
+
+#### Option 2: Deploy Nginx Ingress Controller in Kubernetes - Install with Helm
+Install Helm on Ubuntu or bare metal server
+https://helm.sh/docs/intro/install/
+``````sh
+curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg > /dev/null
+sudo apt-get install apt-transport-https --yes
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
+sudo apt-get update
+sudo apt-get install helm
+helm -h
+helm version
+``````
+Step 2: Deploy Nginx Ingress Controller
+
+use this repo: https://github.com/kubernetes/ingress-nginx/tree/main/charts/ingress-nginx
+To use, add ingressClassName: nginx spec field or the kubernetes.io/ingress.class: nginx annotation to your Ingress resources.
+``````sh
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+helm repo update
+helm install [RELEASE_NAME] ingress-nginx/ingress-nginx
+helm uninstall [RELEASE_NAME]
+
+``````
+``````sh
+kubectl create namespace ingress-nginx
+helm install ingress-nginx ingress-nginx/ingress-nginx -n ingress-nginx
+kubectl get all -n ingress-nginx
+kubectl get pods -n ingress-nginx
+kubectl get pods --all-namespaces
+``````
+To check logs in the Pods use the commands.
+To follow logs as they stream run
+``````sh
+kubectl -n ingress-nginx  logs deploy/ingress-nginx-controller
+kubectl -n ingress-nginx  logs deploy/ingress-nginx-controller -f
+
+``````
+
+##### Upgrading Helm Release
+I’ll set replica count of the controller Pods to 2
+``````sh
+vim values.yaml
+
+kubectl -n ingress-nginx  get deploy
+---
+NAME                       READY   UP-TO-DATE   AVAILABLE   AGE
+ingress-nginx-controller   1/1     1            1           43m
+
+helm upgrade -n ingress-nginx ingress-nginx
+kubectl -n ingress-nginx  get deploy
+``````
+##### Uninstalling the Chart
+``````sh
+helm -n ingress-nginx uninstall ingress-nginx
+``````
+###### Step 2: Configure Nginx Ingress Controller on Kubernetes - Option 1: Using Load Balancer (Highly recommended)
+Load balancer is used to expose an application running in Kubernetes cluster to the external network.
+It provides a single IP address to route incoming requests to Ingress controller application.
+Setting Nginx Ingress to use MetalLB - https://metallb.universe.tf/installation/
+
+``````sh
+# Check Nginx Ingress service.
+kubectl get svc -n ingress-nginx
+---
+NAME                                 TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)                      AGE
+ingress-nginx-controller             NodePort    10.108.4.75      <none>        80:30084/TCP,443:30540/TCP   5m55s
+ingress-nginx-controller-admission   ClusterIP   10.105.200.185   <none>        443/TCP                      5m55s
+``````
+Patch ingress-nginx-controller service by setting service type to LoadBalancer.
+Confirm successful patch of the service.
+
+``````sh
+kubectl get service ingress-nginx-controller --namespace=ingress-nginx
+kubectl -n ingress-nginx patch svc ingress-nginx-controller --type='json' -p '[{"op":"replace","path":"/spec/type","value":"LoadBalancer"}]'
+service/ingress-nginx-controller patched
+
+kubectl get service ingress-nginx-controller --namespace=ingress-nginx
+----
+NAME                       TYPE           CLUSTER-IP    EXTERNAL-IP    PORT(S)                      AGE
+ingress-nginx-controller   LoadBalancer   10.108.4.75   192.168.1.30   80:30084/TCP,443:30540/TCP   10m
+``````
+
+##### 2. Mapping DNS name for Nginx Ingresses to LB IP
+The mapping is *.k8s.example.com pointing to IP address 192.168.1.30 (Nginx Ingress LB IP).
+``````sh
+
+``````
+###### Deploy Services to test Nginx Ingress functionality
+
+Create namespace, test Pods and Services YAML file
+``````sh
+kubectl create namespace demo
+
+``````
+``````sh
+kind: Pod
+apiVersion: v1
+metadata:
+  name: apple-app
+  labels:
+    app: apple
+spec:
+  containers:
+    - name: apple-app
+      image: hashicorp/http-echo
+      args:
+        - "-text=apple"
+---
+
+kind: Service
+apiVersion: v1
+metadata:
+  name: apple-service
+spec:
+  selector:
+    app: apple
+  ports:
+    - port: 5678 # Default port for image
+---
+kind: Pod
+apiVersion: v1
+metadata:
+  name: banana-app
+  labels:
+    app: banana
+spec:
+  containers:
+    - name: banana-app
+      image: hashicorp/http-echo
+      args:
+        - "-text=banana"
+---
+
+kind: Service
+apiVersion: v1
+metadata:
+  name: banana-service
+spec:
+  selector:
+    app: banana
+  ports:
+    - port: 5678 # Default port for image
+
+----
+kubectl apply -f demo-app.yml -n demo
+``````
+##### Test if it is working
+``````sh
+kubectl get pods -n demo
+kubectl -n demo logs apple-app
+``````
+##### Create Ubuntu pod that will be used to test service connection.
+``````sh
+cat <<EOF | kubectl -n demo apply -f -
+apiVersion: v1
+kind: Pod
+metadata:
+  name: ubuntu
+  labels:
+    app: ubuntu
+spec:
+  containers:
+  - name: ubuntu
+    image: ubuntu:latest
+    command: ["/bin/sleep", "3650"]
+    imagePullPolicy: IfNotPresent
+  restartPolicy: Always
+EOF
+
+``````
+``````sh
+kubectl exec -it ubuntu -- bash -n demo
+---
+apt update && apt install curl -y
+curl apple-service:5678
+curl banana-service:5678
+
+``````
+##### Creating an ingress route
+declare an Ingress to route requests to /apple to the first service, and requests to /banana to second service
+``````sh
+kubectl explain ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: webapp-ingress
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: webapp.k8s.example.com
+    http:
+      paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: web-server-service
+              port:
+                number: 80
+----
+kubectl -n web apply -f  webapp-app-ingress.yml
+kubectl get ingress -n web
+kubectl get pods -n ingress-nginx
+curl http://webapp.k8s.example.com/
 
 ``````
 
@@ -248,9 +461,7 @@ spec:
 
 ----
 kubectl get ingresses
-
 kubectl describe ing kiada-example-com
-
 kubectl get ing kiada -o yaml
 
 -- # access the two services it exposes as follows (replace the IP with that of your ingress):
@@ -268,7 +479,7 @@ Path in rule	       Matches request path	          Doesn’t match
 /FOO	                 /FOO	                           /foo
 
 ###### Matching paths using the Prefix path type
-pathType is set to Prefix, things aren’t as you might expect
+pathType is set to Prefix, things aren’t as you might expect. Matches based on a URL path prefix split by /
 
 
 Path in rule	          Matches request paths	                                            Doesn’t match
@@ -411,14 +622,3 @@ spec:
 curl -I http://kiada.example.com --resolve kiada.example.com:80:11.22.33.44
 
 ``````
-##### Ingress Controllers
-Ingress controllers in Kubernetes are resources that accept traffic from the internet and load balance it to applications (usually in the form of running pods).
-An Ingress controller is a daemon running in a Pod that watches the /ingresses endpoint on the API server. When a new endpoint is created, the daemon uses the configured set of rules to allow traffic into a service.
-
-There are many Ingress controllers and NGINX Ingress controllers as NGINX-based controllers seem to be the most common.
-NGINX is a general-purpose implementation compatible with most Kubernetes deployments.
-
-##### How to Set Up an NGINX Ingress Controller:
-To run your own NGINX Ingress Controller, you can use the process documented in this:
-https://kubernetes.github.io/ingress-nginx/deploy/
-https://kubernetes.github.io/ingress-nginx/user-guide/multiple-ingress/

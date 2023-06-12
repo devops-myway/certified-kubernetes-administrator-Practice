@@ -13,30 +13,14 @@ args: ["command one; command two && command three"]
 ```
 The command ["/bin/sh", "-c"] : says "run a shell, and execute the following instructions"
 The args are then passed as commands to the shell
-In shell scripting a semicolon separates commands, and && conditionally runs the following command if the first succeed.
+In shell scripting a semicolon ; separates commands, and && conditionally runs the following command if the first succeed.
 
-##### Setting Command with Array Notation
-The array notation used in the listing is great when the array contains only a few elements, but becomes difficult to read as the number of elements increases.
-In this case, you’re better off using the following notation:
-
-```sh
-spec:
-  containers:
-  - name: kiada
-    image: luksa/kiada:0.4
-    command: ["node", "--cpu-prof", "--heap-prof", "app.js"]
-
-------
-command:
-    - node
-    - --cpu-prof
-    - --heap-prof
-    - app.js
-```
 ##### Referring to environment variables that aren’t in the manifest
 you can only use the $(VAR_NAME) syntax in the command and args fields to reference variables that are defined in the pod manifest
 If you are using the bash shell, you can do this by referring to the variable using the syntax $VAR_NAME or ${VAR_NAME} instead of $(VAR_NAME)
 ```sh
+kubectl run alpine1 --image=alpine --port=8080 --dry-run=client -oyaml --command -- sh -c "echo "hostname is $HOSTNAME."; sleep infinity" > alpine1.yaml
+
 containers:
 - name: main
   image: alpine
@@ -56,7 +40,6 @@ command:
  - |
    /bin/bash <<'EOF'
 
-   # Normal script content possible here
    echo "Hello world"
    ls -l
    exit 123
