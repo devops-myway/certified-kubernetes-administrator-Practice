@@ -7,23 +7,16 @@ Field selectors let you select Kubernetes objects based on the value of one or m
 
 This kubectl command selects all Pods for which the value of the status.phase field is Running
 ```sh
-kubectl get pods --field-selector status.phase=Running
+kubectl run nginx --image=nginx --port=8181
+kubectl run nginx2 --image=nginx --port=8282
+kubectl get po -owide
+
+kubectl label pod nginx app=dev
+kubectl label pod nginx2 app=myapp
+kubectl get po -owide --show-labels
+
+kubectl get pods --field-selector metadata.namespace=default
+kubectl get pods --field-selector metadata.label=app.myapp #this will throw an error as it doesnt support it
 
 ```
-
-```sh
-kubectl get ingress --field-selector foo.bar=baz
-
-```
-###### Supported operators
-You can use the =, ==, and != operators with field selectors (= and == mean the same thing).
-
-```sh
-kubectl get pods --field-selector=status.phase!=Running,spec.restartPolicy=Always
-
-```
-##### Multiple resource types
-```sh
-kubectl get statefulsets,services --all-namespaces --field-selector metadata.namespace!=default
-
-```
+So, one can conclude that field-selector only works for metadata.name and for additional fields for some types, but it is a very select set.
