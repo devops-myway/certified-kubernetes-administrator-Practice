@@ -20,3 +20,13 @@ kubectl get pods --field-selector metadata.label=app.myapp #this will throw an e
 
 ```
 So, one can conclude that field-selector only works for metadata.name and for additional fields for some types, but it is a very select set.
+
+###### Sort-by
+used to filter by creationTimestamp and metadata objects
+
+```sh
+kubectl get pods -A 
+kubectl get pods -A --sort-by={.metadata.creationTimestamp} # in descending order
+kubectl get pods -A --sort-by={.metadata.creationTimestamp} | tac #Ascending order
+
+```

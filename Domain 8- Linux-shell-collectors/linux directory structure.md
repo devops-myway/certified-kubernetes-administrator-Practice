@@ -1,8 +1,15 @@
 
 
+###### What is Top Level in Linux?
+/ is the top level directory of a Linux system. The name “top level” means the “root”.
+
+cd /
+
+
+
 ###### Linux/Unix file system hierarchy
 
-/bin – binary or executable programs.
+/bin – binary or executable programs. contains core system administrators program e.g cat
 /etc – system configuration files.
 /home – home directory. It is the default current directory.
 /opt – optional or third-party software.
