@@ -8,55 +8,37 @@ while tolerations are defined in the pod specification.
 A taint can produce three possible effects:
 - NoSchedule: The Kubernetes scheduler will only allow scheduling pods that have tolerations for the tainted nodes
 - PreferNoSchedule: The Kubernetes scheduler will try to avoid scheduling pods that don’t have tolerations for the tainted nodes.
-- NoExecute: Kubernetes will evict the running pods from the nodes if the pods don’t have tolerations for the tainted nodes
+- NoExecute: Kubernetes will evict the running pods from the nodes if the pods don’t have tolerations for the tainted nodes.
 
-#### Use Cases for Taints and Tolerations
-Dedicated Nodes: If you need to dedicate a group of worker nodes for a set of users, you can add a taint to those nodes.
-``````sh
-kubectl taint nodes nodename dedicated=groupName:NoSchedule
-
-``````
-Nodes with Special Hardware
-``````sh
-kubectl taint nodes nodename special=true:NoSchedule
-
-``````
 ##### How to Use Taints and Tolerations
-The taint below with key name app, with a value frontend, and has the effect of NoSchedule, which means that no pod will be placed on this node until the pod has defined a toleration for the taint.
-
-Try to deploy an app on the cluster without any toleration configured in the app deployment specification.
 ``````sh
-kubectl taint nodes cluster01-worker-1 app=frontend:NoSchedule
 
-------
-kubectl create ns frontend
-
-kubectl run nginx --image=nginx --namespace frontend
-
-kubectl get events -n frontend
+kubectl get nodes
+kubectl taint nodes node01 key1=value1:NoSchedule
+kubectl describe node/node01
 
 ``````
 
-To successfully place the pod on the worker node, we need to edit the deployment and add a toleration of the taint we configured earlier on the node.
 ``````sh
-kubectl get deployment nginx -n frontend -o yaml
+vi test-pod.yaml
 
-------
-kubectl edit deployment nginx -n frontend
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx
+  labels:
+    env: test
+spec:
+  containers:
+  - name: nginx
+    image: nginx
+    imagePullPolicy: IfNotPresent
+  tolerations:
+  - key: "key1"
+    operator: "Equal"
+    value: "value1"
+    effect: "NoSchedule"
 --
-  spec:
-        containers:
-        - image: nginx
-          imagePullPolicy: Always
-          name: nginx
-        tolerations:
-        - effect: NoSchedule
-          key: app
-          operator: Equal
-          value: frontend
------
-kubectl get events -n frontend
-
-kubectl get pods -n frontend
-
+kubectl apply -f test-pod.yaml
+kubectl get pod/nginx -owide # watch as it schedule with tolerations on the dedicated pod
 ``````
