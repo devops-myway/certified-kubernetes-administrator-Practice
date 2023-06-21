@@ -90,59 +90,68 @@ kubectl delete -f myInitPod-3.yaml --force --grace-period=0
 ``````
 
 ##### Realistic Production Init Container Simulation
-I removed terminationGracePeriodSeconds: 0 This simulates a live Pod: it must take the default 30 seconds to terminate gracefully.
-
+This example defines a simple Pod that has two init containers. The first waits for myservice, and the second waits for mydb. Once both init containers complete, the Pod runs the app container from its spec section.
 ``````sh
-vi myInitPod-7.yaml
+vi myapp-init.yaml
 ---
 apiVersion: v1
 kind: Pod
 metadata:
-  name: myapp-pod
+  name: myapp
   labels:
-    app: myapp
+    app.kubernetes.io/name: myApp
 spec:
   containers:
-  - name: myapp-container
-    image: busybox
-    imagePullPolicy: IfNotPresent
-    command: ['sh', '-c', 'echo The app is running! && sleep 10']
-  
-  restartPolicy: Never
-  
+  - name: myapp
+    image: busybox:1.28
+    command: ['sh', '-c', 'echo The app is running! && sleep 3600']
   initContainers:
+  - name: init-myservice
+    image: busybox:1.28
+    command: ['sh', '-c', "until nslookup myservice.$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace).svc.cluster.local; do echo waiting for myservice; sleep 2; done"]
+  - name: init-mydb
+    image: busybox:1.28
+    command: ['sh', '-c', "until nslookup mydb.$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace).svc.cluster.local; do echo waiting for mydb; sleep 2; done"]
 
-  - name: my-init-container-1
-    image: busybox
-    imagePullPolicy: IfNotPresent
-    command: ['sh', '-c', 'echo my-init-container-1 start; sleep 3 ;echo my-init-container-1 complete;']
-
-  - name: my-init-container-2
-    image: busybox
-    imagePullPolicy: IfNotPresent
-    command: ['sh', '-c', 'echo my-init-container-2 start; sleep 3;echo my-init-container-2 complete;']  
-
-  - name: my-init-container-3
-    image: busybox
-    imagePullPolicy: IfNotPresent
-    command: ['sh', '-c', 'echo my-init-container-3 start; sleep 3;echo my-init-container-3 complete;']  
-
-  - name: my-init-container-4
-    image: busybox
-    imagePullPolicy: IfNotPresent
-    command: ['sh', '-c', 'echo my-init-container-4 start; sleep 3;echo my-init-container-4 complete;']  
 --
-kubectl apply -f myInitPod-7.yaml 
-kubectl get po 
-kubectl delete -f myInitPod-7.yaml
+kubectl apply -f myapp-init.yaml 
+kubectl get pod
+kubectl describe myapp-init.yaml
+``````
+To see logs for the init containers in this Pod, run:
+
+``````sh
+kubectl logs myapp-pod -c init-myservice # Inspect the first init container
+kubectl logs myapp-pod -c init-mydb      # Inspect the second init container
 
 ``````
+At this point, those init containers will be waiting to discover Services named mydb and myservice.
+You'll then see that those init containers complete, and that the myapp-pod Pod moves into the Running state:
 ``````sh
-
-
-``````
-``````sh
-
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: myservice
+spec:
+  ports:
+  type: clusterip
+  - protocol: TCP
+    port: 80
+    targetPort: 9376
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mydb
+spec:
+  ports:
+  type: clusterip
+  - protocol: TCP
+    port: 80
+    targetPort: 9377
+----
+kubectl apply -f services.yaml
 
 ``````
 ``````sh
