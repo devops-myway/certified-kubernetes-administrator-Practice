@@ -45,25 +45,28 @@ cd /etc/kubernetes/manifests
 ls
 
 ``````
+ssh on the controlplane node
 ``````sh
-sudo vi staticpod.yaml
+sudo ls -l /etc/kubernetes/manifests/
 
+sudo cat <<EOF >/etc/kubernetes/manifests/static-web.yaml
 apiVersion: v1
 kind: Pod
-metadata: 
-  name: staticpod
+metadata:
+  name: static-web
   labels:
-    role: staticpod-role
+    role: myrole
 spec:
   containers:
-- name: container
-  image: nginx
-  ports:
-  - name: port
-    containerPort: 80
-    protocol: TCP
+    - name: web
+      image: nginx
+      ports:
+        - name: web
+          containerPort: 80
+          protocol: TCP
+EOF
 ---
 kubectl get pods
-kubectl get pods --all-namespaces
-rm -rf staticpod.yaml
+kubectl get pods -A -owide
+rm -rf static-web.yaml
 ``````
