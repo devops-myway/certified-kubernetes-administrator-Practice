@@ -30,6 +30,7 @@ spec:
  selector:
   matchLabels:
    app: nginx
+   version: "1.0"
  replicas: 3
  template:
   metadata:
@@ -68,6 +69,7 @@ metadata:
   creationTimestamp: null
   labels:
     app: nginx-svc
+    version: "1.0"
   name: nginx-svc
 spec:
   ports:
