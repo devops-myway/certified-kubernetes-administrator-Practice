@@ -49,7 +49,7 @@ kubectl describe pod liveness-exec
 The periodSeconds field specifies that the kubelet should perform a liveness probe every 3 seconds
  The initialDelaySeconds field tells the kubelet that it should wait 3 seconds before performing the first probe.
  httpGet livenessProbe: access port 8080 at path /healthz
- Any code greater than or equal to 200 and less than 400 indicates success. Any other code indicates failure.
+ For the first 10 seconds that the container is alive, the /healthz handler returns a status of 200. After that, the handler returns status of 500.
 
 ``````sh
 apiVersion: v1
@@ -82,46 +82,33 @@ kubectl describe pod liveness-http
 Readiness probes are configured similarly to liveness probes. The only difference is that you use the readinessProbe field instead of the livenessProbe field.
 You have to determine exactly what to test to ensure a readiness probe tests readiness.
 
-
-
-``````sh
-readinessProbe:
-  exec:
-    command:
-    - cat
-    - /tmp/healthy
-  initialDelaySeconds: 5
-  periodSeconds: 5
-
-``````
-
 ### Example2
 ``````sh
-nano myLiveness-Pod.yaml
+vi readiness-Pod.yaml
 
-apiVersion: v1
+piVersion: v1
 kind: Pod
 metadata:
-  name: myliveness-pod
+  labels:
+    test: readiness
+  name: readiness-exec
 spec:
   containers:
-  - image: httpd:2.4
-    imagePullPolicy: IfNotPresent
-    name: myliveness-container
-
-    command: ['sh', '-c', 'echo Container 1 is Running ; sleep 3600']
-
-    ports:
-    - name: liveness-port
-      containerPort: 80
-      hostPort: 8080
-    
+  - name: readiness
+    image: registry.k8s.io/busybox
+    args:
+    - /bin/sh
+    - -c
+    - touch /tmp/healthy; sleep 30; rm -f /tmp/healthy; sleep 600
     readinessProbe:
-      tcpSocket:
-        port: 80
-      initialDelaySeconds: 3
-      periodSeconds: 2
+      exec:
+        command:
+        - cat
+        - /tmp/healthy
+      initialDelaySeconds: 5
+      periodSeconds: 5
 ----
 kubectl apply -f myLiveness-Pod.yaml
-kubectl get po
+kubectl get pod/readiness-exec
+kubectl describe pod/readiness-exec  # after 30 seconds the probe fails
 ``````
