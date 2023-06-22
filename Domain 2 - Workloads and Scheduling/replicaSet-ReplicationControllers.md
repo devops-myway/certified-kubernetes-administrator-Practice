@@ -71,10 +71,8 @@ Assuming you suddenly expect that load on your application is going to increase 
 ``````sh
 kubectl scale rc myapp-rc --replicas=6
 kubectl scale rc myapp-rc --replicas=3
-
 kubectl get pods
 kubectl get rc
-
 kubectl delete rc myapp-rc --cascade=false
 
 ``````
@@ -89,39 +87,35 @@ kubectl api-resources
 kubectl explain ReplicaSet | head -n 2
 --
 
-[root@controller ~]# cat replica-set.yml
+[root@controller ~]# cat rs1.yml
 apiVersion: apps/v1
 kind: ReplicaSet
 metadata:
-  name: myapp-replicaset
+  name: frontend
   labels:
-    app: myapp
-    type: dev
+    app: guestbook
+    tier: frontend
 spec:
+  # modify replicas according to your case
   replicas: 3
   selector:
     matchLabels:
-      app: myapp
+      tier: frontend
   template:
     metadata:
-      name: myapp-pod
       labels:
-        app: myapp
-        type: dev
+        tier: frontend
     spec:
       containers:
-      - name: nginx-container
+      - name: frontend
         image: nginx
+
 --
-kubectl apply -f replica-set.yml
-
+kubectl apply -f rs1.yml
 kubectl get pods -o wide
-
 kubectl describe pods myapp-rc-6vjv4
-
 kubectl get rs
-
-kubectl describe rs myapp-replicaset
+kubectl describe rs/frontend
 ``````
 
 ##### Horizontally scaling Pod
@@ -129,11 +123,8 @@ kubectl describe rs myapp-replicaset
 kubectl label pod lab-nginx-58f9bf94f7-pc8zf app-
 
 ---
-kubectl scale rs myapp-replicaset --replicas=6
-
+kubectl scale rs/frontend --replicas=6
 kubectl get pods -o wide
-
-kubectl scale rs myapp-replicaset --replicas=3
-
-kubectl delete rs myapp-replicaset
+kubectl scale rs/frontend --replicas=3
+kubectl delete rs/frontend
 ``````
