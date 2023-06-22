@@ -5,8 +5,8 @@ https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-read
 Many applications running for long periods of time eventually transition to broken states, this checks your containers are alive
 Kubernetes assumes responsibility that your containers in your Pods are alive. If not, it restarts the containers that fail liveness probes.
 
-initialDelaySeconds: 2 waits 2 seconds after container got created before probing starts
-periodSeconds: 10 liveness probe probes every 10 seconds.
+- initialDelaySeconds: 2 waits 2 seconds after container got created before probing starts
+- periodSeconds: 10 liveness probe probes every 10 seconds.
 
 ###### Readiness Probes:
 checks your containers are able to do productive work
