@@ -1,13 +1,6 @@
 
 https://kubernetes.io/docs/concepts/workloads/controllers/deployment/
 
-
-##### Kubernetes Deployment Strategies
-Kubernetes deployment strategies are the way that pods are updated, downgraded or created into new versions of applications.
-Kubernetes deployment strategies work by replacing pods of previous versions of your application with pods of the new version.
-The main benefits of these Kubernetes deployment strategies are that it mitigates the risk of disruptions and downtime of services.
-
-
 ###### Blue/ Green (or Red / Black) deployments
 In a blue/green deployment strategy (sometimes referred to as red/black) the old version of the application (blue) and the new version (green) get deployed at the same time. When both of these are deployed, users only have access to the blue; whereas, the green is available to your QA team for test automation on a separate service or via direct port-forwarding.
 
@@ -18,7 +11,7 @@ with an busybox initContainer
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: blue-1.10
+  name: blue-deploy
 spec:
   replicas: 3
   selector:
@@ -30,9 +23,7 @@ spec:
       labels:
         name: nginx
         app: blue
-    spec:Create Blue deployment
-
-
+    spec:
       initContainers:
       - name: install
         image: busybox:1.28
@@ -43,7 +34,7 @@ spec:
         volumeMounts:
         - name: workdir
           mountPath: "/work-dir"
-      containers: 
+      containers:
         - name: nginx
           image: nginx:1.10
           ports:
@@ -55,40 +46,37 @@ spec:
       volumes:
       - name: workdir
         emptyDir: {}
-
 ``````
 ###### Create a service to interact with the blue deployment
 ``````sh
 apiVersion: v1
 kind: Service
-metadata: 
-  name: nginx
-  labels: 
-    name: nginx
+metadata:
+  creationTimestamp: null
+  labels:
+    app: blue
+  name: blue-svc
 spec:
   ports:
-    - name: http
-      port: 80
-      targetPort: 80
-  selector: 
-    name: nginx
+  - name: blue-svc
+    port: 8282
+    protocol: TCP
+    targetPort: 80
+  selector:
     app: blue
+  type: NodePort
+status:
+  loadBalancer: {}
 ------
 kubectl apply -f blue-deploy.yaml
-kubectl apply -f blue-green-svc.yaml
+kubectl get svc/blue-svc
+kubectl get nodes -owide
 ``````
-##### Validate both the objects
+##### Test the Blue Deployment for output
 ``````sh
-kubectl get deploy
-kubectl get svc
-kubectl get po
+curl 172.30.1.2:30364
 ``````
-###### Test the deployment
 
-``````sh
-kubectl run -it --rm --restart=Never busybox --image=gcr.io/google-containers/busybox --command -- wget -qO- nginx
-
-``````
 ##### Create Green deployment
 Green deployment is same as blue except for label `app=green` and command echoing `green` instead of `blue
 
@@ -96,7 +84,7 @@ Green deployment is same as blue except for label `app=green` and command echoin
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: green-1.10
+  name: green-deploy
 spec:
   replicas: 3
   selector:
@@ -119,7 +107,7 @@ spec:
         volumeMounts:
         - name: workdir
           mountPath: "/work-dir"
-      containers: 
+      containers:
         - name: nginx
           image: nginx:1.10
           ports:
@@ -131,37 +119,42 @@ spec:
       volumes:
       - name: workdir
         emptyDir: {}
-
 ``````
 ##### Create and validate green deployment
 ``````sh
 kubectl apply -f green-deploy.yaml
-
-kubectl get deployments
+kubectl get deploy/green-deploy -owide
 kubectl get po
 
 ``````
 ##### Update the selector of service nginx
 ``````sh
+kubectl create svc nodeport green-svc --tcp=8181:80 --dry-run=client -oyaml > green-svc.yaml
+
 apiVersion: v1
 kind: Service
-metadata: 
-  name: nginx
-  labels: 
-    name: nginx
+metadata:
+  creationTimestamp: null
+  labels:
+    app: green
+  name: green-svc
 spec:
   ports:
-    - name: http
-      port: 80
-      targetPort: 80
-  selector: 
-    name: nginx
+  - name: green-svc
+    port: 8181
+    protocol: TCP
+    targetPort: 80
+  selector:
     app: green
+  type: NodePort
+status:
+  loadBalancer: {}
 --
-kubectl apply -f blue-green-svc.yaml
+kubectl apply -f green-svc.yaml
+kubectl get svc/green-svc -owide
+kubectl get nodes -owide
 ``````
 ###### Test the deployment
 ``````sh
-kubectl run -it --rm --restart=Never busybox --image=gcr.io/google-containers/busybox --command -- wget -qO- nginx
-
+curl 172.30.2.2:32072  # green as output
 ``````
