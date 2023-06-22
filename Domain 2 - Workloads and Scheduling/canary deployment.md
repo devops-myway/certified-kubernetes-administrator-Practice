@@ -1,4 +1,5 @@
 https://kubernetes.io/docs/concepts/workloads/controllers/deployment/
+https://kubernetes.io/docs/concepts/cluster-administration/manage-deployment/#canary-deployments
 
 ##### Kubernetes Deployment Strategies
 Kubernetes deployment strategies are the way that pods are updated, downgraded or created into new versions of applications.
