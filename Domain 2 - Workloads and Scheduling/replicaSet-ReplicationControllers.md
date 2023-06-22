@@ -127,4 +127,10 @@ kubectl scale rs/frontend --replicas=6
 kubectl get pods -o wide
 kubectl scale rs/frontend --replicas=3
 kubectl delete rs/frontend
+---- # To edit a failed replicaset, kill the pods when you update the replicaset image
+kubectl get rs
+kubectl edit rs # update the image
+kubectl delete po --all
+kubectl describe rs  # watch the actual new pods populate
+kubectl get po
 ``````
