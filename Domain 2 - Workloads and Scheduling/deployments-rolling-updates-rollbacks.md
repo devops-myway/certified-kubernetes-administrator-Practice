@@ -1,3 +1,5 @@
+https://kubernetes.io/docs/concepts/workloads/controllers/deployment/
+
 
 ##### Overview on Kubernetes Deployment
 Kubernetes also provides Deployment resource that sits on top of ReplicaSets and enables declarative application updates.
