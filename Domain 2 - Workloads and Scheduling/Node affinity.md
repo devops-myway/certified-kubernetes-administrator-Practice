@@ -54,28 +54,41 @@ kubectl get pods --output=wide
 
 ###### Schedule a Pod using preferred node affinity 
 This manifest describes a Pod that has a preferredDuringSchedulingIgnoredDuringExecution node affinity,disktype: ssd. This means that the pod will prefer a node that has a disktype=ssd label.
+
 ``````sh
+kubectl get nodes
+kubectl label node controlplane app=node1
+kubectl label node node01 disktype=ssd
+
+vi pod3.yaml
+
 apiVersion: v1
 kind: Pod
 metadata:
-  name: nginx
+  name: with-node-affinity
 spec:
   affinity:
     nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: app
+            operator: In
+            values:
+            - node1
       preferredDuringSchedulingIgnoredDuringExecution:
       - weight: 1
         preference:
           matchExpressions:
           - key: disktype
-            operator: NotIn
+            operator: In
             values:
-            - ssd          
+            - ssd
   containers:
-  - name: anti-affinity
-    image: nginx
-    imagePullPolicy: IfNotPresent
+  - name: with-node-affinity
+    image: registry.k8s.io/pause:2.0
 
 -------
-kubectl apply -f https://k8s.io/examples/pods/pod-nginx-preferred-affinity.yaml
+kubectl apply -f pod3.yaml
 kubectl get pods -owide
 ``````
