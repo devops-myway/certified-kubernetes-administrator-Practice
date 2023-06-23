@@ -1,4 +1,5 @@
 https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
+https://kubernetes.io/docs/tasks/configure-pod-container/assign-pods-nodes/
 
 #### Taints and Tolerations
 Taints and tolerations are a mechanism that allows you to ensure that pods are not placed on inappropriate node.
@@ -15,7 +16,47 @@ A taint can produce three possible effects:
 kubectl taint nodes nodename dedicated=groupName:NoSchedule
 
 ``````
+``````sh
+kubectl get nodes --show-labels
+kubectl label nodes <your-node-name> disktype=ssd
+kubectl get nodes --show-labels
 
+``````
+###### Create a pod that gets scheduled to your chosen node
+``````sh
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx
+  labels:
+    env: test
+spec:
+  containers:
+  - name: nginx
+    image: nginx
+    imagePullPolicy: IfNotPresent
+  nodeSelector:
+    disktype: ssd
+--
+Kubectl apply -f 
+kubectl get pods --output=wide
+``````
+##### Create a pod that gets scheduled to specific node
+``````sh
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx
+spec:
+  nodeName: foo-node # schedule pod to specific node
+  containers:
+  - name: nginx
+    image: nginx
+    imagePullPolicy: IfNotPresent
+---
+kubectl apply -f
+kubectl get pods --output=wide
+``````
 ##### How to Use Taints and Tolerations
 ``````sh
 kubectl get nodes
