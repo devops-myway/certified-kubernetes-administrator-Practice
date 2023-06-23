@@ -30,9 +30,8 @@ kubectl describe service internal-service
 
 #To access the pods with ClusterIP, you can run a BusyBox curl container, then run nslookup for the internal service
 
-kubectl run curl --image=radial/busyboxplus:curl -i --tty
-
-$ ns lookup internal-service
+kubectl run curl --image=radial/busyboxplus:curl -it
+nslookup internal-service
 
 # exit the pod using Ctrl+D
 
