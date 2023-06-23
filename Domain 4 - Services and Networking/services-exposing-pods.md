@@ -51,27 +51,29 @@ spec:
         - containerPort: 80
 
 ------ # cat quote for pod
-kubectl create service nodeport nginx --tcp=80:80 --dry-run=client -oyaml > nginx-svc.yaml
-kubectl apply -f nginx-svc.yaml
+kubectl create service nodeport nginx-svc --tcp=80:80 --dry-run=client -oyaml > svc1.yaml
+kubectl apply -f svc1.yaml
 
 
 apiVersion: v1
 kind: Service
 metadata:
-  name: nginx
-  namespace: default
+  creationTimestamp: null
   labels:
-    app: nginx
+    app: nginx-svc
+  name: nginx-svc
 spec:
-  externalTrafficPolicy: Local
   ports:
-  - name: http
+  - name: nginx-svc
     port: 80
     protocol: TCP
     targetPort: 80
-  selector:    
-    app: nginx
+    nodePort: 30000
+  selector:
+    app: nginx-lab-1
   type: NodePort
+status:
+  loadBalancer: {}
 --
 kubectl apply -f nginx-lab-1.yml
 kubectl get pods
@@ -79,8 +81,7 @@ kubectl get deployment | grep nginx
 kubectl get replicaset | grep nginx
 ---
 kubectl apply -f my-service.yml
-kubectl get service | grep nginx
-kubectl describe service nginx
+kubectl describe service/nginx-svc
 
 --
  the nginx application can be accessed through this service on NodeIp:NodePort
