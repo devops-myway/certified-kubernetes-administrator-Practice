@@ -95,6 +95,9 @@ watch command in Linux is used to execute a program periodically, showing output
 
 date command is used to display the system date and time
 
+Sleep command is used to delay for a fixed amount of time during the execution of any script.
+You can set the delay amount by seconds (s), minutes (m), hours (h) and days (d).
+
 ``````sh
 tac -b concat.txt tacexample.txt
 
@@ -110,4 +113,13 @@ date
 
 now = $(date)
 echo $now
+
+ls && sleep 2 && pwd
+
+---
+#!/bin/bash
+ 
+echo "Waiting for 2 seconds..."
+sleep 2
+echo "Task Completed"
 ``````
