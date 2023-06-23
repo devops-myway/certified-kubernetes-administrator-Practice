@@ -24,6 +24,8 @@ kubectl get nodes --show-labels
 ``````
 ###### Create a pod that gets scheduled to your chosen node
 ``````sh
+kubectl explain pod.spec   # To find the fileds for nodeSelector and nodeName
+
 apiVersion: v1
 kind: Pod
 metadata:
@@ -48,7 +50,7 @@ kind: Pod
 metadata:
   name: nginx
 spec:
-  nodeName: foo-node # schedule pod to specific node
+  nodeName: node01 # schedule pod to specific node
   containers:
   - name: nginx
     image: nginx
