@@ -48,7 +48,7 @@ spec:
     image: nginx
     imagePullPolicy: IfNotPresent
 ------
-kubectl apply -f https://k8s.io/examples/pods/pod-nginx-required-affinity.yaml
+kubectl apply -f test.yaml
 kubectl get pods --output=wide
 
 ``````
