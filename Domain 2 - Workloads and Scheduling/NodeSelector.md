@@ -1,5 +1,6 @@
-https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
-https://kubernetes.io/docs/tasks/configure-pod-container/assign-pods-nodes/
+- https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
+
+- https://kubernetes.io/docs/tasks/configure-pod-container/assign-pods-nodes/
 
 ##### nodeSelector - Assign Pods to Nodes
 

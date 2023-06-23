@@ -1,3 +1,5 @@
+https://kubernetes.io/docs/concepts/workloads/controllers/deployment/
+
 
 ##### Overview on Kubernetes Deployment
 Kubernetes also provides Deployment resource that sits on top of ReplicaSets and enables declarative application updates.
@@ -24,63 +26,37 @@ we will create a new deployment using kubectl using --dry-run so that actually a
 kubectl create deployment nginx-deploy --image=nginx --dry-run=client -o yaml > nginx-deploy.yml
 
 -- Basic Template to cleanup
-
-[root@controller ~]# cat nginx-deploy.yml
+[root@controller ~]# vi nginx-deploy.yml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  creationTimestamp: null
+  name: nginx-deployment
   labels:
-    app: nginx-deploy
-  name: nginx-deploy
+    app: nginx
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
-      app: nginx-deploy
-  strategy: {}
+      app: nginx
   template:
     metadata:
-      creationTimestamp: null
       labels:
-        app: nginx-deploy
+        app: nginx
     spec:
       containers:
-      - image: nginx
-        name: nginx
-        resources: {}
+      - name: nginx
+        image: nginx:1.14.2
+        ports:
+        - containerPort: 80
 
---- #Modify the contents of the deployment template
-[root@controller ~]# cat nginx-deploy.yml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  labels:
-    type: dev
-  name: nginx-deploy
-spec:
-  replicas: 2
-  selector:
-    matchLabels:
-      type: dev
-  template:
-    metadata:
-      labels:
-        type: dev
-    spec:
-      containers:
-      - image: nginx
-        name: nginx
 ---
-kubectl create -f nginx-deploy.yml
-
-kubectl rollout status deployment nginx-deploy
-
+kubectl apply -f nginx-deploy.yml
+kubectl rollout status deployment/nginx-deployment
 kubectl get pods
-
-kubectl describe Pod nginx-deploy-d98cc8bdb-48ppw
-
 kubectl get rs
+kubectl describe deploy/nginx-deployment
+kubectl rollout history deploy/nginx-deployment
+kubectl rollout history deploy/nginx-deployment --revision=2
 
 ``````
 ##### Using Kubernetes RollingUpdate
@@ -93,15 +69,12 @@ You have two ways of updating all those pods. You can do one of the following:
 The RollingUpdate strategy options are used to guarantee a certain minimal and maximal amount of Pods to be always available:
 
 - maxUnavailable: The maximum number of Pods that can be unavailable during updating. The value could be a percentage (the default is 25%).
-- maxSurge: The maximum number of Pods that can be created over the desired number of ReplicaSet during updating.  the value of maxSurge cannot be 0
-
+- maxSurge: The maximum number of Pods that can be created over the desired number of ReplicaSet during updating. the value of maxSurge cannot be 0
 --
-
-
 ``````sh
-vim rolling-nginx.yml
+vi rolling-nginx.yml
 ----
-[root@controller ~]# cat rolling-nginx.yml
+[root@controller ~]# vi rolling-nginx.yml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -125,12 +98,9 @@ spec:
       - name: nginx
         image: nginx:1.9
 ---
-kubectl create -f rolling-nginx.yml
-
+kubectl apply -f rolling-nginx.yml
 kubectl get pods
-
 kubectl get deployments
-
 kubectl get event --field-selector involvedObject.name=rolling-nginx-74cf96d8bb-6f54x
 ``````
 ##### Check rollout history
@@ -156,24 +126,20 @@ kubectl set image deployment rolling-nginx nginx=nginx:1.15 --record
 ##### Monitor the rolling update status
 To monitor the rollout status you can use:
 ``````sh
-kubectl set image deployment rolling-nginx nginx=nginx:1.16 --record
-
-kubectl rollout pause deployment rolling-nginx
-
+kubectl scale --replicas=4 deployment/rolling-nginx
+kubectl set image deployment/rolling-nginx nginx=nginx:1.16 --record
+kubectl rollout pause deployment/rolling-nginx
 kubectl rollout status deployment rolling-nginx
-
 kubectl get pods -l app=rolling-nginx
-
-kubectl rollout resume deployment rolling-nginx
+kubectl rollout history deployment/rolling-nginx
+kubectl rollout undo deploy/rolling-nginx --to-revision=1
 
 ``````
 ##### Rolling back (undo) an update
 To monitor the rollout status you can use:
 ``````sh
-kubectl rollout history deployment rolling-nginx
-
-kubectl rollout undo deployment rolling-nginx --to-revision=2
-
+kubectl rollout history deployment/rolling-nginx
+kubectl rollout undo deployment/rolling-nginx --to-revision=2
 kubectl rollout status deployment rolling-nginx
 
 ``````

@@ -30,3 +30,16 @@ kubectl get pods -A --sort-by={.metadata.creationTimestamp} # in descending orde
 kubectl get pods -A --sort-by={.metadata.creationTimestamp} | tac #Ascending order
 
 ```
+##### Example2
+List pods in all namespaces of the cluster and sort by ascending order.
+move the file to directory /opt/pods_asc.sh and print to screen.
+```sh
+sudo ls -l /opt/
+sudo cat << EOF > /opt/pods_asc.sh
+> #! /bin/bash
+> kubectl get pods -A --sort-by={.metadata.creationTimestamp} | tac
+> EOF
+sudo chmod +x /opt/pods_asc.sh
+bash /opt/pods_asc.sh
+
+```

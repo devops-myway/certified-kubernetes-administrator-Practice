@@ -1,5 +1,6 @@
-https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/
-https://kubernetes.io/docs/tasks/configure-pod-container/assign-pods-nodes-using-node-affinity/
+- https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/
+
+- https://kubernetes.io/docs/tasks/configure-pod-container/assign-pods-nodes-using-node-affinity/
 
 
 ##### Node affinity
@@ -25,7 +26,7 @@ kubectl get nodes --show-labels
 ``````
 
 ##### Schedule a Pod using required node affinity
-This manifest describes a Pod that has a requiredDuringSchedulingIgnoredDuringExecution node affinity,disktype: ssd. This means that the pod will get scheduled only on a node that has a disktype=ssd label.
+This manifest describes a Pod that has a requiredDuringSchedulingIgnoredDuringExecution node affinity,disktype: hdd. This means that the pod will get scheduled only on a node that has a disktype=hdd label.
 
 ``````sh
 apiVersion: v1
@@ -41,20 +42,66 @@ spec:
           - key: disktype
             operator: In
             values:
-            - ssd
+            - ssd            
   containers:
-  - name: with-node-affinity
+  - name: nginx
     image: nginx
     imagePullPolicy: IfNotPresent
+
 ------
-kubectl apply -f https://k8s.io/examples/pods/pod-nginx-required-affinity.yaml
+kubectl apply -f test.yaml
 kubectl get pods --output=wide
 
 ``````
 
 ###### Schedule a Pod using preferred node affinity 
 This manifest describes a Pod that has a preferredDuringSchedulingIgnoredDuringExecution node affinity,disktype: ssd. This means that the pod will prefer a node that has a disktype=ssd label.
+
 ``````sh
+kubectl get nodes
+kubectl label node controlplane app=node1
+kubectl label node node01 disktype=ssd
+
+vi pod3.yaml
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: with-node-affinity
+spec:
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: app
+            operator: In
+            values:
+            - node1
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 1
+        preference:
+          matchExpressions:
+          - key: disktype
+            operator: In
+            values:
+            - ssd
+  containers:
+  - name: with-node-affinity
+    image: registry.k8s.io/pause:2.0
+
+-------
+kubectl apply -f pod3.yaml
+kubectl get pods -owide
+``````
+###### Schedule a Pod using preferred node affinity
+This means that the pod will prefer a node that has a type=cpu label.
+``````sh
+kubectl get nodes --show-labels
+kubectl label node controlplane type=cpu
+
+vi test.yaml
+
 apiVersion: v1
 kind: Pod
 metadata:
@@ -66,16 +113,16 @@ spec:
       - weight: 1
         preference:
           matchExpressions:
-          - key: disktype
-            operator: NotIn
+          - key: type
+            operator: In
             values:
-            - ssd          
+            - cpu          
   containers:
-  - name: anti-affinity
+  - name: nginx
     image: nginx
-    imagePullPolicy: IfNotPresent
+    imagePullPolicy: IfNotPresent  
 
 -------
-kubectl apply -f https://k8s.io/examples/pods/pod-nginx-preferred-affinity.yaml
+kubectl apply -f test.yaml
 kubectl get pods -owide
 ``````
