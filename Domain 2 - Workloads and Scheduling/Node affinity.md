@@ -32,7 +32,7 @@ This manifest describes a Pod that has a requiredDuringSchedulingIgnoredDuringEx
 apiVersion: v1
 kind: Pod
 metadata:
-  name: test-affinity
+  name: nginx
 spec:
   affinity:
     nodeAffinity:
@@ -42,11 +42,12 @@ spec:
           - key: disktype
             operator: In
             values:
-            - hdd
+            - ssd            
   containers:
-  - name: test-affinity
+  - name: nginx
     image: nginx
     imagePullPolicy: IfNotPresent
+
 ------
 kubectl apply -f test.yaml
 kubectl get pods --output=wide
@@ -91,5 +92,37 @@ spec:
 
 -------
 kubectl apply -f pod3.yaml
+kubectl get pods -owide
+``````
+###### Schedule a Pod using preferred node affinity
+This means that the pod will prefer a node that has a type=cpu label.
+``````sh
+kubectl get nodes --show-labels
+kubectl label node controlplane type=cpu
+
+vi test.yaml
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx
+spec:
+  affinity:
+    nodeAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 1
+        preference:
+          matchExpressions:
+          - key: type
+            operator: In
+            values:
+            - cpu          
+  containers:
+  - name: nginx
+    image: nginx
+    imagePullPolicy: IfNotPresent  
+
+-------
+kubectl apply -f test.yaml
 kubectl get pods -owide
 ``````
