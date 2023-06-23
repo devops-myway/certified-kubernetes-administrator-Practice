@@ -26,13 +26,13 @@ kubectl get nodes --show-labels
 ``````
 
 ##### Schedule a Pod using required node affinity
-This manifest describes a Pod that has a requiredDuringSchedulingIgnoredDuringExecution node affinity,disktype: ssd. This means that the pod will get scheduled only on a node that has a disktype=ssd label.
+This manifest describes a Pod that has a requiredDuringSchedulingIgnoredDuringExecution node affinity,disktype: hdd. This means that the pod will get scheduled only on a node that has a disktype=hdd label.
 
 ``````sh
 apiVersion: v1
 kind: Pod
 metadata:
-  name: nginx
+  name: test-affinity
 spec:
   affinity:
     nodeAffinity:
@@ -42,9 +42,9 @@ spec:
           - key: disktype
             operator: In
             values:
-            - ssd
+            - hdd
   containers:
-  - name: with-node-affinity
+  - name: test-affinity
     image: nginx
     imagePullPolicy: IfNotPresent
 ------
