@@ -1,5 +1,5 @@
-https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
-https://kubernetes.io/docs/tasks/configure-pod-container/assign-pods-nodes/
+- https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
+- https://kubernetes.io/docs/tasks/configure-pod-container/assign-pods-nodes/
 
 #### Taints and Tolerations
 Taints and tolerations are a mechanism that allows you to ensure that pods are not placed on inappropriate node.
