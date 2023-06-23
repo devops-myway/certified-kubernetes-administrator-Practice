@@ -10,13 +10,17 @@ A taint can produce three possible effects:
 - PreferNoSchedule: The Kubernetes scheduler will try to avoid scheduling pods that don’t have tolerations for the tainted nodes.
 - NoExecute: Kubernetes will evict the running pods from the nodes if the pods don’t have tolerations for the tainted nodes.
 
+##### Dedicated Nodes
+``````sh
+kubectl taint nodes nodename dedicated=groupName:NoSchedule
+
+``````
+
 ##### How to Use Taints and Tolerations
 ``````sh
-
 kubectl get nodes
 kubectl taint nodes node01 key1=value1:NoSchedule
 kubectl describe node/node01
-
 ``````
 
 ``````sh
