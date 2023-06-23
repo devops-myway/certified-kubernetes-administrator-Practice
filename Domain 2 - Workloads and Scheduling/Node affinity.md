@@ -1,5 +1,6 @@
-https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/
-https://kubernetes.io/docs/tasks/configure-pod-container/assign-pods-nodes-using-node-affinity/
+- https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/
+
+- https://kubernetes.io/docs/tasks/configure-pod-container/assign-pods-nodes-using-node-affinity/
 
 
 ##### Node affinity
