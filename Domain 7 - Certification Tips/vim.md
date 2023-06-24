@@ -9,10 +9,14 @@ Ctrl + r – redo
 u – undo
 s – delete a character (and move into insert mode)
 
-##### Delete
-dd – cut (delete) entire line
-yy – copy (yank) entire line
-p – paste after the cursor
+##### Delete a line in vim
+Press ESC to go to Normal mode.
+Place the cursor on the line you need to delete.
+
+
+dd – cut (delete) entire line - Press dd. This will delete the current line.
+yy – copy (yank) entire line - Press yy to copy
+p – paste after the cursor - to paste
 
 #### save and quit: 
 If you are currently in insert or append mode, press Esc key.
