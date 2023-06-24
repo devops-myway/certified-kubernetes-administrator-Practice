@@ -23,10 +23,10 @@ Service without selector: which is used for direct connections based on IP port 
 The easiest way to create a service is through kubectl expose
 
 ``````sh
-kubectl create deployment nginx-lab-1 --image=nginx --replicas=3 --dry-run=client -o yaml > nginx-lab-1.yaml
+kubectl create deployment nginx1 --image=nginx --replicas=3 --dry-run=client -o yaml > nginx1.yaml
 
----- # modify few sections and following is my final template file to create a new deployment nginx-lab-1 with a label app=dev and 3 replicas.
-[root@controller ~]# cat my-deployment.yml
+---- # modify few sections and following is my final template file to create a new deployment nginx1 with a label app=dev and 3 replicas.
+[root@controller ~]# cat nginx1.yaml
 
 apiVersion: apps/v1
 kind: Deployment
