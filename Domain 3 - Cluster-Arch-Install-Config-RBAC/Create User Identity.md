@@ -46,10 +46,12 @@ spec:
 ``````sh
 kubectl get csr
 kubectl certificate approve myuser
-
 kubectl get csr/myuser -o yaml
+kubectl get csr/myuser -ojson
 ``````
 #### Export the issued certificate from the CertificateSigningRequest
+The certificate value is in Base64-encoded format under status.certificate.
+Export the issued certificate from the CertificateSigningRequest.
 
 ``````sh
 kubectl get csr myuser -o jsonpath='{.status.certificate}'| base64 -d > myuser.crt
