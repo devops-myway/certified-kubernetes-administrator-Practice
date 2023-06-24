@@ -109,7 +109,7 @@ metadata:
   name: nginx
   namespace: default
 spec:
-  serviceAccount: user1
+  serviceAccountName: user1
   containers:
   - name: nginx
     image: nginx
