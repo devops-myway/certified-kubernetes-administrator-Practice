@@ -51,9 +51,9 @@ spec:
         - containerPort: 80
 
 ------ # cat quote for pod
+kubectl expose deploy/nginx1 --port=80 --target-port=80 --name=nginx1-svc --type=NodePort
 kubectl create service nodeport nginx-svc --tcp=80:80 --dry-run=client -oyaml > svc1.yaml
 kubectl apply -f svc1.yaml
-
 
 apiVersion: v1
 kind: Service
@@ -70,33 +70,30 @@ spec:
     targetPort: 80
     nodePort: 30000
   selector:
-    app: nginx-lab-1
+    app: nginx
   type: NodePort
 status:
   loadBalancer: {}
 --
-kubectl apply -f nginx-lab-1.yml
+kubectl apply -f nginx1.yml
+kubectl get deploy/nginx1
+kubectl get svc/nginx1svc
 kubectl get pods
-kubectl get deployment | grep nginx
-kubectl get replicaset | grep nginx
+kubectl get nodes -owide
 ---
-kubectl apply -f my-service.yml
-kubectl describe service/nginx-svc
-
---
- the nginx application can be accessed through this service on NodeIp:NodePort
- open another terminal---------s
- 
+the nginx application can be accessed through this service on NodeIp:NodePort
+ open another terminal 
  curl nopeip:nodeport
+ curl 172.30.1.2:31977
 ``````
 ###### Ex2 expose a pod to nodeport and loadbalancer type services
 ``````sh
 kubectl run nginx-pod --image=nginx --port=80 --labels="app=nginx" --dry-run=client -oyaml > nginx-pod.yaml
 kubectl apply -f nginx-pod.yaml 
 
-kubectl expose pod nginx-pod --port=8080 --target-port=80 --name=nginx-svc --type=NodePort --dry-run=client -oyaml > nginx-np-svc.yaml
+kubectl expose pod/nginx-pod --port=8080 --target-port=80 --name=nginx-svc --type=NodePort --dry-run=client -oyaml > nginx-np-svc.yaml
 vi nginx-np-svc.yaml
-manually add = nodePort: 30000
+manually add = nodePort: 30001
 kubectl apply -f nginx-np-svc.yaml
 ---
 apiVersion: v1
@@ -113,24 +110,27 @@ spec:
     - protocol: TCP
       port: 8080
       targetPort: 80
-      nodePort: 30000
+      nodePort: 30001
 ----
-
-on bear service - copy the public-ip: node-port = http://34.240.137.16:30000/
+kubectl apply -f nginx-np-svc.yaml
+kubectl describe svc/nginx-svc
+kubectl get po
+kubectl get node -owide
+curl 172.30.1.2:30001 # To access the server content on NodeIP: NodePort
 ``````
 
 ##### Accessing LoadBalancer Service
 
 ``````sh
-kubectl run nginx-pod --image=nginx --port=80 --labels="app=nginx" --dry-run=client -oyaml > nginx-pod.yaml
-kubectl apply -f nginx-pod.yaml
+kubectl run nginx2pod --image=nginx --port=80 --labels="app=nginx" --dry-run=client -oyaml > nginx2pod.yaml
+kubectl apply -f nginx2pod.yaml
 
-kubectl expose pod nginx-pod --port=8080 --target-port=80 --name=nginx-svc --type=NodePort --dry-run=client -oyaml > nginx-np-svc.yaml
+kubectl expose pod/nginx2pod --port=8080 --target-port=80 --name=nginx2svc --type=LoadBalancer --dry-run=client -oyaml > nginx2svc.yaml
 ----
 apiVersion: v1
 kind: Service
 metadata:
-  name: nginx-service
+  name: nginx2svc
   labels:
     app: nginx
 spec:
@@ -143,6 +143,12 @@ spec:
       targetPort: 80
       nodePort: 32000
 ----
+Manually Test without LoadBalance:
+kubectl get nodes
+kubectl get nodes -owide
+kubectl get ep/nginx2svc
+curl 172.30.1.2:32238
+----
 On bear server:
 - Create Target Groups - register 2 worker nodes and manaully add the nodeport of 32000
 - Create application Loadbalancer - internet facing, register the target group with zones of the worker nodes
@@ -153,13 +159,8 @@ On bear server:
 A service is typically backed by a set of pods whose labels match the label selector defined in the Service object.
 
 ``````sh
-kubectl describe svc kiada
-
-kubectl get endpoints
-
------ # Inspecting an Endpoints object more closely
-kubectl get ep kiada -oyaml
-
+kubectl describe svc/service_name
+kubectl get endpoints/svc_name
 
 ``````
 ##### Creating a service without a label selector
