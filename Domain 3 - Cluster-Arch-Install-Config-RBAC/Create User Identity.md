@@ -54,23 +54,34 @@ The certificate value is in Base64-encoded format under status.certificate.
 Export the issued certificate from the CertificateSigningRequest.
 
 ``````sh
+kubectl get csr/myuser -ojson  # use jsonpath to filter the .status.certificate
 kubectl get csr myuser -o jsonpath='{.status.certificate}'| base64 -d > myuser.crt
 ``````
+##### Create Role and RoleBinding for our newly created user
+``````sh
+kubectl create role developer --verb=create --verb=get --verb=list --verb=update --verb=delete --resource=pods
+kubectl get role
+kubectl describe role/developer
 
-#### Using Set Context for kubeconfig file entries.
+kubectl create rolebinding developer-binding-myuser --role=developer --user=myuser
+kubectl get rolebinding
+kubectl describe rolebinding/developer-binding-myuser
+``````
+##### Test the role for the user using auth can-i global commands
+``````sh
+kubectl auth can-i delete pods --as=myuser -n default
+kubectl auth can-i create pods --as=myuser -n default
+kubectl auth can-i list pods --as=myuser -n default
+``````
 
+#### Using Set Context for kubeconfig file entries
 ``````sh
 kubectl config -h
-
-kubectl config set-credentials --
-kubectl config set-cluster --
-kubectl config set-context --
 
 kubectl config set-credentials myuser --client-key=myuser.key --client-certificate=myuser.crt
 kubectl config set-context myuser-context --cluster=kubernetes --user=myuser
 kubectl config use-context myuser-context    # change the context to myuser
-
-kubectl --context=myuser-context get pods  # Use Context to Verify
+kubectl config current-context
 ``````
 
 
