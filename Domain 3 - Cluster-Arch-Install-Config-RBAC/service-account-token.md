@@ -26,7 +26,7 @@ kubectl get sa default -oyaml
 # To test the default sa attached to the pod
 kubectl run nginx --image=nginx 
 kubectl describe po/nginx
-kubectl describe sa/default -oyaml
+kubectl describe sa/default
 
 kubectl exec -it po/nginx -- sh
 ls -l /var/run/secrets/kubernetes.io/serviceaccount
