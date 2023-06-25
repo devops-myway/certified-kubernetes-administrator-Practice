@@ -37,7 +37,9 @@ spec:
       - name: nginx
         image: nginx:1.7.9
       serviceAccountName: bob-the-bot
-
+---
+# To test if this service account has permissions
+kubectl auth can-i get pods --as=system:serviceaccount:default:demo-sa -n default #No
 ``````
 The above shows that this service account has a set of credentials mounted in a secret volume.
 In this particular case, the secret is called default-token-srs4v.
@@ -74,7 +76,6 @@ metadata:
   name: user2
 
 kubectl apply -f service-account.yaml
-
 kubectl get sa user2 -o yaml
 
 ``````
@@ -176,11 +177,8 @@ spec:
 
 ----
 kubectl create -f busbybox.yaml
-
 kubectl get pods
-
 kubectl exec -it busybox -- opkg-install curl
-
 kubectl exec -it busybox -- /bin/sh
 
 # and make sure that you are able to resolve kubernetes.default using CoreDNS.
