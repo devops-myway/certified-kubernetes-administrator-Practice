@@ -72,6 +72,9 @@ rules:
 ``````
 ##### RoleBinding for Autorization
 ``````sh
+kubectl create rolebinding -h
+kubectl create rolebinding listpods-rolebinding --role=list-pods --serviceaccount=default:demo-sa --dry-run=client -oyaml > rolebinding1.yaml
+
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: RoleBinding
 metadata:
@@ -112,7 +115,10 @@ spec:
 There isn't an easy way, but auth can-i may be helpful. You must be allowed to use impersonation for the global option "--as".
 ``````sh
 # To check if our sa demo-sa in default ns can list services in the kube-system ns.
-kubectl auth can-i --list --as=system:serviceaccount:<namespace>:<serviceaccount> -n <namespace>
+kubectl auth can-i -h
+kubectl auth can-i list,get resources --as=system:serviceaccount:<namespace>:<serviceaccount> -n <namespace>
 
-kubectl auth can-i --list --as=system:serviceaccount:default:demo-sa -n kube-system
+kubectl auth can-i list pods --as=system:serviceaccount:default:demo-sa -n kube-system
+kubectl auth can-i list pods --as=system:serviceaccount:default:demo-sa
+kubectl auth can-i create pods --as=system:serviceaccount:default:demo-sa --all-namespaces #No
 ``````
