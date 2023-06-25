@@ -52,6 +52,10 @@ metadata:
 ``````
 ##### Role For Autorization
 ``````sh
+kubectl api-resources
+kubectl api-resources | grep v1
+kubectl create role list-pods --namespace=default --verb=list --resource=pods."" --dry-run=client -oyaml > role1.yaml
+
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: Role
 metadata:
