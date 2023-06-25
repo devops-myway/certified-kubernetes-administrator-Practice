@@ -16,21 +16,16 @@ An association between a role and one or more users or service accounts, called 
 These are variants of Role and RoleBinding that exist at the cluster level. ClusterRoles and ClusterRoleBindings do not belong to a namespace and grant access across the entire cluster.
 ClusterRoles only describe a role which can be reused across namespaces. It doesn't grant any permissions without a binding. I believe the following rule setup does exactly what you're describing:
 
-Rather than referring to individual resources, apiGroups, and verbs, you can use the wildcard * symbol to refer to all such objects.
+To view all the api groups: Also note that below:
+Continued deprecation of extensions/v1beta1, apps/v1beta1, and apps/v1beta2 APIs; these extensions will be retired in 1.16! Migrate to the apps/v1 API, available since v1.9.
 
 ```sh
-rules:
-- apiGroups: ["example.com"]
-  resources: ["*"]
-  verbs: ["*"]
-```
-##### Implementing RBAC In Your Kubernetes Cluster
-Run the below commands to see if RBAC is enabled.
-```sh
-kubectl api-versions
-kubectl api-versions | grep rbac.authorization.k8s
+kubectl api-resources -o wide
+kubectl api-resources -o wide | grep apps/v1
+kubectl api-resources -o wide | grep -i deployment
+
 kubectl proxy --port=8181
-curl localhost:8181  # new terminal to verify the api groups e.g /api/v1 for core api group - pod or /apis/apps/v1 for apps api group - deployments
+curl localhost:8181
 ```
 ##### Role Resource and Verbs as List/arrays
 
