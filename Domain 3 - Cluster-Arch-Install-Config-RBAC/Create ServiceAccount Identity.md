@@ -36,7 +36,7 @@ spec:
       containers:
       - name: nginx
         image: nginx:1.7.9
-        serviceAccountName: bob-the-bot
+      serviceAccountName: bob-the-bot
 
 ``````
 The above shows that this service account has a set of credentials mounted in a secret volume.
