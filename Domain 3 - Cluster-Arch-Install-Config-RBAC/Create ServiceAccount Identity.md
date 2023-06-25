@@ -69,7 +69,8 @@ kubectl get sa user1 -oyaml
 #### Using YAML file for declarative
 
 ``````sh
-[root@controller ~]# vim service-account.yaml
+vim service-account.yaml
+
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -149,8 +150,6 @@ kubectl apply -f nginx.yaml
 
 ----
 kubectl exec -it nginx -- awk 1 /var/run/secrets/kubernetes.io/serviceaccount/token
-
------- # You can get the secret token id for your ServiceAccount using:
 kubectl describe sa user1 | grep "Tokens:"
 
 ``````
@@ -158,7 +157,8 @@ kubectl describe sa user1 | grep "Tokens:"
 We will create a busybox pod and assign user2 ServiceAccount which we created earlier in this tutorial.
 
 ``````sh
-[root@controller ~]# cat busybox.yaml 
+vi busybox.yaml 
+
 apiVersion: v1
 kind: Pod
 metadata:
@@ -198,7 +198,7 @@ kubectl create sa user3
 #### Create Role
 A Role resource defines what actions can be taken on which resources. I will create a separate role which allows to list the Pods in default namespace:
 ``````sh
-cat list-pods.yaml
+vi list-pods.yaml
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -274,9 +274,7 @@ Next we will install the curl package:
 
 ``````sh
 kubectl exec -it busybox -- opkg-install curl
-
 kubectl exec -it busybox -- /bin/sh
----
-kubectl create -f user3-busybox.yaml
+kubectl apply -f user3-busybox.yaml
 
 ``````
