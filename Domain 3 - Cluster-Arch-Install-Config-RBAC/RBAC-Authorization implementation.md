@@ -21,7 +21,7 @@ Continued deprecation of extensions/v1beta1, apps/v1beta1, and apps/v1beta2 APIs
 
 ```sh
 kubectl api-resources -o wide
-kubectl api-resources -o wide | grep apps/v1
+kubectl api-resources -o wide | grep apps/v1  # To find resources in the actual api-groups
 kubectl api-resources -o wide | grep -i deployment
 
 kubectl proxy --port=8181
@@ -30,20 +30,14 @@ curl localhost:8181
 ##### Role Resource and Verbs as List/arrays
 
 The Kubernetes "" empty API group is a special group that refers to the built-in objects or core Api groups.
-Kubernetes reads the API group and automatically expands them to:
-If it is empty "" to /api/v1/xxx.
-Otherwise /apis/{apigroup_name}/{apigroup_version}/xxx
+
 ```sh
-apiGroups:
-  - '' # Built-in objects
-resources:
-  - pods
-  - pods/logs
-  - serviceaccounts
-verbs:
-  - get
-  - list
-  - watch
+kubectl create -h
+kubectl create role -h
+kubectl create role NAME --verb=verb --resource=resource.group/subresource  # with specific api group
+
+kubectl create role foo --verb=get,list,watch --resource=replicasets.apps
+
 ```
 In Kubernetes, a collection of resources and verbs is called a Rule, and you can group rules into a list:
 A collection of rules has a specific name in Kubernetes, and it is called a Role.
