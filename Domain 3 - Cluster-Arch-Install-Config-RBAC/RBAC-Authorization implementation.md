@@ -399,18 +399,3 @@ kubectl create clusterrolebinding kube-proxy-binding --clusterrole=system:node-p
 kubectl create clusterrolebinding myapp-view-binding --clusterrole=view --serviceaccount=acme:myapp
 
 ```
-
-```
-
-
-
-
-
-
-
-
-
-
-
-
-
