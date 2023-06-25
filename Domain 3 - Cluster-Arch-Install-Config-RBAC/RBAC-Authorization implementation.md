@@ -98,7 +98,7 @@ kubectl create namespace test4
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: myaccount
+  name: demo-sa
   namespace: test
 
 kubectl apply -f service-account.yaml
@@ -108,6 +108,9 @@ Let's start with creating a Role and a RoleBinding to grant the Service Account 
 All resources (the Service Account, Role, and RoleBinding) are in the test namespace.
 
 ```sh
+kubectl create role -h
+kubectl create role testadmin -n test --verb='*' --resource='*' --dry-run=client -oyaml > role1.yaml
+kubectl get role/testadmin -n test -oyaml
 
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
@@ -119,6 +122,10 @@ rules:
     resources: ['*']
     verbs: ['*']
 ---
+kubectl create rolebinding -h
+kubectl create rolebinding testadmin-rolebinding --role=testadmin --serviceaccount=test:demo-sa --dry-run=client -oyaml > rolebinding1.yaml
+kubectl get rolebinding/testadmin-rolebinding -oyaml
+
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
@@ -136,8 +143,8 @@ roleRef:
 ---
 kubectl apply -f scenario1.yaml
 
-kubectl auth can-i <verb> <resource>
-kubectl auth can-i get pods -n test --as=system:serviceaccount:test:myaccount
+kubectl auth can-i -h
+kubectl auth can-i get pods --as=system:serviceaccount:test:demo-sa --n test
 yes
 ```
 ##### Scenario 2: Role and RoleBinding in a different namespace
@@ -177,31 +184,40 @@ yes
 ClusterRoles do not belong to a namespace. However, when a ClusterRole is linked to a Service Account via a RoleBinding, the ClusterRole permissions only apply to the namespace in which the RoleBinding was created.
 
 ```sh
+kubectl create clusterrole jenkins-deployer --verb='*' --resource=deployments.'apps' --dry-run=client -oyaml > cl-role.yaml
+kubectl get clusterrole/jenkins-deployer -oyaml
+
 kind: Cluster
 apiVersion: rbac.authorization.k8s.io/v1alpha1
 metadata:
   name: jenkins-deployer
 rules:
-- apiGroups: ["extensions"]
+- apiGroups: ["apps"]
   resources: ["deployments"]
   verbs: ["*"]
-  nonResourceURLs: ["/version"]
+  
 ---
+kubectl create rolebinding deploy-myapp --clusterrole=jenkins-deployer --serviceaccount=default:jenkins-deployer --dry-run=client -oyaml > rolebinding2.yaml
+kubectl apply -f rolebinding.yaml
+kubectl get rolebinding/deploy-myapp -oyaml
 
+apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1alpha1
 metadata:
   name: deploy-myapp
-  namespace: default
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: jenkins-deployer
 subjects:
 - kind: ServiceAccount
   name: jenkins-deployer
   namespace: default
-roleRef:
-  kind: ClusterRole
-  name: jenkins-deployer
-
+--
+kubectl auth can-i list deployments --as=system:serviceaccount:default:jenkins-deployer #yes
+kubectl auth can-i list pods --as=system:serviceaccount:default:jenkins-deployer   #No
 ---
+kubectl create ns myapp
 
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1alpha1
