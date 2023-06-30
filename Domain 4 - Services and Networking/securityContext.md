@@ -3,8 +3,7 @@ https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
 
 
 ##### Kubernetes SecurityContext Overview
-A SecurityContext they allow you to control the behaviour of the running pods and containers and how they interact with the host server, OS and kernel.
-They authorize to bind certain resources in your cluster (pods and containers) to specific users or groups, restrict pods and containers from interacting with the host operating system processes, other pods and services and allow them to perform their intended tasks while staying secure at the same time.
+A SecurityContext they allow you to control the behaviour of the running pods and containers and how they interact with the host server.
 If applied at the Pod level the settings will apply to all containers in the Pod. If the SecurityContext is defined at both the Pod and container level, the container level SecurityContext will take precedence.
 
 Here are some of the settings which can be configured as part of Kubernetes SecurityContext field. These settings can be applied at the Pod or container level.
