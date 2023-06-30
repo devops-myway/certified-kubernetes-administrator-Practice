@@ -63,11 +63,11 @@ https://kubernetes.io/docs/concepts/extend-kubernetes/compute-storage-net/networ
 
 ##### Network Policy syntax
 
-podSelector: selects a group of pods for which the policy applies (the policy target) - An empty podSelector: {} selects all pods in the namespace.
-policyTypes: defines the type of traffic to be restricted (inbound, outbound, both), ingress and/or egress - this is optional but I recommend to always specify it explicitly.
-ingress: allowed inbound traffic to the target pods whitelist rules - ingress:  - {} - Allow all ingress traffic
-egress: allowed outbound traffic from the target pods whitelist rules - egress:  - {} - Allow all egress traffic
-Pods policy applies to can be made from any IP within the CIDR block 172.17.0.0/16 (that's 65536 IP addresses, from 172.17.0.0 to 172.17.255.255)
+- podSelector: selects a group of pods for which the policy applies (the policy target) - An empty podSelector: {} selects all pods in the namespace.
+- policyTypes: defines the type of traffic to be restricted (inbound, outbound, both), ingress and/or egress - this is optional but I recommend to always specify it explicitly.
+- ingress whitelist rules: allowed inbound traffic to the target pods whitelist rules - ingress:  - {} - Allow all ingress traffic
+- egress whitelist rules: allowed outbound traffic from the target pods whitelist rules - egress:  - {} - Allow all egress traffic
+- Pods policy applies to can be made from any IP within the CIDR block 172.17.0.0/16 (that's 65536 IP addresses, from 172.17.0.0 to 172.17.255.255)
 
 #### Deny all traffic in the default namespace 
 Since this resource defines both policyTypes (ingress and egress), but doesn’t define any whitelist rules, it blocks all the pods in the default namespace from communicating with each other.
