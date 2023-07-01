@@ -114,7 +114,7 @@ kubectl run box2 --image=busybox --dry-run=client -oyaml --command -- sh -c "sle
 
 kubectl get pods -owide --show-labels
 kubectl exec -it box1 -- sh
-ping 192.168.1.4
+curl 192.168.1.4
 ``````
 #### Example 2 - Create an allow-out-to-in policy, and add labels to pods
 To isolate all pods in namespace default:
@@ -123,62 +123,49 @@ allow inbound traffic from pods in namespace default with the label test=out
 allow outbound traffic to pods in namespace default with the label test=in
 
 ``````sh
-cat << EOF > allow-out-to-in.yaml
+kubectl run test1 --image=nginx --label='role=db' -n default
+kubectl run frontend --image=nginx --label='role=frontend' -n default
+kubectl create ns myproject
+kubectl run test2 --image=nginx -n myproject
+
+kubectl get po -owide --show-labels #copy ips and add on the ipblocks for default ns
+kubectl get po -owide -n myproject --show-labels
+
+
+vi netp1.yaml
+
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: allow-out-to-in
+  name: test-network-policy
   namespace: default
 spec:
-  podSelector: {}
-  ingress:
-  - from:
-    - podSelector:
-        matchLabels:
-          test: out
-  egress:
-  - to:
-    - podSelector:
-        matchLabels:
-          test: in
+  podSelector:
+    matchLabels:
+      role: db
   policyTypes:
-  - Ingress
-  - Egress
-EOF
-``````
-``````sh
-cat << EOF > allow-out-to-in.yaml
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: db-policy
-  namespace: default
-spec:
-  podSelector: {}
+    - Ingress
+    - Egress
   ingress:
-  - from:
-    - podSelector:
-        matchLabels:
-          test: out
+    - from:
+        - ipBlock:
+            cidr: 192.168.0.0/16
+        - namespaceSelector:
+            matchLabels:
+              project: myproject
+        - podSelector:
+            matchLabels:
+              role: frontend
   egress:
-  - to:
-    - podSelector:
-        matchLabels:
-          test: in
-  policyTypes:
-  - Ingress
-  - Egress
-EOF
+    - to:
+        - ipBlock:
+            cidr: 192.168.0.0/16
 ``````
 #### Test Pods
 
 ``````sh
-kubectl run boxin --image=busybox --dry-run=client -oyaml --labels="test=in" --command -- sh -c "sleep 3600" > boxin.yaml
-kubectl run boxout --image=busybox --dry-run=client -oyaml --labels="test=out" --command -- sh -c "sleep 3600" > boxout.yaml
-
-kubectl get pods -owide --show-labels
 kubectl exec -it boxin -- sh
-
+curl ips
 ``````
 
 ###### A more realistic example To Test Network Policy
