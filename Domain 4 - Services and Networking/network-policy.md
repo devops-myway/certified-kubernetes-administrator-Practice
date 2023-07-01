@@ -181,7 +181,7 @@ kubectl exec -it boxin -- sh
 
 ``````
 
-###### A more realistic example
+###### A more realistic example To Test Network Policy
 We will create 3 pods, 1 for the front-end, back-end and database application that should have initially abilities to communicate.
 
 YAML file contains the 3 services which is pointing to 3 pods as below -
@@ -192,6 +192,8 @@ db service => mysql pod
 2- Create pods and services -vi  network-policy-demo.yaml
 
 ``````sh
+vi pod1.yaml
+
 apiVersion: v1
 kind: Pod
 metadata:
@@ -207,6 +209,8 @@ spec:
       containerPort: 80
       protocol: TCP
 ---
+vi svc1.yaml
+
 apiVersion: v1
 kind: Service
 metadata:
@@ -221,6 +225,8 @@ spec:
     port: 80
     targetPort: 80
 ---
+vi pod2.yaml
+
 apiVersion: v1
 kind: Pod
 metadata:
@@ -236,6 +242,8 @@ spec:
       containerPort: 80
       protocol: TCP
 ---
+vi svc2.yaml
+
 apiVersion: v1
 kind: Service
 metadata:
@@ -250,6 +258,8 @@ spec:
     port: 80
     targetPort: 80
 ---
+vi svcdb.yaml
+
 apiVersion: v1
 kind: Service
 metadata:
@@ -264,6 +274,7 @@ spec:
     port: 3306
     targetPort: 3306
 ---
+vi pod3.yaml
 apiVersion: v1
 kind: Pod
 metadata:
@@ -288,7 +299,7 @@ spec:
           containerPort: 3306
           protocol: TCP
 ---------------
-kubectl apply -f network-policy-demo.yaml
+kubectl apply -f all-files
 kubectl get all
 
 ``````
@@ -334,12 +345,14 @@ spec:
 ----
 kubectl apply -f db-netpol.yaml
 ``````
-For test:
+For testing the netpol connection to th db from both pods:
 ``````sh
 kubectl exec -it backend -- bash
+apt update && apt install telnet -y
 telnet db 3306
 
 kubectl exec -it frontend -- bash
+apt update && apt install telnet -y
 teclnet db 3306
 
 ``````
