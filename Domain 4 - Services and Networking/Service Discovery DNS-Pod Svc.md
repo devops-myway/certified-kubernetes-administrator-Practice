@@ -1,20 +1,20 @@
 
-https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/
-https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/
+- https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/
+- https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/
 
 Helpers:
-https://www.alibabacloud.com/help/en/container-service-for-kubernetes/latest/configure-dns-resolution
-https://www.alibabacloud.com/help/en/container-service-for-kubernetes/latest/service-discovery-dns-dns-troubleshooting?spm=a2c63.p38356.0.0.65de26a0UUlwGB
-https://www.alibabacloud.com/help/en/container-service-for-kubernetes/latest/configure-coredns?spm=a2c63.p38356.0.0.65de26a0UUlwGB
+- https://www.alibabacloud.com/help/en/container-service-for-kubernetes/latest/configure-dns-resolution
+- https://www.alibabacloud.com/help/en/container-service-for-kubernetes/latest/service-discovery-dns-dns-troubleshooting?spm=a2c63.p38356.0.0.65de26a0UUlwGB
+- https://www.alibabacloud.com/help/en/container-service-for-kubernetes/latest/configure-coredns?spm=a2c63.p38356.0.0.65de26a0UUlwGB
 
 #### DNS for Services and Pods
 Kubernetes creates DNS records for Services and Pods. You can contact Services with consistent DNS names instead of IP addresses.
 Kubernetes publishes information about Pods and Services which is used to program DNS. Kubelet configures Pods' DNS so that running containers can lookup Services by name rather than IP.
 
 #### How DNS resolution works in Kubernetes clusters
-he startup parameters of kubelet in a cluster include 
---cluster-dns=<dns-service-ip> : The parameters are used to configure the IP address
---cluster-domain=<default-local-domain> : The parameters are used to configure the suffix of the base domain name for the DNS server.
+The startup parameters of kubelet in a cluster include 
+- --cluster-dns=<dns-service-ip> : The parameters are used to configure the IP address
+- --cluster-domain=<default-local-domain> : The parameters are used to configure the suffix of the base domain name for the DNS server.
 
 #### Namespaces of Services
 A Service named kube-dns is deployed to expose these workloads to DNS queries in the cluster. Two backend pods named coredns are deployed for CoreDNS.
