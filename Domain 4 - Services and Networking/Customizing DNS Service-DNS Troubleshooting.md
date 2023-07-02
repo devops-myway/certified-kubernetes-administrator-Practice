@@ -77,7 +77,8 @@ In the kube-system namespace, you can find a CoreDNS ConfigMap. The CoreDNS serv
 The CoreDNS Corefile is held in a ConfigMap named coredns. To edit it, use the command:
 
 ``````sh
-  kubectl -n kube-system edit configmap coredns
+kubectl get cm coredns -n kube-system -o yaml # check the corefile
+kubectl -n kube-system edit configmap coredns
 
 ``````
 
