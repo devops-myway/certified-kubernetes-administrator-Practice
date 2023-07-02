@@ -20,9 +20,9 @@ The startup parameters of kubelet in a cluster include
 A Service named kube-dns is deployed to expose these workloads to DNS queries in the cluster. Two backend pods named coredns are deployed for CoreDNS.
 The DNS configuration file in the pod is /etc/resolv.conf. The file contains the following content:
 
-nameserver 10.32.0.10
-search <namespace>.svc.cluster.local svc.cluster.local cluster.local
-options ndots:5
+- nameserver 10.32.0.10
+- search <namespace>.svc.cluster.local svc.cluster.local cluster.local
+- options ndots:5
 
 The parameters in the dnsConfig for DNS policy also has the below parameters:
 - nameserver:
