@@ -85,6 +85,10 @@ kubectl logs literal-pod
 #### Create a ConfigMap with manifest file
 
 ``````sh
+kubectl create configmap testcm --from-literal=SPECIAL_LEVEL=very --from-literal=SPECIAL_TYPE=charm --dry-run=client -oyaml > cmtest.yaml
+kubectl apply -f cmtest.yaml
+kubectl describe configmap/testcm
+--
 apiVersion: v1
 kind: ConfigMap
 metadata:
