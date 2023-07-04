@@ -29,65 +29,75 @@ To start creating a secret with kubectl, first create the files to store the sen
 echo -n '[username]' > [file1]
 echo -n '[password]' > [file2]
 
+touch secret1.txt
 echo -n 'jsmith' | base64 | ./username.txt
 echo -n 'mysecretpassword' | base64 | ./password.txt
-
+cat << EOF > secret1.txt
+username= username encoded
+password = password encoded
+EOF
 ---
-kubectl create secret generic [secret-name] \
---from-file=[file1] \
---from-file=[file2]
-
-kubectl create secret generic db-credentials --from-file=./username.txt --from-file=./password.txt
+kubectl create secret generic -h
+kubectl create secret generic test-secret --from-file=./secret1.txt --dry-run=client -oyaml > sec1.yaml #output the secret file
+kubectl apply -f sec1.yaml
 --
-kubectl get secrets
+kubectl get secrets/test-secret
+kubectl describe secret/test-secret
 
 ``````
-#### Create Secrets in a Configuration File
-``````sh
-
-apiVersion: v1
-kind: Secret
-metadata:
-  name: secret-test
-type: Opaque
-data:
-  username: dXNlcg==
-  password: NTRmNDFkMTJlOGZh
-
----
-kubectl apply -f secret.yml
-``````
-
 #### Mount a Secret as a volume to a pod
- the secret-test Secret that contains the username and password information is stored as a file under the /srt directory.
 ``````sh
+kubectl explain pod.spec  # to understand the properties of containers, volumes, volumeMounts, env and envFrom
+kubectl run nginx --image=nginx --dry-run=client -oyaml > pod1.yaml # manually add the voolumes and use volumeMount
+
 apiVersion: v1
 kind: Pod
 metadata:
-  name: pod0
+  name: nginx
 spec:
   containers:
-  - name: redis
-    image: redis
+  - name: nginx
+    image: nginx
     volumeMounts:
     - name: srt
-      mountPath: "/srt "
+      mountPath: "/data/srt "
       readOnly: true
   volumes:
   - name: srt
     secret:
-      secretName: secret-test
+      secretName: test-secret
 -----
-kubectl exec -it [pod] -- /bin/bash
+kubectl apply -f pod1.yaml
 
 kubectl exec -it test-pod -- /bin/bash
-cd /srt
+cd /data/srt
+cat test-secret
 
 ``````
 #####  Expose a Secret as an environment variable for a pod - using env parameter with valueFrom field.
 the username and password stored in the secret-test Secret are referenced in an environment variable of a pod.
 
 ``````sh
+# crete a simple txt file to store the secrets
+touch test-secret.txt 
+echo -n 'user1'| base64
+dXNlcjE=
+echo -n 'pass1'| base64
+cGFzczE=
+cat << EOF > ./test-secret.txt
+username=dXNlcjE=
+password=cGFzczE=
+EOF
+cat test-secret.txt
+
+kubectl create secret generic test-secret --from-file=./test-secret.txt --dry-run=client -oyaml > test-secret.yaml
+kubectl apply -f test-secret.yaml
+kubectl get secret/test-secret -oyaml
+
+----
+kubectl run nginx --image=nginx --dry-run=client -oyaml > test-sec1.yaml
+vi test-sec1.yaml
+
 apiVersion: v1
 kind: Pod
 metadata:
@@ -108,90 +118,9 @@ spec:
             name: secret-test
             key: password
 
-
-``````
-#### Mounting Secret as a file
-It is possible to create Secret and pass it as a file or multiple files to Pods.
-can see a sample Secret manifest file and Deployment that uses this Secret:
-NOTE: I used subPath with Secrets and it works as expected.
-``````sh
-apiVersion: v1
-kind: Secret
-metadata:
-  name: my-secret
-data:
-  secret.file1: |
-    c2VjcmV0RmlsZTEK
-  secret.file2: |
-    c2VjcmV0RmlsZTIK
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-...
-    spec:
-      containers:
-      - image: nginx
-        name: nginx
-        volumeMounts:
-        - name: secrets-files
-          mountPath: "/mnt/secret.file1"  # "secret.file1" file will be created in "/mnt" directory
-          subPath: secret.file1
-        - name: secrets-files
-          mountPath: "/mnt/secret.file2"  # "secret.file2" file will be created in "/mnt" directory
-          subPath: secret.file2
-      volumes:
-        - name: secrets-files
-          secret:
-            secretName: my-secret # name of the Secret
-------
-kubectl get secret,deploy,pod
-
-kubectl exec nginx-7c67965687-ph7b8 -- ls /mnt
-
 ``````
 
-#### Method-2: Mount Kubernetes Secrets as a file
- Declare Kubernetes Secrets using certificates and mount as a file
-``````sh
-[root@controller ~]# ls server.*
-server.crt  server.csr  server.key
 
-``````
-Create Kubernetes Secrets from multiple files
-``````sh
-kubectl create secret generic secret-tls --from-file=server.crt --from-file=server.key
-
-kubectl describe secret secret-tls
-
-``````
-#### Method-2: Mount Secrets as a file inside Pod’s container
- 
-``````sh
-[root@controller ~]# cat secret-tls-pod.yml
-apiVersion: v1
-kind: Pod
-metadata:
-  name: secret-tls-pod
-spec:
-  containers:
-    - name: secret-tls-pod
-      image: busybox
-      command:
-      - sleep
-      - "3600"
-      volumeMounts:
-      - name: tls-certs  ## Use this name inside volumes to define mount point
-        mountPath: "/tls"  ## This will be created if not present
-  volumes:
-    - name: tls-certs  ## This must match the volumeMount name
-      secret:
-        secretName: secret-tls  ## This must match the secret name which we created earlier
---
-kubectl get pods secret-tls-pod
-kubectl exec -it secret-tls-pod -- /bin/sh
-
-``````
 #### Create Kubernetes Secret as a file
  some-file.conf with the provided data inside the file.
  Note: If you do not want to perform the base64 encoding, you can choose to use the stringData field instead.
