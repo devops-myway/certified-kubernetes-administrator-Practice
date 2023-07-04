@@ -39,15 +39,15 @@ Here you can specify whether you want a filesystem ("Filesystem") or raw storage
 #### 1.3 Access Modes
 There are three access modes:
 
-RWO — ReadWriteOnce—Only: a single node can mount the volume for reading and writing.
-ROX — ReadOnlyMany—Multiple: nodes can mount the volume for reading.
-RWX — ReadWriteMany—Multiple: nodes can mount the volume for both reading and writing.
+- RWO — ReadWriteOnce—Only: a single node can mount the volume for reading and writing.
+- ROX — ReadOnlyMany—Multiple: nodes can mount the volume for reading.
+- RWX — ReadWriteMany—Multiple: nodes can mount the volume for both reading and writing.
 
 ##### 1.4 Reclaim Policy
 The reclaim policy determines what happens when a persistent volume claim is deleted. There are three different policies:
-Retain: The volume will need to be reclaimed manually
-Delete: The associated storage asset, such as AWS EBS, GCE PD, Azure disk, or OpenStack Cinder volume, is deleted
-Recycle: Delete content only (rm -rf /volume/*)
+- Retain: The volume will need to be reclaimed manually
+- Delete: The associated storage asset, such as AWS EBS, GCE PD, Azure disk, or OpenStack Cinder volume, is deleted
+- Recycle: Delete content only (rm -rf /volume/*)
 
 ##### 1. Create Persistent Volume
 
