@@ -146,24 +146,25 @@ You can use ConfigMaps to define the commands or parameter values for a containe
 apiVersion: v1
 kind: Pod
 metadata:
-   name: config-pod-3
+  name: cm-demo-pod
 spec:
-   containers:
-     - name: test-container
-       image: busybox
-       command: [ "/bin/sh", "-c", "echo $(SPECIAL_LEVEL_KEY) $(SPECIAL_TYPE_KEY)" ]
-       env:
-         - name: SPECIAL_LEVEL_KEY
-           valueFrom:
-             configMapKeyRef:
-               name: special-config
-               key: SPECIAL_LEVEL
-         - name: SPECIAL_TYPE_KEY
-           valueFrom:
-             configMapKeyRef:
-               name: special-config
-               key: SPECIAL_TYPE
-   restartPolicy: Never
+  containers:
+    - name: cm-demo-pod
+      image: busybox
+      command: ["/bin/sh", "-c", "while true; do echo $(SPECIAL_LEVEL_KEY) $(SPECIAL_TYPE_KEY); sleep 3600 ; done"]
+      env:
+        - name: SPECIAL_LEVEL_KEY  
+          valueFrom:
+            configMapKeyRef:
+              name: testcm           
+              key: SPECIAL_LEVEL
+        - name: SPECIAL_TYPE_KEY
+          valueFrom:
+            configMapKeyRef:
+              name: testcm
+              key: SPECIAL_TYPE
+--
+kubectl apply -f testpod.yaml
 
 ``````
 #### Use a ConfigMap in a volume
