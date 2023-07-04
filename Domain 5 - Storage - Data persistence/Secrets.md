@@ -1,6 +1,5 @@
-https://kubernetes.io/docs/concepts/configuration/secret/
-https://kubernetes.io/docs/tasks/inject-data-application/distribute-credentials-secure/#define-a-container-environment-variable-with-data-from-a-single-secret
-https://secrets-store-csi-driver.sigs.k8s.io/concepts.html#secretproviderclass
+- https://kubernetes.io/docs/concepts/configuration/secret/
+- https://kubernetes.io/docs/tasks/inject-data-application/distribute-credentials-secure/#define-container-environment-variables-using-secret-data
 
 
 #### Kubernetes Secrets
@@ -74,25 +73,12 @@ cd /data/srt
 cat test-secret
 
 ``````
-#####  Expose a Secret as an environment variable for a pod - using env parameter with valueFrom field.
+#####  Define container environment variables using Secret data
 the username and password stored in the secret-test Secret are referenced in an environment variable of a pod.
 
 ``````sh
-# crete a simple txt file to store the secrets
-touch test-secret.txt 
-echo -n 'user1'| base64
-dXNlcjE=
-echo -n 'pass1'| base64
-cGFzczE=
-cat << EOF > ./test-secret.txt
-username=dXNlcjE=
-password=cGFzczE=
-EOF
-cat test-secret.txt
-
-kubectl create secret generic test-secret --from-file=./test-secret.txt --dry-run=client -oyaml > test-secret.yaml
-kubectl apply -f test-secret.yaml
-kubectl get secret/test-secret -oyaml
+kubectl create secret generic backend-user --from-literal=backend-username='backend-admin' --dry-run=client -oyaml > secret2.yaml
+kubectl apply -f secret2.yaml
 
 ----
 kubectl run nginx --image=nginx --dry-run=client -oyaml > test-sec1.yaml
@@ -101,135 +87,64 @@ vi test-sec1.yaml
 apiVersion: v1
 kind: Pod
 metadata:
-  name: pod1
-spec:
-  containers:
-  - name: redis
-    image: redis
-    env:
-      - name: USERNAME
-        valueFrom:
-          secretKeyRef:
-            name: secret-test
-            key: username
-      - name: PASSWORD
-        valueFrom:
-          secretKeyRef:
-            name: secret-test
-            key: password
-
-``````
-
-
-#### Create Kubernetes Secret as a file
- some-file.conf with the provided data inside the file.
- Note: If you do not want to perform the base64 encoding, you can choose to use the stringData field instead.
-``````sh
-~]# cat secret-mount.yaml
-apiVersion: v1
-kind: Secret
-metadata:
-  name: secret-mount
-type: Opaque
-stringData:
-  some-file.conf: |
-          VAR1=value-1
-          VAR2=value-2
---
-kubectl apply -f secret-mount.yaml
-
-kubectl get secret secret-mount -o yaml
-
-``````
-#### Mount the Kubernetes Secret as a file
-
-Now we will mount our some-file.conf under /dir1 on the Pod as read-only
-``````sh
-~]# cat secret-busybox-2.yaml
-apiVersion: v1
-kind: Pod
-metadata:
-  name: secret-mount
-spec:
-  containers:
-    - name: secret-mount
-      image: busybox
-      command:
-      - sleep
-      - "3600"
-      volumeMounts:
-      - name: check-mount  ## Use this name inside volumes to define mount point
-        mountPath: "/dir1"  ## This will be created if not present
-  volumes:
-    - name: check-mount  ## This must match the volumeMount name
-      secret:
-        secretName: secret-mount  ## This must match the secret name which we created earlier
-        items:
-        - key: some-file.conf  ## Existing filename used in the secret
-          path: new-file-name.conf  ## New file name using which it will be mounted on the Pod
---
-kubectl create -f secret-busybox-2.yaml
-
-kubectl exec -it secret-mount -- sh
-``````
-
-#### Projected Volume
-
-A projected volume maps many existing volume sources into an equivalent directory.
-Using projected volume I mounted secret.file1, secret.file2 from Secret and config.file1 from ConfigMap as files into the Pod
-
-``````sh
-apiVersion: v1
-kind: Secret
-metadata:
-  name: my-secret
-data:
-  secret.file1: |
-    c2VjcmV0RmlsZTEK
-  secret.file2: |
-    c2VjcmV0RmlsZTIK
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: my-config
-data:
-  config.file1: |
-    configFile1  
----
-apiVersion: v1
-kind: Pod
-metadata:
+  creationTimestamp: null
+  labels:
+    run: nginx
   name: nginx
 spec:
   containers:
-  - name: nginx
-    image: nginx
-    volumeMounts:
-    - name: all-in-one
-      mountPath: "/config-volume"
-      readOnly: true
-  volumes:
-  - name: all-in-one
-    projected:
-      sources:
-      - secret:
-          name: my-secret
-          items:
-            - key: secret.file1
-              path: secret-dir1/secret.file1
-            - key: secret.file2
-              path: secret-dir2/secret.file2
-      - configMap:
-          name: my-config
-          items:
-            - key: config.file1
-              path: config-dir1/config.file1
+  - image: nginx
+    name: nginx
+    env:
+    - name: SECRET_USERNAME
+      valueFrom:
+        secretKeyRef:
+          name: backend-user
+          key: backend-username
+---
+kubectl exec -it po/nginx -- /bin/sh -c 'echo $SECRET_USERNAME'
+backend-admin
 
----------
-kubectl exec nginx -- ls /config-volume
-kubectl exec nginx -- cat /config-volume/config-dir1/config.file1
-kubectl exec nginx -- cat /config-volume/secret-dir1/secret.file1
-kubectl exec nginx -- cat /config-volume/secret-dir2/secret.file2
+``````
 
+
+#### Define container environment variables with data from multiple Secrets 
+
+``````sh
+kubectl create secret generic backend-user --from-literal=backend-username='backend-admin'
+kubectl create secret generic db-user --from-literal=db-username='db-admin'
+
+kubectl get secret secret
+kubectl describe secret/backend-user
+kubectl describe secret/db-user
+
+``````
+
+``````sh
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    run: secpod
+  name: secpod
+spec:
+  containers:
+  - image: nginx
+    name: secpod
+    env:
+    - name: BACKEND_USERNAME
+      valueFrom:
+        secretKeyRef:
+          name: backend-user
+          key: backend-username
+    - name: DB_USERNAME
+      valueFrom:
+        secretKeyRef:
+          name: db-user
+          key: db-username
+--
+kubectl apply -f secpod.yaml
+kubectl exec -it secpod -- sh -c 'env | grep _USERNAME'
+DB_USERNAME=db-admin
+BACKEND_USERNAME=backend-admin
 ``````
