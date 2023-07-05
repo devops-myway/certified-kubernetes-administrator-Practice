@@ -1,15 +1,16 @@
 
+https://kubernetes.io/docs/concepts/storage/volumes/
 
 ##### Kubernetes Volumes
 
 The containers in a Kubernetes pod can access a data directory called a Kubernetes volume.
 In Kubernetes, there are various volume types such as:
 
-Persistent Volumes
-EmptyDir Volumes
-Ephemeral Volumes
-Kubernetes Volumes configMap
-Kubernetes hostPath Volumes
+- Persistent Volumes
+- EmptyDir Volumes
+- Ephemeral Volumes
+- Kubernetes Volumes configMap
+- Kubernetes hostPath Volumes
 
 ###### emptyDir
 
