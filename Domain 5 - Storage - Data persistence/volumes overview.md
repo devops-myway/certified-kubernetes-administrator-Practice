@@ -253,15 +253,3 @@ cat   /mnt/persistent-volume/persistent-file
 kubectl delete -f myVolumes-Pod.yaml --force --grace-period=0
 
 ``````
-``````sh
-
-
-``````
-``````sh
-
-
-``````
-``````sh
-
-
-``````
