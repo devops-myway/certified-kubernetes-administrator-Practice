@@ -85,7 +85,11 @@ If we nslookup normal-service one DNS entry and IP is returned
 where nslookup headless-service returns the list of associated Pod IPs with the service DNS
 
 ``````sh
-kubectl run --generator=run-pod/v1 --rm utils -it --image eddiehale/utils bash
+kubectl run ubuntu --image=ubuntu -- sh -c 'sleep 3600'
+apt update
+apt install dnsutils
+dig -v
+--
 nslookup normal-service
 nslookup headless-service
 exit
