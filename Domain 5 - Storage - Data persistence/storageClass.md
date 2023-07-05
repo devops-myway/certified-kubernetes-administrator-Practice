@@ -21,11 +21,12 @@ Using a StorageClass is necessary to dynamically provision storage, and in gener
 You will typically prefer to interact with StorageClasses (SCs) rather than individual PVs.
 
 Each StorageClass contains the fields provisioner, parameters, and reclaimPolicy, which are used when a PersistentVolume belonging to the class needs to be dynamically provisioned.
-PROVISIONER:
+
+- PROVISIONER:
 Refers to the CSI plugin through which Kubernetes will be connecting dynamically generated PVs to whatever external storage system you are using. e.g AzureFile, AWSElasticBlockStore etc.
-reclaimPolicy:
+- reclaimPolicy:
 PersistentVolumes that are dynamically created by a StorageClass will have the reclaim policy specified in the reclaimPolicy field of the class,which can be either Delete or Retain. If no reclaimPolicy is specified when a StorageClass object is created, it will default to Delete
-Parameters:
+- Parameters:
 Storage Classes have parameters that describe volumes belonging to the storage class.
 Different parameters may be accepted depending on the provisioner. For example, the value io1, for the parameter type, and the parameter iopsPerGB are specific to EBS.
 
