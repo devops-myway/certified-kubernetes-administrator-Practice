@@ -52,7 +52,8 @@ The reclaim policy determines what happens when a persistent volume claim is del
 ##### 1. Create Persistent Volume
 
 ``````sh
-[root@controller ~]# cat persistent-volume.yml
+vi persistent-volume.yaml
+
 apiVersion: v1
 kind: PersistentVolume
 metadata:
@@ -73,13 +74,14 @@ spec:
     server: 192.168.43.48
 
 --
-kubectl create -f persistent-volume.yml
+kubectl apply -f persistent-volume.yml
 kubectl get pv
 ``````
 ##### 2. Claiming a PersistentVolume by creating a PersistentVolumeClaim
 
 ``````sh
-[root@controller ~]# cat persistent-volume-claim.yml
+vi persistent-volume-claim.yaml
+
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
@@ -93,17 +95,15 @@ spec:
   storageClassName: ""
 
 --
-kubectl create -f persistent-volume-claim.yml
-
+kubectl apply -f persistent-volume-claim.yaml
 kubectl get pvc
-
 kubectl describe pvc nfs-share-pvc
 ``````
 ##### 3. Using a PersistentVolumeClaim in a pod
 Here I am creating an nginx container to use the PV storage:
-Nobody else can claim the same volume until you release it. To use it inside a pod, you need to reference the PersistentVolumeClaim by name inside the pod’s volume
 ``````sh
-[root@controller ~]# cat nfs-share-pod.yml
+vi nfs-share-pod.yaml
+
 apiVersion: v1
 kind: Pod
 metadata:
@@ -123,114 +123,9 @@ spec:
     persistentVolumeClaim:
       claimName: nfs-share-pvc
 --
-kubectl create -f nfs-share-pod.yml
-
+kubectl apply -f nfs-share-pod.yml
 kubectl get pods pod-nfs-share
-
 kubectl exec -it pod-nfs-share -- df -h /var/www
-
 kubectl exec -it pod-nfs-share -- ls -l /var/www
 ``````
 
-##### 5.1 Create StorageClass
-Storage classes let an administrator configure your cluster with custom persistent storage .
-A storage class has a name in the metadata (it must be specified in the annotation to claim), a provisioner, and parameters.
-
-As I don't have access to cloud environment, I will define a storage class for using local volumes. Local volumes are similar to HostPath, but they persist across pod restarts and node restarts.
-
-``````sh
-[root@controller ~]# cat storage-class.yml
-apiVersion: storage.k8s.io/v1
-kind: StorageClass
-metadata:
-  name: local-storage
-provisioner: kubernetes.io/no-provisioner
-volumeBindingMode: WaitForFirstConsumer
---
-kubectl create -f storage-class.yml
-kubectl get sc
-``````
-##### Creating a local persistent volume
-
-
-``````sh
-[root@controller ~]# cat local-pv-sc.yml
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: local-pv
-spec:
-  capacity:
-    storage: 2Gi
-  accessModes:
-   - ReadWriteOnce
-  persistentVolumeReclaimPolicy: Retain
-  storageClassName: local-storage
-  local:
-    path: /tmp/data
-  nodeAffinity:
-    required:
-      nodeSelectorTerms:
-      - matchExpressions:
-        - key: kubernetes.io/hostname
-          operator: In
-          values:
-          - worker-2.example.com
- ---
-kubectl get nodes
-
-kubectl create -f local-pv-sc.yml
-
-kubectl get pv
-kubectl describe pv local-pv
-``````
-##### Making Persistent Volume Claims
-
-``````sh
-[root@controller ~]# cat local-pvc.yml
-kind: PersistentVolumeClaim
-apiVersion: v1
-metadata:
-  name: local-storage-claim
-spec:
-  accessModes:
-    - ReadWriteOnce
-  storageClassName: local-storage
-  resources:
-    requests:
-      storage: 1Gi
---
-kubectl create -f local-pvc.yml
-
-kubectl get pvc
-
-kubectl describe pvc local-storage-claim
-``````
-##### Create a Pod
-
-
-``````sh
-[root@controller ~]# cat local-pv-pod.yml
-kind: Pod
-apiVersion: v1
-metadata:
-  name: local-pod
-spec:
-  containers:
-    - name: local-pod
-      image: nginx
-      ports:
-      - containerPort: 80
-        name: "httpd-server"
-      volumeMounts:
-      - mountPath: "/mnt/tmp"
-        name: persistent-volume
-  volumes:
-    - name: persistent-volume
-      persistentVolumeClaim:
-        claimName: local-storage-claim
----
-kubectl create -f local-pv-pod.yml
-kubectl get pods local-pod
-kubectl get pvc
-``````
