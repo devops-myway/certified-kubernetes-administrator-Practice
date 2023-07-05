@@ -1,7 +1,7 @@
-https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/
-https://www.mirantis.com/blog/how-to-use-statefulsets-and-create-a-scalable-mysql-server-on-kubernetes/
-https://kubernetes.io/docs/tasks/run-application/run-replicated-stateful-application/
-https://kubernetes.io/docs/tasks/run-application/force-delete-stateful-set-pod/
+- https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/
+- https://www.mirantis.com/blog/how-to-use-statefulsets-and-create-a-scalable-mysql-server-on-kubernetes/
+- https://kubernetes.io/docs/tasks/run-application/run-replicated-stateful-application/
+- https://kubernetes.io/docs/tasks/run-application/force-delete-stateful-set-pod/
 
 
 ##### What is a StatefulSet
