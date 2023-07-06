@@ -33,6 +33,7 @@ How HPA can be configured to auto-scale application pods based on target CPU uti
 kubectl create ns hpa-test
 --------- # Create a deployment for HPA testing
 cat example-app.yaml
+cat << EOF | kubectl apply -f -
   apiVersion: apps/v1
   kind: Deployment
   metadata:
@@ -58,7 +59,9 @@ cat example-app.yaml
              cpu: 500m   #  55m/1000 is 5.5% of a CPU core being used. 500/1000 is 100% of 50% of cpu being used.
            requests:
              cpu: 200m  # 200m/1000m x 100% 20% cpu being used.
+EOF
   ---
+cat << EOF | kubectl apply -f -
   apiVersion: v1
   kind: Service
   metadata:
@@ -71,8 +74,8 @@ cat example-app.yaml
    - port: 80
    selector:
      run: php-apache
+EOF
 ---
-kubectl create -f example-app.yaml
 kubectl get deploy -n hpa-test
 
 ``````
@@ -105,14 +108,18 @@ kubectl -n hpa-test get hpa
 ``````
 Currently there is no load on the running application so the current and desired pods are equal to the initial number which is 1
 ``````sh
-kubectl get hpa php-apache -o yaml -n hpa-test
+kubectl get hpa/php-apache -n hpa-test
 ``````
 ###### Increase the load
 Stop the load by pressing CTRL-C and then get the hpa status again , this will show things get back to normal and one replica running
 ``````sh
-kubectl run -i --tty load-generator --rm --image=busybox:1.28 --restart=Never -- /bin/sh -c "while sleep 0.01; do wget -q -O- http://php-apache; done"
+kubectl run -it load-generator --rm --image=busybox:1.28 --restart=Never -n hpa-test -- /bin/sh -c "while sleep 0.01; do wget -q -O- http://php-apache; done"
+kubectl get hpa -w -n hpa-test
+kubectl get hpa -n hpa-test
 
-kubectl -n hpa-test get hpa
+kubectl get services -n hpa-test
+kubectl port-forward svc/php-apache 80:80 -n hpa-test
+curl 127.0.0.1:80   #ok
 ``````
 Clean up the resources
 ``````sh
