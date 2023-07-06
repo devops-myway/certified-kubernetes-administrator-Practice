@@ -3,10 +3,7 @@ https://kubernetes.io/docs/concepts/policy/resource-quotas/
 
 ##### Resource Quotas
 ResourceQuota is an object in Kubernetes that enables administrators to restrict cluster tenants’ resource usage per namespace.
-A Kubernetes cluster has a limited amount of available hardware resources. Hardware resources are measured based on worker nodes with a specific number of CPU cores or RAM allocation.
-In a shared Kubernetes environment, it is important to pre-define the allocation of resources for each tenant to avoid unintended resource contention and depletion.
-The namespace resource quota governs the maximum use of computing resources by the namespace, while the pod request and limits govern the use of computing resources by the containers within each pod.
-ResourceQuota object support is enabled by default on most Kubernetes distributions. It can be enabled manually by setting the API server. For example, the command --enable-admission-plugins= flag has the ResourceQuota object as its target argument.
+A Kubernetes cluster has a limited amount of available hardware resources.
 
 ###### How Resource Quota Limits Work
 we go through a demo example of how to create and define the CPU resource quota on a namespace with requests and limits.
@@ -29,7 +26,7 @@ apiVersion: v1
       requests.cpu: "200m"  
       limits.cpu: "300m"
 ------
-kubectl create -f cpu-quota.yaml
+kubectl apply -f cpu-quota.yaml
 kubectl describe resourcequota test-cpu-quota --namespace quota-demo
 ``````
 you can create a test pod with requests and limits defined as shown below:
