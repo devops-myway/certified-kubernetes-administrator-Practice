@@ -17,9 +17,9 @@ The journald daemon collects all logs from everywhere of the Linux operating sys
 /var/log/pods/<namespace>_<pod_name>_<pod_id>/<container_name>/:  If you log in to any Kubernetes worker node and go to /var/log/containers the directory, you will find a log file for each container running on that node with this naming scheme.
 
 ##### Types for Kubernetes logs
-Application logs: Logs from user deployed applications. Application logs help in understanding what is happening inside the application.
-Kubernetes Cluster components: Logs from api-server, kube-scheduler, etcd, kube-proxy, etc. These logs help you troubleshoot Kubernetes cluster issues.
-Kubernetes Audit logs: All logs related to API activity recorded by the API server. Primarily used for investigating suspicious API activity.
+- Application logs: Logs from user deployed applications. Application logs help in understanding what is happening inside the application.
+- Kubernetes Cluster components: Logs from api-server, kube-scheduler, etcd, kube-proxy, etc. These logs help you troubleshoot Kubernetes cluster issues.
+- Kubernetes Audit logs: All logs related to API activity recorded by the API server. Primarily used for investigating suspicious API activity.
 
 ##### Kubernetes Logging Architecture
 If we take the Kubernetes cluster as a whole, we would need to centralize the logs.
