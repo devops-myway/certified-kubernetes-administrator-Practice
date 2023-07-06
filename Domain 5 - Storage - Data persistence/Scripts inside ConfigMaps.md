@@ -14,6 +14,7 @@ This separation of concerns makes it easier to manage and update configuration d
 #### Executing a simple Task with Bash
 configmap we are creating a bash script called “slim-shady.sh” that echos the lyrics “My Name Is” by Eminem
 ``````sh
+cat << EOF | kubectl apply -f -
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -21,7 +22,6 @@ metadata:
 data:
   slim-shady.sh: |
     #!/bin/bash
-
     echo "Hi!"
     echo "My name is"
     echo "What?"
@@ -30,7 +30,7 @@ data:
     echo "My name is"
     echo "Chika-chika"
     echo "Slim Shady"
-
+EOF
 ``````
 To run this script by using the configmap, let’s take a look at an example Kubernetes Job below and walk through it.
 Two things I would like to point out here:
@@ -41,6 +41,7 @@ Two things I would like to point out here:
   Warning  Failed     7s    kubelet            Error: failed to create containerd task: failed to create shim task: OCI runtime create failed: runc create failed: unable to start container process: exec: "/script/slim-shady.sh": permission denied: unknown 
 
 ``````sh
+cat << EOF | kubectl apply -f -
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -50,7 +51,7 @@ spec:
     spec:
       containers:
         - name: shady
-          image: centos
+          image: ubuntu
           command: ["/script/slim-shady.sh"]
           volumeMounts:
             - name: script
@@ -61,12 +62,14 @@ spec:
             name: slim-shady-configmap
             defaultMode: 0500
       restartPolicy: Never
+EOF
 ----
 kubectl logs -f chicka-chicka-slim-shady-h7j5m
 ``````
 ##### Create a ConfigMap
 The key is "my-script.sh" and the value is a Bash script that prints "Hello, World!" to the console.
 ``````sh
+cat << EOF | kubectl apply -f -
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -75,8 +78,7 @@ data:
   my-script.sh: |
     #!/bin/bash
     echo "Hello, World!"
---
-kubectl apply -f my-script-configmap.yaml
+EOF
 ``````
 ##### Define a Volume Mount
 ``````sh
@@ -92,7 +94,7 @@ spec:
     volumeMounts:
     - name: my-script-volume
       mountPath: /script
-    command: ["/script/my-script.sh"]
+    command: ["/bin/sh","-c","/script/my-script.sh"]
   volumes:
   - name: my-script-volume
     configMap:

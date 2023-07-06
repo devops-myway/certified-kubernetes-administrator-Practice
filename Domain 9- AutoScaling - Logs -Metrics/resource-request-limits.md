@@ -10,7 +10,7 @@ Limits and Requests are important settings when working with Kubernetes. will fo
 - Requests, are the minimum guaranteed amount of a resource that is reserved for a container.
 
 ###### Understanding resource units
-There is a different unit which us used in Kubernetes to measure CPU and Memory:
+There is a different unit which is used in Kubernetes to measure CPU and Memory:
 
 ###### CPU limit
 - Limits and requests for CPU resources are measured in cpu units.
@@ -60,15 +60,13 @@ spec:
   containers:
   - name: mybench-container
     image: mytutorials/centos:bench
-    imagePullPolicy: IfNotPresent
-    
+    imagePullPolicy: IfNotPresent    
     command: ['sh', '-c', 'echo The Bench Pod is Running ; sleep 3600']
     resources:
       limits:
         memory: "100Mi"
       requests:
         memory: "50Mi"
-    
   restartPolicy: Never
 --
 kubectl apply -f myBench-Pod.yaml
@@ -95,26 +93,22 @@ spec:
   containers:
   - name: mybench-container-1
     image: mytutorials/centos:bench
-    imagePullPolicy: IfNotPresent
-    
+    imagePullPolicy: IfNotPresent    
     command: ['sh', '-c', 'echo mybench-container-1 is Running ; sleep 3600']
     resources:
       limits:
         memory: "100Mi"
       requests:
-        memory: "50Mi"
-    
+        memory: "50Mi"    
   - name: mybench-container-2
     image: mytutorials/centos:bench
-    imagePullPolicy: IfNotPresent
-    
+    imagePullPolicy: IfNotPresent    
     command: ['sh', '-c', 'echo mybench-container-2 is Running ; sleep 3600']
     resources:
       limits:
         memory: "100Mi"
       requests:
         memory: "50Mi"
-
   restartPolicy: Never
 -------
 kubectl apply -f myBench-Pod.yaml
@@ -132,6 +126,7 @@ kubectl delete -f myBench-Pod.yaml --force --grace-period=0
 Both containers are defined with a request for 0.25 CPU and 64MiB (226 bytes) of memory. Each container has a limit of 0.5 CPU and 128MiB of memory
 
 ``````sh
+cat << EOF | kubectl apply -f -
 apiVersion: v1
 kind: Pod
 metadata:
@@ -156,7 +151,7 @@ spec:
       limits:
         memory: "128Mi"
         cpu: "500m"
-
+EOF
 ``````
 
 ##### Example: Cpu Management policy
@@ -168,6 +163,7 @@ A 4 core node has a CPU capacity of 4000m
 ``````sh
 vi myguaranteed.yaml
 
+cat << EOF | kubectl apply -f -
 apiVersion: v1
 kind: Pod
 metadata:
@@ -187,6 +183,7 @@ spec:
         cpu: 1    
   restartPolicy: Never
   terminationGracePeriodSeconds: 0
+EOF
 ----
 kubectl apply -f myguaranteed.yaml
 kubectl delete -f myguaranteed.yaml

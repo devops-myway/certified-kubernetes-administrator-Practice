@@ -15,7 +15,7 @@ Once you’ve created a headless service, you can access each pod associated wit
 
 ##### Example1: Create a deployment with five pods.
 ``````sh
-cat <<EOF | kubectl create --filename -
+cat <<EOF | kubectl apply -f -
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -42,7 +42,7 @@ EOF
 ``````
 ##### Create a regular service and And a headless service
 ``````sh
-cat <<EOF | kubectl create --filename -
+cat <<EOF | kubectl apply -f -
 apiVersion: v1
 kind: Service
 metadata:
@@ -56,13 +56,13 @@ spec:
       targetPort: 3000
 EOF
 ---------
-cat <<EOF | kubectl create --filename -
+cat <<EOF | kubectl apply -f -
 apiVersion: v1
 kind: Service
 metadata:
   name: headless-service
 spec:
-  clusterIP: None # <-- Don't forget!!
+  clusterIP: None
   selector:
     app: api
   ports:
@@ -85,11 +85,9 @@ If we nslookup normal-service one DNS entry and IP is returned
 where nslookup headless-service returns the list of associated Pod IPs with the service DNS
 
 ``````sh
-kubectl run ubuntu --image=ubuntu -- sh -c 'sleep 3600'
-apt update
+kubectl run testpod --image=ubuntu -- sh -c 'sleep 3600'
+apt update && upgrade
 apt install dnsutils
-dig -v
---
 nslookup normal-service
 nslookup headless-service
 exit
@@ -103,13 +101,13 @@ This allows you to access each pod by its unique network identity, which can be 
 
 ###### create a stateful service
 ``````sh
-cat <<EOF | kubectl create --filename -
+cat <<EOF | kubectl apply -f -
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: my-statefulset
+  name: my-sts
 spec:
-  serviceName: my-statefulset-headless-service
+  serviceName: my-sts-headless-service
   replicas: 3
   selector:
     matchLabels:

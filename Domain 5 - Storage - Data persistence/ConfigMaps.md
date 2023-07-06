@@ -38,6 +38,7 @@ data:
 You can use ConfigMaps to define the commands or parameter values for a container by using the environment variable replacement syntax $(VAR_NAME)
 
 ``````sh
+cat << EOF | kubectl apply -f -
 apiVersion: v1
 kind: Pod
 metadata:
@@ -58,8 +59,9 @@ spec:
             configMapKeyRef:
               name: testcm
               key: SPECIAL_TYPE
+EOF
 --
-kubectl apply -f testpod.yaml
+
 kubectl exec -it cm-demo-pod -- sh -c 'env | grep _KEY'
 SPECIAL_TYPE_KEY=charm
 SPECIAL_LEVEL_KEY=very
@@ -71,6 +73,7 @@ vi cm1.yaml
 kubectl apply -f cm1.yaml
 kubectl describe configmap/game-demo
 
+cat << EOF | kubectl apply -f -
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -79,14 +82,16 @@ data:
   player_initial_lives: "3"
   ui_properties_file_name: "user-interface.properties"
   
-user-interface.properties: |
+  user-interface.properties: |
     color.good=purple
     color.bad=yellow
     allow.textmode=true
+EOF
 ---
 vi pod1.yaml
 kubectl apply -f pod1.yaml
 
+cat << EOF | kubectl apply -f -
 apiVersion: v1
 kind: Pod
 metadata:
@@ -118,7 +123,7 @@ spec:
       items:
       - key: "user-interface.properties"
         path: "user-interface.properties"
-                                       
+EOF
 
 ---- # After you run the pod, the following output is returned:
 kubectl exec -it configmap-demo-pod -- sh -c 'env | grep _LIVES'

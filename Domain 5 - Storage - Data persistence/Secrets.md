@@ -102,11 +102,10 @@ spec:
           name: backend-user
           key: backend-username
 ---
-kubectl exec -it po/nginx -- /bin/sh -c 'echo $SECRET_USERNAME'
+kubectl exec -it po/nginx -- sh -c 'echo $SECRET_USERNAME'
 backend-admin
 
 ``````
-
 
 #### Define container environment variables with data from multiple Secrets 
 
@@ -121,6 +120,7 @@ kubectl describe secret/db-user
 ``````
 
 ``````sh
+cat << EOF | kubectl apply -f -
 apiVersion: v1
 kind: Pod
 metadata:
@@ -142,6 +142,7 @@ spec:
         secretKeyRef:
           name: db-user
           key: db-username
+EOF
 --
 kubectl apply -f secpod.yaml
 kubectl exec -it secpod -- sh -c 'env | grep _USERNAME'

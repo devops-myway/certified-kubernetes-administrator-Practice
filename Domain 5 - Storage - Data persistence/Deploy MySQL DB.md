@@ -5,6 +5,7 @@ https://dev.to/musolemasu/deploy-a-mysql-database-server-in-kubernetes-static-dp
 
 1- Build a Persistent Volume (PV)
 ``````sh
+cat << EOF | kubectl apply -f -
 apiVersion: v1
 kind: PersistentVolume
 metadata:
@@ -18,11 +19,13 @@ spec:
   accessModes:
     - ReadWriteOnce
   hostPath:
-    path: "/mnt/data
-
+    path: /mnt/data
+EOF
 ``````
 2-  Build a Persistent Volume Claim (PVC)
 ``````sh
+cat << EOF| kubectl apply -f -
+
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -34,9 +37,11 @@ spec:
   resources:
     requests:
       storage: 5Gi
+EOF
 ``````
 3- Build the Service  
 ``````sh
+cat << EOF | kubectl apply -f -
 apiVersion: v1
 kind: Service
 metadata:
@@ -47,19 +52,26 @@ spec:
   selector:
     app: mysql
   clusterIP: None
+EOF
 ``````
 3- Create a secret.yml file for MySQL that will be mapped as an Environment Variable as follows:
 ``````sh
+echo -n 'password1' | base64
+cGFzc3dvcmQx
+
+cat << EOF | kubectl apply -f -
 apiVersion: v1
 kind: Secret
 metadata:
   name: mysql-pass
 type: Opaque
 data:
-  password: YWRtaW4=
+  password: cGFzc3dvcmQx
+EOF
 ``````
 3- Deploy the MySQL BD
 ``````sh
+cat<< EOF | kubectl apply -f -
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -94,6 +106,7 @@ spec:
         - name: mysql-persistent-storage
           persistentVolumeClaim:
             claimName: mysql-pv-claim
+EOF
 ``````
 ###### Create and Test the objects
 ``````sh
@@ -113,9 +126,8 @@ kubectl get services
 Now that the MySQL is deployed, we would like to connect to the node right inside the cluster
 now run a test to create a Pod running a MySQL container that connects to the MySQL database server Pod as a client
 ``````sh
-kubectl exec -it <pod_name> bash
+kubectl exec -it po/mysql-66cbddd4fc-nlj86 -- bash
 mysql -h mysql -u root -p 
-
-kubectl run -it --rm --image=mysql:8.0 --restart=Never mysql-client -- mysql -h mysql -password="password"
-
+SHOW DATABASES;
+exit
 ``````

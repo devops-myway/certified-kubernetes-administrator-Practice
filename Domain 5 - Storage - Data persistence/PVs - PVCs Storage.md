@@ -2,11 +2,12 @@ https://kubernetes.io/docs/concepts/storage/persistent-volumes/
 
 
 ##### The pyramid of persistent data
-For stateless applications — apps that don’t store or modify changeable data—this is perfect e.g deployments, etc.
+Stateless applications — apps that don’t store or modify changeable data—this is perfect e.g deployments, etc.
 Containers are typically presumed to be ephemeral and immutable, which is to say that we expect any given container to be short-lived, replaceable, and unchanging in its contents.
-But most apps are stateful: they change into different states as users or clients create, update, or delete data that may persist over time.
 
-Top fo the pyramid of data persistence and reliability:
+But most apps are Stateful: they change into different states as users or clients create, update, or delete data that may persist over time.
+
+Top of the pyramid of data persistence and reliability:
 - Volumes mounted to Pods: 
 Pod-mounted volumes are most suited to temporary caches and other short-term uses that you don’t expect to last any longer than a given Pod—for example, this technique can be used to mount a Secret to a Pod.
 - Volumes mounted to Nodes:
@@ -52,15 +53,22 @@ The reclaim policy determines what happens when a persistent volume claim is del
 ##### 1. Create Persistent Volume
 
 ``````sh
+<<<<<<< HEAD
 vi emp-volume.yaml
 
 apiVersion: apps/v1
 kind: Deployment
+=======
+cat << EOF | kubectl apply -f -
+apiVersion: v1
+kind: PersistentVolume
+>>>>>>> b1c1ba8 (updates)
 metadata:
   name: my-app
   labels:
     app: my-app
 spec:
+<<<<<<< HEAD
   replicas: 1
   selector:
     matchLabels:
@@ -99,12 +107,29 @@ kubectl exec -it my-app-5d74b5cc88-7n474 -c my-app -- sh -c 'cat /var/log/myapp.
 kubectl exec -it my-app-5d74b5cc88-7n474 -c log-sidecar -- sh -c 'cat /var/log/myapp.log'
 
 
+=======
+  capacity:
+    storage: 1Gi
+  volumeMode: Filesystem
+  accessModes:
+   - ReadWriteMany
+   - ReadOnlyMany
+  persistentVolumeReclaimPolicy: Recycle
+  mountOptions:
+    - hard
+    - nfsvers=4.1
+  nfs:
+    path: /nfs_share
+    server: 192.168.43.48
+EOF
+--
+kubectl get pv
+>>>>>>> b1c1ba8 (updates)
 ``````
 ##### 2. Claiming a PersistentVolume by creating a PersistentVolumeClaim
 
 ``````sh
-vi persistent-volume-claim.yaml
-
+cat << EOF | kubectl apply -f -
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
@@ -116,17 +141,16 @@ spec:
     requests:
       storage: 500Mi
   storageClassName: ""
-
+EOF
 --
-kubectl apply -f persistent-volume-claim.yaml
+
 kubectl get pvc
 kubectl describe pvc nfs-share-pvc
 ``````
 ##### 3. Using a PersistentVolumeClaim in a pod
 Here I am creating an nginx container to use the PV storage:
 ``````sh
-vi nfs-share-pod.yaml
-
+cat << EOF | kubectl apply -f -
 apiVersion: v1
 kind: Pod
 metadata:
@@ -137,18 +161,18 @@ spec:
     name: pv-container
     ports:
      - containerPort: 80
-       name: "http-server"
+       name: "pv-port"
     volumeMounts:
-    - name: data
-      mountPath: /var/www
+    - name: demo-pvc
+      mountPath: /var/lib
   volumes:
-  - name: data
+  - name: demo-pvc
     persistentVolumeClaim:
       claimName: nfs-share-pvc
+EOF
 --
-kubectl apply -f nfs-share-pod.yml
 kubectl get pods pod-nfs-share
-kubectl exec -it pod-nfs-share -- df -h /var/www
-kubectl exec -it pod-nfs-share -- ls -l /var/www
+kubectl exec -it pod-nfs-share -- df -h /var/lib
+kubectl exec -it pod-nfs-share -- ls -l /var/lib
 ``````
 

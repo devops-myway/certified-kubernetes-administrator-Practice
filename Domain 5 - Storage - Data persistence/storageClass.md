@@ -33,7 +33,7 @@ Different parameters may be accepted depending on the provisioner. For example, 
 ##### Example 1
 StorageClass, for example, enables dynamic creation of “fast-storage” volumes by a CSI volume plugin called “csi-driver.example.com”
 ``````sh
-cat <<EOF | kubectl create --filename -
+cat <<EOF | kubectl apply -f -
 kind: StorageClass
 apiVersion: storage.k8s.io/v1
 metadata:
@@ -48,6 +48,7 @@ EOF
 ###### PersistentVolumeClaim object creation
 Dynamic provisioning is triggered by the creation of a PersistentVolumeClaim object. The following PersistentVolumeClaim, for example, triggers dynamic provisioning using the StorageClass above.
 ``````sh
+cat << EOF | kubectl apply -f -
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -59,11 +60,12 @@ spec:
     requests:
       storage: 5Gi
   storageClassName: fast-storage
-
+EOF
 ``````
 ##### Attaching and Mounting PVC
 You can reference a PersistentVolumeClaim that is bound to a CSI volume in any pod or pod template
 ``````sh
+cat << EOF| kubectl apply -f -
 kind: Pod
 apiVersion: v1
 metadata:
@@ -79,7 +81,7 @@ spec:
     - name: my-csi-volume
       persistentVolumeClaim:
         claimName: my-request-for-storage
-
+EOF
 ``````
 ##### Example2: 
 The following manifest creates a storage class "sc-local" which provisions SSD-like persistent disks as an example
@@ -99,6 +101,19 @@ EOF
 ----
 kubectl apply -f sc.yml
 kubectl get sc
+``````
+##### Create the Secret
+``````sh
+echo -n 'octoberfest' | base64 # use it as the password
+
+cat << EOF | kubectl apply -f -
+apiVersion: v1
+kind: Secret
+metadata:
+ name: mysqlpwd
+data:
+ password: b2N0b2JlcmZlc3Q= 
+EOF
 ``````
 ##### create PVCs from the SC
 ``````sh
@@ -120,7 +135,7 @@ kubectl get pv
 ``````
 ##### deploy our MySQL server
 ``````sh
-cat <<EOF | kubectl create --filename -
+cat <<EOF | kubectl apply -f -
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -151,12 +166,12 @@ spec:
          name: todo-volume
 EOF
 -----
- kubectl exec -it todo-mysql-5798c74978-dksct -- /bin/bash
+kubectl exec -it po/todo-mysql-f9df5dd5-v5zr7 -- sh
 
 ``````
 Go ahead and open MySQL:
 ``````sh
-bash4.4# mysql -u root -p
+bash4.4# mysql -u root -p  #octoberfest
 
 mysql> USE todo_db;
 mysql> CREATE TABLE IF NOT EXISTS test123 ( \
