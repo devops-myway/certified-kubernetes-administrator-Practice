@@ -52,30 +52,53 @@ The reclaim policy determines what happens when a persistent volume claim is del
 ##### 1. Create Persistent Volume
 
 ``````sh
-vi persistent-volume.yaml
+vi emp-volume.yaml
 
-apiVersion: v1
-kind: PersistentVolume
+apiVersion: apps/v1
+kind: Deployment
 metadata:
-  name: nfs-share-pv
+  name: my-app
+  labels:
+    app: my-app
 spec:
-  capacity:
-    storage: 1Gi
-  volumeMode: Filesystem
-  accessModes:
-   - ReadWriteMany
-   - ReadOnlyMany
-  persistentVolumeReclaimPolicy: Recycle
-  mountOptions:
-    - hard
-    - nfsvers=4.1
-  nfs:
-    path: /nfs_share
-    server: 192.168.43.48
+  replicas: 1
+  selector:
+    matchLabels:
+      app: my-app
+  template:
+    metadata:
+      labels:
+        app: my-app
+    spec:
+      containers:
+      - name: my-app
+        image: busybox:1.28
+        command: ['sh', '-c'] 
+        args: 
+        - while true; do 
+            echo "$(date) INFO some app data" >> /var/log/myapp.log;
+            sleep 5;
+          done
+          volumeMounts:
+        - name: log
+          mountPath: /var/log   
+      - name: log-sidecar
+        image: busybox:1.28
+        command: ['sh', '-c'] 
+        args:
+        - tail -f /var/log/myapp.log 
+        volumeMounts:
+        - name: log
+          mountPath: /var/log
+        volumes: 
+      - name: log
+        emptyDir: {}
+---
+kubectl apply -f emp-volume.yaml
+kubectl exec -it my-app-5d74b5cc88-7n474 -c my-app -- sh -c 'cat /var/log/myapp.log'
+kubectl exec -it my-app-5d74b5cc88-7n474 -c log-sidecar -- sh -c 'cat /var/log/myapp.log'
 
---
-kubectl apply -f persistent-volume.yml
-kubectl get pv
+
 ``````
 ##### 2. Claiming a PersistentVolume by creating a PersistentVolumeClaim
 
