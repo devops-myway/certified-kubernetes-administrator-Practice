@@ -19,7 +19,8 @@ Four namespaces are defined when a cluster is created:
 ##### List available namespaces
 
 ``````sh
-kubectl get ns or kubectl get namespaces
+kubectl get ns
+kubectl get namespaces
 kubectl get all --all-namespaces
 
 ``````

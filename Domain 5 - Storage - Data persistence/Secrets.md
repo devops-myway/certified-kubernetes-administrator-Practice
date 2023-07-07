@@ -149,3 +149,66 @@ kubectl exec -it secpod -- sh -c 'env | grep _USERNAME'
 DB_USERNAME=db-admin
 BACKEND_USERNAME=backend-admin
 ``````
+### Configmap and secrets with deployments
+``````sh
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: myapp-config
+data:
+  db_host: mysql-service
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: myapp-secret
+type: Opaque
+data:
+  username: dXNlcm5hbWU=
+  password: cGFzc3dvcmQ=
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-app
+  labels:
+    app: my-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: my-app
+  template:
+    metadata:
+          labels:
+        app: my-app
+    spec:
+      containers:
+      - name: my-app
+        image: busybox:1.28
+        command: ['sh', '-c', "while true; do env | grep MYSQL; sleep 3600; done"]
+        env:
+        - name: MYSQL_USER
+          valueFrom:
+            secretKeyRef:
+              name: myapp-secret
+              key: username
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: myapp-secret
+              key: password
+        - name: MYSQL_SERVER
+          valueFrom:
+            configMapKeyRef:
+              name: myapp-config
+              key: db_host
+
+kubectl apply podsec.yaml
+kubectl get all
+kubectl logs my-app-7d54f6bcd7-ksncn
+--
+MYSQL_SERVER=mysql-service
+MYSQL_PASSWORD=password
+MYSQL_USER=username
+``````

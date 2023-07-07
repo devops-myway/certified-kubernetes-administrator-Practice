@@ -46,9 +46,9 @@ Upgrade kubeadm: unhold kubeadm and Install the required version
 ----------------------------------
 
  # replace x in 1.25.x-00 with the latest patch version
- apt-mark unhold kubeadm && \
- apt-get update && apt-get install -y kubeadm=1.25.x-00 && \
- apt-mark hold kubeadm
+ sudo apt-mark unhold kubeadm && \
+ sudo apt-get update && sudo apt-get install -y kubeadm=1.25.x-00 && \
+ sudo apt-mark hold kubeadm
 
 
  ##### Verify that the download works and has the expected version:
