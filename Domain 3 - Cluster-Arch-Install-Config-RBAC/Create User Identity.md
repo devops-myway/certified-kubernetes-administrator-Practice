@@ -84,4 +84,3 @@ kubectl config use-context myuser-context    # change the context to myuser
 kubectl config current-context
 ``````
 
-

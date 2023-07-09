@@ -1,4 +1,5 @@
 https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
+https://kubernetes.io/docs/reference/kubectl/jsonpath/
 
 ###### Using service account tokens to connect with the API server
 A ServiceAccount is used by containers running in a Pod, to communicate with the API server of the Kubernetes cluster.
@@ -121,4 +122,60 @@ kubectl auth can-i list,get resources --as=system:serviceaccount:<namespace>:<se
 kubectl auth can-i list pods --as=system:serviceaccount:default:demo-sa -n kube-system
 kubectl auth can-i list pods --as=system:serviceaccount:default:demo-sa
 kubectl auth can-i create pods --as=system:serviceaccount:default:demo-sa --all-namespaces #No
+``````
+##### Manually create an API token for a ServiceAccount and secret
+
+In Kubernetes 1.24, ServiceAccount token secrets are no longer automatically generated.
+Use the TokenRequest API to acquire service account tokens.
+
+``````sh
+kubectl create sa demo-sa
+kubectl create token demo-sa
+``````
+##### Manually create a long-lived API token for a ServiceAccount
+
+You can still manually create a service account token Secret; for example, if you need a token that never expires. However, using the TokenRequest subresource to obtain a token to access the API is recommended instead.
+If you want to obtain an API token for a ServiceAccount, you create a new Secret with a special annotation, kubernetes.io/service-account.name.
+
+
+``````sh
+kubectl create sa demo-sa 
+kubectl describe sa/demo-sa
+kubectl get sa/demo-sa -oyaml
+
+----
+vi demo-secret.yaml
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: demo-sa-secret
+  annotations:
+    kubernetes.io/service-account.name: demo-sa
+type: kubernetes.io/service-account-token
+--
+kubectl apply -f demo-secret.yaml
+kubectl get sa/demo-sa -oyaml
+kubectl get secret demo-sa-secret --namespace default -o json | jq -r '.data["ca.crt"]' | base64 -d
+kubectl get secret demo-sa-secret --namespace default -o json | jq -r '.data["token"]' | base64 -d 
+kubectl get secret demo-sa-secret --namespace default -o json | jq -r '.data["namespace"]' | base64 -d
+----
+kubectl get secret demo-sa-secret -o jsonpath='{.data.token}'| base64 -d > token.txt
+kubectl get secret demo-sa-secret -o jsonpath='{.data.ca\.crt}'| base64 -d > ca-demo.key
+cat token.txt
+cat ca-demo.key
+
+``````
+
+#### Using Set Context for kubeconfig file entries
+``````sh
+kubectl config -h
+
+kubectl config set-credentials demo-sa --client-key=ca-dmo.key --token=token.txt
+kubectl config set-context demo-sa-context --cluster=kubernetes --user=demo-sa --namespace=default
+kubectl config current-context
+kubectl config get-contexts
+kubectl config use-context demo-sa-context
+kubectl config view
+
 ``````
