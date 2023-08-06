@@ -25,7 +25,6 @@ EOF
 2-  Build a Persistent Volume Claim (PVC)
 ``````sh
 cat << EOF| kubectl apply -f -
-
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -130,4 +129,17 @@ kubectl exec -it po/mysql-66cbddd4fc-nlj86 -- bash
 mysql -h mysql -u root -p 
 SHOW DATABASES;
 exit
+-- # test the services
+
+kubectl run testpod1 --image=ubuntu -- sh -c 'sleep 3600'
+kubectl exec -it po/testpod1 -- sh
+--
+apt update && upgrade
+apt install dnsutils -y
+nslookup mysql
+--
+kubectl scale deploy/mysql --replicas=4
+nslookup mysql
+exit
+
 ``````

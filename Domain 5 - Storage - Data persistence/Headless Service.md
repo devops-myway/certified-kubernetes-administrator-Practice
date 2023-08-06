@@ -7,9 +7,6 @@ https://medium.com/@bubu.tripathy/headless-k8s-service-924c689607a7
 ##### Headless Service
 A headless service is a service with a service IP but instead of load-balancing it will return the IPs of our associated Pods.
 This allows us to interact directly with the Pods instead of a proxy.  It's as simple as specifying None for .spec.clusterIP and can be utilized with or without selectors.
-A headless service doesn't provide any sort of proxy or load balancing -- it simply provides a mechanism by which clients can look up the ip address of pods.
-This means that when they connect to your service, they're connecting directly to the pods; there's no intervening proxy.
-By removing the proxy from the equation, clients are aware of the actual pod ips, which may be important for some application.
 
 Once you’ve created a headless service, you can access each pod associated with the service through DNS. The DNS record for each pod will be in the format <pod-name>.<headless-service-name>.<namespace>.svc.cluster.local.
 

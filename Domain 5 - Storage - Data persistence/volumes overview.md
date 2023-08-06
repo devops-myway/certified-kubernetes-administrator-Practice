@@ -19,7 +19,7 @@ emptyDir are volumes that get created empty when a Pod is created. While a Pod i
 ##### Basic emptyDir Example
 
 ``````sh
-vi vol-Pod.yaml
+vi vol-pod.yaml
 --
 apiVersion: v1
 kind: Pod
@@ -32,7 +32,7 @@ spec:
     name: myvolumes-container    
     command: [    'sh', '-c', 'echo The Bench Container 1 is Running ; sleep 3600']    
     volumeMounts:
-    - mountPath: /demo
+    - mountPath: /opt
       name: demo-volume
   volumes:
   - name: demo-volume
@@ -40,14 +40,15 @@ spec:
 
 ----
 kubectl apply -f myVolumes-Pod.yaml
+kubectl logs vol-pod
 kubectl exec myvolumes-pod -it -- /bin/sh
 --
-pwd
-ls
-ls demo/
-echo test > demo/textfile
-ls demo/
-cat demo/textfile
+
+ls -l /opt
+cat << EOF > /opt/text.txt
+impossible is nothing
+EOF
+cat /opt/text.txt
 exit
 
 ---
@@ -87,16 +88,19 @@ spec:
   - image: nginx
     name: test-container
     volumeMounts:
-    - mountPath: /test-pd
+    - mountPath: /opt
       name: test-volume
   volumes:
   - name: test-volume
     hostPath:
-      # directory location on host
-      path: /data
-      # this field is optional
+      path: /opt
       type: Directory
-
+----
+kubectl exec -it pod/test-pd -- sh
+cat << EOF > /opt/test.txt
+> this is a test for hostpath
+> EOF
+cat /opt/test.txt
 ``````
 ``````sh
 

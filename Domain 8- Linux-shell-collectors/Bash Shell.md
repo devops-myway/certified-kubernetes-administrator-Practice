@@ -36,6 +36,13 @@ chmod 100 hello_world.sh
 ./hello_world.sh
 bash hello_world.sh
 ``````
+##### Copy a file to the root directory
+cp is copy. -p means to preserve the file owner and permissions.
+``````sh
+sudo cp -p Desktop/FILE /
+
+``````
+
 ##### How to define variables
 variable by using the syntax variable_name=value. To get the value of the variable, add $ before the variable
 ``````sh

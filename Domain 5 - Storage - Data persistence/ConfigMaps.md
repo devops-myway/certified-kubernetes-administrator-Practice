@@ -136,7 +136,7 @@ allow.textmode=true
 ``````
 ###### Example cm and secret combine in deployment
 ``````sh
-
+cat << EOF | kubectl apply -f -
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -148,7 +148,9 @@ data:
     socket=/tmp/mysql.sock
     key_buffer_size=16M
     max_allowed_packet=128M
+EOF
 ---
+cat << EOF | kubectl apply -f -
 apiVersion: v1
 kind: Secret
 metadata:
@@ -157,7 +159,9 @@ type: Opaque
 data:
   secret.file: |
     c29tZXN1cGVyc2VjcmV0IGZpbGUgY29udGVudHMgbm9ib2R5IHNob3VsZCBzZWU=
+EOF
 ---
+cat << EOF | kubectl apply -f -
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -191,6 +195,7 @@ spec:
         - name: db-secret
           secret:
             secretName: mysql-secret
+EOF
 --
 
 kubectl apply -f pod2.yaml

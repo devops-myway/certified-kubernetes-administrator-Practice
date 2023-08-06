@@ -2,12 +2,13 @@
 ##### Overview on Kubernetes DaemonSets
 
 - A DaemonSet contains a Pod template and uses it to create multiple Pod replicas, just like Deployments, ReplicaSets, and StatefulSets.
-- A DaemonSet is typically used to deploy infrastructure Pods that provide some sort of system-level service to each cluster node
+- A DaemonSet is typically used to deploy infrastructure Pods that provide some sort of system-level service to each cluster node.
 - The Kube Proxy component, which is responsible for routing traffic for the Service objects you create in your cluster, is usually deployed via a DaemonSet in the kube-system Namespace
 - The Container Network Interface (CNI) plugin that provides the network over which the Pods communicate is also typically deployed via a DaemonSet.
 
 ##### Deploying Pods with a DaemonSet
 ``````sh
+cat << EOF | kubectl apply -f -
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
@@ -27,6 +28,7 @@ spec:
         command:
         - sleep
         - infinity
+EOF
 ---
 kubectl get ds
 kubectl get ds -o wide
@@ -50,7 +52,7 @@ status:
 #####  Using a DaemonSet to run a pod on every node
 
 ``````sh
-[root@controller ~]# cat fluentd-daemonset.yml
+cat << EOF | kubectl apply -f -
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
@@ -88,7 +90,8 @@ spec:
           path: /var/log
       - name: varlibdockercontainers
         hostPath:
-          path: /var/lib/docker/containers\
+          path: /var/lib/docker/containers
+EOF
 --
 kubectl create -f fluentd-daemonset.yml
 kubectl get ds
@@ -98,7 +101,7 @@ kubectl get pods -owide
 ``````
 ##### Create DaemonSet using Node Selectors
 ``````sh
-[root@controller ~]# cat nginx-daemonset.yml
+cat << EOF | kubectl apply -f -
 apiVersion: apps/v1
 kind: "DaemonSet"
 metadata:
@@ -121,6 +124,7 @@ spec:
       containers:
         - name: nginx
           image: nginx:1.10.0
+EOF
 --
 kubectl create -f nginx-daemonset.yml
 kubectl get ds
@@ -151,6 +155,7 @@ kubectl get ds
 To update the Pods of the demo DaemonSet, use the kubectl apply command to apply the manifest file ds.demo.v2.rollingUpdate.yaml
 
 ``````sh
+cat << EOF | kubectl apply -f -
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
@@ -172,6 +177,7 @@ spec:
         ver: v2
     spec:
       ...
+EOF
 --
 kubectl get pods -l app=demo -L ver
 kubectl get pods -l app=demo -L ver

@@ -35,9 +35,8 @@ tomcatinfra-7f58bf9cb8-bk654 - Single Container POD
 tomcat-nginx-78d457fd5d-446wx - Multi Container POD
 
 ``````sh
-kubectl exec tomcatinfra-7f58bf9cb8-bk654 -n test-ns – ls -lrt /opt/tomcat/webapps
-
-kubectl exec tomcat-nginx-78d457fd5d-446wx -n test-ns -c tomcat8 – ls -lrt /opt/tomcat/webapps
+kubectl exec -it po/sidecar-pod -c app-container -- sh -c 'cat /var/log/app.log'
+kubectl exec -it po/sidecar-pod -c log-exporter-sidecar -- sh -c 'ls -l /usr/share/nginx
 
 ``````
 To get SSH or Terminal access to the container on the POD using kubectl exec.

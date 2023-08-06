@@ -24,6 +24,9 @@ So, one can conclude that field-selector only works for metadata.name and for ad
 ###### Sort-by
 used to filter by creationTimestamp and metadata objects
 
+On OS/X like on many systems (BSDs, Solaris, AIX, IRIX...), the functionality of GNU tac is available in tail with the -r option. So no need to install GNU tac:
+
+tail -r the-file
 ```sh
 kubectl get pods -A 
 kubectl get pods -A --sort-by={.metadata.creationTimestamp} # in descending order
@@ -43,3 +46,9 @@ sudo chmod +x /opt/pods_asc.sh
 bash /opt/pods_asc.sh
 
 ```
+Cat and TAC for OSX
+I like to use tac to reverse the output of cat.
+for mac you can tail instead of tac to reverse the output of cat.
+##### Install Homebrew
+brew install coreutils
+To use tac utility

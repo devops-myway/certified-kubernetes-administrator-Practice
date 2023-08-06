@@ -10,10 +10,6 @@ The main benefits of these Kubernetes deployment strategies are that it mitigate
 ###### canary deployment
 A canary deployment is an upgraded version of an existing deployment, with all the required application code and dependencies. It is used to test out new features and upgrades to see how they handle the production environment. This is done by creating a new replica set with the updated version of the software while keeping the original replica set running.
 
-If issues are detected during the canary deployment, it can be quickly rolled back to the original replica set. When you add the canary deployment to a Kubernetes cluster, it is managed by a service through selectors and labels.
-
-The amount of traffic that the canary gets corresponds to the number of pods it spins up. In most cases, you start by routing a smaller percentage of traffic to the canary and increase the number over time
-
 Canary deployments are a valuable tool for minimizing risk and ensuring high availability in complex distributed systems, by allowing for controlled testing of changes before they are released to the entire system.
 
 #### Example 1.0 
@@ -22,6 +18,7 @@ We created 3 replicas of Nginx pods for the Kubernetes cluster. All the pods hav
 ``````sh
 vi pod1.yaml
 
+cat << EOF | kubectl apply -f -
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -51,7 +48,7 @@ spec:
    - name: indexhtml
      hostPath:
        path: /var/logs/Documents/nginx/v1
-~                                          
+EOF                                        
 ----
 k apply -f pod1.yaml
 k get pods -o wide
@@ -63,12 +60,13 @@ The type of service – nodeport. It instructs the service to balance workloads 
 kubectl create svc nodeport -h
 kubectl create svc nodeport nginx-svc --tcp=8181:80 --dry-run=client -oyaml > svc1.yaml
 
+cat << EOF | kubectl apply -f -
 apiVersion: v1
 kind: Service
 metadata:
   creationTimestamp: null
   labels:
-    app: nginx-svc
+    app: nginx-svc1
     version: "1.0"
   name: nginx-svc
 spec:
@@ -82,9 +80,13 @@ spec:
   type: NodePort
 status:
   loadBalancer: {}
+EOF
 ---
 kubectl apply -f svc1.yaml
 kubectl get svc
+kubectl port-forward svc/nginx-svc 8181:8181
+forwarding from 127.0.0.1:8181 -> 80
+paste on browser: 127.0.0.1:8181
 
 ``````
 ##### Check First Version of Cluster
@@ -100,6 +102,7 @@ It has the label version: “2.0”.
 It is linked to a html file index.html which consists of:
 
 ``````sh
+cat << EOF | kubectl apply -f - 
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -121,7 +124,7 @@ spec:
       image: nginx:alpine
       resources:
       ports:
-      - containerPort: 80
+      - containerPort: 8282
       volumeMounts:
       - mountPath: /usr/share/nginx/html
         name: indexhtml
@@ -129,7 +132,7 @@ spec:
    - name: indexhtml
      hostPath:
        path: /var/logs/Documents/nginx/v1
-~                                          
+EOF                                       
 ---
 k apply -f nginx-canary-deployment.yaml
 k get pods -o wide
@@ -141,6 +144,7 @@ Find and remove the line version: “1.0”. The file should include the followi
 
 kubectl create svc nodeport nginx-svc-canary --tcp=8282:80 --dry-run=client -oyaml > svc2.yaml
 
+cat << EOF | kubectl apply -f -
 apiVersion: v1
 kind: Service
 metadata:
@@ -148,18 +152,19 @@ metadata:
   labels:
     app: nginx-svc-canary
     version: "2.0"
-  name: nginx-svc
+  name: nginx-svc2
 spec:
   ports:
-  - port: 8282
+  - port: 8383
     protocol: TCP
-    targetPort: 80
+    targetPort: 8282
   selector:
     app: nginx
     version: "2.0"
   type: NodePort
 status:
   loadBalancer: {}
+EOF
 --
 k apply -f svc2.yml
 ``````

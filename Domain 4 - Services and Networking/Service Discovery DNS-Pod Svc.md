@@ -2,14 +2,11 @@
 - https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/
 - https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/
 
-Helpers:
-- https://www.alibabacloud.com/help/en/container-service-for-kubernetes/latest/configure-dns-resolution
-- https://www.alibabacloud.com/help/en/container-service-for-kubernetes/latest/service-discovery-dns-dns-troubleshooting?spm=a2c63.p38356.0.0.65de26a0UUlwGB
-- https://www.alibabacloud.com/help/en/container-service-for-kubernetes/latest/configure-coredns?spm=a2c63.p38356.0.0.65de26a0UUlwGB
 
-#### DNS for Services and Pods
-Kubernetes creates DNS records for Services and Pods. You can contact Services with consistent DNS names instead of IP addresses.
-Kubernetes publishes information about Pods and Services which is used to program DNS. Kubelet configures Pods' DNS so that running containers can lookup Services by name rather than IP.
+##### Note 
+There are two objects that you could access via DNS within your Kubernetes cluster and those are Services and Pods. Now Pods can get a dns entry, but you’d be wondering why, since we’ve learned that accessing pods should be done through a Service. For this reason, pods don’t get a DNS entry by default with CoreDNS.
+
+Services get a DNS entry of the service name appended to the namespace and then appended to “svc.cluster.local”. Similarly pods get entries of PodIPAddress appended to the namespace and then appended to .pod.cluster.local if Pod DNS is enabled in your cluster.
 
 #### How DNS resolution works in Kubernetes clusters
 The startup parameters of kubelet in a cluster include 
@@ -17,6 +14,8 @@ The startup parameters of kubelet in a cluster include
 - --cluster-domain=<default-local-domain> : The parameters are used to configure the suffix of the base domain name for the DNS server.
 
 #### Namespaces of Services
+Each time you deploy a new service or pod, the DNS service sees the calls made to the Kube API and adds DNS entries for the new object. Then other containers within a Kubernetes cluster can use these DNS entries to access the services within it by name.
+
 A Service named kube-dns is deployed to expose these workloads to DNS queries in the cluster. Two backend pods named coredns are deployed for CoreDNS.
 The DNS configuration file in the pod is /etc/resolv.conf. The file contains the following content:
 
@@ -52,7 +51,7 @@ Any Pods exposed by a Service have the following DNS resolution available:
 pod-ip-address.service-name.my-namespace.svc.cluster-domain.example
 
 ##### Configure DNS resolution
-A Service named kube-dns is deployed in acluster to provide DNS resolution services for the cluster.
+A Service named kube-dns is deployed in a cluster to provide DNS resolution services for the cluster.
 Two backend pods named coredns are deployed for the kube-dns Service. You can run the following command to query information about the coredns pods:
 ``````sh
 kubectl get svc kube-dns -n kube-system
@@ -73,27 +72,94 @@ This policy indicates that a pod inherits the DNS settings from the node where t
 - ClusterFirstWithHostNet:
 This policy indicates that a pod in HostNetwork mode uses the ClusterFirst policy. If you do not specify a policy for a pod, the pod uses the Default policy.
 
+###### DNS in Action
+``````sh
+cat << EOF | kubectl apply -f -
+apiVersion: apps/v1 
+kind: Deployment 
+metadata: 
+  name: nginx-deployment 
+  labels: 
+    app: nginx
+spec: 
+  replicas: 2 
+  selector:
+    matchLabels:
+      app: nginx 
+  template: 
+    metadata:
+      labels: 
+        app: nginx
+    spec:
+      containers:
+      - name: nginx-container 
+        image: nginx 
+        ports:
+        - containerPort: 80
+EOF
+
+cat << EOF | kubectl apply -f -
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginxsvc
+spec:
+  type: NodePort
+  ports:
+  - name: http
+    port: 80
+    targetPort: 80
+    nodePort: 30001
+    protocol: TCP
+  selector:
+    app: nginx
+EOF
+``````
+``````sh
+kubectl get svc
+
+``````
+##### Deploy a test Pod to test DNS resoltion
+Deploy another container where we can run some DNS lookups
+``````sh
+kubectl run testpod --image=ubuntu --command -- sh -c "sleep 3600"
+kubectl exec -it po/testpod -- sh
+--
+apt update && upgrade
+apt install dnsutils
+nslookup nginxsvc
+---
+Server:         10.96.0.10
+Address:        10.96.0.10#53
+
+Name:   nginxsvc.default.svc.cluster.local
+Address: 10.99.23.119
+
+``````
+
 ###### Scenario 1: In this scenario, you must specify dnsPolicy: ClusterFirst for the DNS policy settings.
 ``````sh
+cat << EOF | kubectl apply -f -
 apiVersion: v1
 kind: Pod
 metadata:
-  name: alpine
+  name: ubuntu
   namespace: default
 spec:
   containers:
-  - image: alpine
+  - image: ubuntu
     command:
       - sleep
-      - "10000"
+      - "3600"
     imagePullPolicy: Always
-    name: alpine
+    name: ubuntu
   dnsPolicy: ClusterFirst
-
+EOF
 ``````
 ##### Scenario 2: Customize DNS settings for a pod
 To customize DNS settings for a Deployment, you must specify dnsPolicy: None for the DNS policy settings
 ``````sh
+cat << EOF | kubectl apply -f -
 apiVersion: v1
 kind: Pod
 metadata:
@@ -114,6 +180,7 @@ spec:
       - name: ndots
         value: "2"
       - name: edns0
+EOF
 ----- # When the Pod above is created, the container test gets the following contents in its /etc/resolv.conf file
 nameserver 192.0.2.1
 search ns1.svc.cluster-domain.example my.dns.search.suffix

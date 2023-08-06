@@ -13,10 +13,14 @@ Here are some of the settings which can be configured as part of Kubernetes Secu
 - fsGroup: allows you to run containers with and a specific file system group.
 - allowPrivilegeEscalation: controls whether any process inside the container can gain more privilege to perform the respective task.
 
+ubectl explain pod.spec.securityContext
+kubectl explain pod.spec.containers.securityContext
+
 ##### Example1: Without Security Context as Root user
 The risks behind it, is the root user here is the same root user on your host and sharing the same kernel.
 Another level of administration permissions can be given to the root user if we add a security context as below:
 ``````sh
+cat << EOF | kubectl apply -f -
 apiVersion: v1
 kind: Pod
 metadata:
@@ -32,11 +36,9 @@ spec:
    volumeMounts:
    - name: sec-ctx-vol-default
      mountPath: /data/demo
-  
+EOF
 -------
-kubectl exec -it security-context-demo-default -- sh
-
-#id
+kubectl exec -it security-context-demo-default -- sh -c 'id'
 uid=0(root) gid=0(root) groups=10(wheel)
 
 ``````
@@ -47,6 +49,7 @@ kubectl explain pod.spec.securityContext | more
 kubectl explain pod.spec.containers.securityContext | more
 
 ``````sh
+cat<< EOF | kubectl apply -f -
 apiVersion: v1
 kind: Pod
 metadata:
@@ -68,12 +71,11 @@ spec:
       mountPath: /data/demo
     securityContext:
       allowPrivilegeEscalation: false
-
+EOF
 --
 kubectl apply -f security-context-demo.yml
-
 kubectl get pod security-context-demo
-kubectl exec -it security-context-demo -- sh
+kubectl exec -it security-context-demo -- sh -c 'id'
 
 ----
 ps  #Also let’s check the processes that are running in the container:
@@ -82,56 +84,25 @@ PID   USER     TIME  COMMAND
     1 1000      0:00 sleep 1h
     6 1000      0:00 sh
 ----
-cd /data
-ls -l
+kubectl exec -it po/security-context-demo -- sh
+$ touch text.txt
+touch: text.txt: Permission denied
 ---
-
-cd /data/demo
-touch testfile.txt
-echo "head no well" > testfile.txt
-ls -lt
----
-# ow let’s try to create the same file under /
-cd /
-touch testfile.txt
-touch: testfile: Permission denied
-------
-
-# Then checking the user running the container process through id command
-id
+$ cat << EOF > /data/demo/test.txt
+> This boy is a bad boy
+> EOF
+$ cat /demo/data/test.txt
 exit
+
 ``````
 
 ##### Set capabilities for a Container
-With Linux capabilities, you can grant certain privileges to a process without granting all the privileges of the root user.
-``````sh
-apiVersion: v1
-kind: Pod
-metadata:
-  name: security-context-demo-3
-spec:
-  containers:
-  - name: sec-ctx-3
-    image: gcr.io/google-samples/node-hello:1.0
-  
--------
-kubectl apply -f security-context-demo-3.yaml
-
-kubectl get pod security-context-demo-3
-
-kubectl exec -it security-context-demo-3 -- sh
-
-# In your shell, list the running processes:
-ps aux
-cd /proc/1
-cat status
-exit
-``````
-#### Capabilities
+kubectl explain pod.spec.containers.securityContext
 
 Next, run a Container that is the same as the preceding container, except that it has additional capabilities set.
 The configuration adds the CAP_NET_ADMIN and CAP_SYS_TIME capabilities:
 ``````sh
+cat << EOF | kubectl apply -f -
 apiVersion: v1
 kind: Pod
 metadata:
@@ -140,15 +111,13 @@ spec:
   containers:
   - name: sec-ctx-4
     image: gcr.io/google-samples/node-hello:1.0
-  securityContext:
+    securityContext:
       capabilities:
         add: ["NET_ADMIN", "SYS_TIME"]
+EOF
 -------
-kubectl apply -f security-context-demo-4.yaml
-
 kubectl get pod security-context-demo-4
-
-kubectl exec -it security-context-demo-4 -- sh
+kubectl exec -it security-context-demo-4 -- sh -c 'ps'
 
 # In your shell, list the running processes:
 ps aux

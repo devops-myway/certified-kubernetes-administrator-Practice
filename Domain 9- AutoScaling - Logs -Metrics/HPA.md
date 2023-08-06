@@ -33,6 +33,7 @@ How HPA can be configured to auto-scale application pods based on target CPU uti
 kubectl create ns hpa-test
 --------- # Create a deployment for HPA testing
 cat example-app.yaml
+
 cat << EOF | kubectl apply -f -
   apiVersion: apps/v1
   kind: Deployment

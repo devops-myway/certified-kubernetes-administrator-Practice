@@ -18,6 +18,7 @@ The app-container-server runs nginx and listens on port 80 to handle external re
 here is an ambassador-container running within the pod that listens on localhost:81 and proxies the connection to example.com, so when we curl the app-container-server endpoint on port 80, we get a response from example.com.
 
 ``````sh
+cat << EOF | kubectl apply -f -
 apiVersion: v1
 kind: Pod
 metadata:
@@ -32,7 +33,7 @@ spec:
   - name: app-container-poller
     image: yauritux/busybox-curl
     command: ["/bin/sh"]
-    args: ["-c", "while true; do curl 127.0.0.1:81 > /usr/share/nginx/html/index.html; sleep 10; done"]
+    args: ["-c", "while true; do curl 127.0.0.1:81 >> /usr/share/nginx/html/index.html; sleep 10; done"]
     volumeMounts:
     - name: shared
       mountPath: /usr/share/nginx/html
@@ -47,5 +48,11 @@ spec:
     image: bharamicrosystems/nginx-forward-proxy
     ports:
       - containerPort: 81
+EOF
+---
+kubectl exec -it po/ambassador-pod  -c app-container-poller -- sh -c 'cat /usr/share/nginx/html/index.html'
+kubectl exec -it po/ambassador-pod  -c app-container-server -- sh -c 'cat  /usr/share/nginx/html/index.html'
+
+kubectl logs po/ambassador-pod -c ambassador-container
 
 ``````

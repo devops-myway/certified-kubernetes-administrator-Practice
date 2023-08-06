@@ -36,10 +36,7 @@ environment in (production, qa)
 ``````sh
 kubectl create deployment label-nginx-example --image=nginx --dry-run=client -oyaml > label-nginx-example.yml
 -- # clean up the template and add a label app: prod
-
-[root@controller ~]# Let’s create a pod with the label env=develop
-$ cat pod.yaml
-
+cat << EOF | kubectl apply -f -
 apiVersion: v1
 kind: Pod
 metadata:
@@ -52,6 +49,7 @@ spec:
     image: quay.io/openshiftlabs/simpleservice:0.4.0
     ports:
     - containerPort: 9870
+EOF
 -------                 
 kubectl get pods --show-labels
 kubectl label pods labelex owner=ijaz

@@ -21,4 +21,7 @@ command will decode the encoded text, ‘bGludXhoaW50LmNvbQ==‘ and print the o
 echo 'bGludXhoaW50LmNvbQo=' | base64 --decode
 echo 'bGludXhoaW50LmNvbQo=' | base64 -d
 
+kubectl get secret demo-sa-secret -o jsonpath='{.data.token}'| base64 -d > token.txt
+kubectl get secret demo-sa-secret -o jsonpath='{.data.ca\.crt}'| base64 -d > ca-demo.key
+
 ``````

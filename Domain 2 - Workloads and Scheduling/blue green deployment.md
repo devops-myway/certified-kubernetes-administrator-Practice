@@ -8,6 +8,7 @@ In a blue/green deployment strategy (sometimes referred to as red/black) the old
 with pod label `app: blue`
 with an busybox initContainer
 ``````sh
+cat << EOF | kubectl apply -f -
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -46,9 +47,12 @@ spec:
       volumes:
       - name: workdir
         emptyDir: {}
+EOF
+
 ``````
 ###### Create a service to interact with the blue deployment
 ``````sh
+cat << EOF | kubectl apply -f -
 apiVersion: v1
 kind: Service
 metadata:
@@ -67,6 +71,7 @@ spec:
   type: NodePort
 status:
   loadBalancer: {}
+EOF
 ------
 kubectl apply -f blue-deploy.yaml
 kubectl get svc/blue-svc
@@ -74,13 +79,14 @@ kubectl get nodes -owide
 ``````
 ##### Test the Blue Deployment for output
 ``````sh
-curl 172.30.1.2:30364
+kubectl port-forward svc/blue-svc 8383:8282
 ``````
 
 ##### Create Green deployment
 Green deployment is same as blue except for label `app=green` and command echoing `green` instead of `blue
 
 ``````sh
+cat << EOF | kubectl apply -f -
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -119,6 +125,7 @@ spec:
       volumes:
       - name: workdir
         emptyDir: {}
+EOF
 ``````
 ##### Create and validate green deployment
 ``````sh
@@ -131,6 +138,7 @@ kubectl get po
 ``````sh
 kubectl create svc nodeport green-svc --tcp=8181:80 --dry-run=client -oyaml > green-svc.yaml
 
+cat << EOF | kubectl apply -f -
 apiVersion: v1
 kind: Service
 metadata:
@@ -149,6 +157,7 @@ spec:
   type: NodePort
 status:
   loadBalancer: {}
+EOF
 --
 kubectl apply -f green-svc.yaml
 kubectl get svc/green-svc -owide
@@ -156,5 +165,5 @@ kubectl get nodes -owide
 ``````
 ###### Test the deployment
 ``````sh
-curl 172.30.2.2:32072  # green as output
+kubectl port-forward svc/green-svc 8181:8181
 ``````

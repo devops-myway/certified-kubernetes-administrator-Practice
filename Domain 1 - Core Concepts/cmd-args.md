@@ -11,7 +11,7 @@ command in Kubernetes overrides ENTRYPOINT in the original docker image.
 command: ["/bin/sh","-c"]
 args: ["command one; command two && command three"]
 ```
-The command ["/bin/sh", "-c"] : says "run a shell, and execute the following instructions"
+The command ["/bin/sh", "-c"] or "-- sh -c": says "run a shell, and execute the following instructions"
 The args are then passed as commands to the shell
 In shell scripting a semicolon ; separates commands, and && conditionally runs the following command if the first succeed.
 

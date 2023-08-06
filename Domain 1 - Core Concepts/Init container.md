@@ -14,8 +14,7 @@ In addition to the above, init containers do not support livenessProbe, readines
 ##### Init Containers That Just Sleeps (Too Slow)
 Let's create a Pod with 2 Init Containers that just echos and sleeps .
 ``````sh
-vi myInitPod-1.yaml
-   
+ cat << EOF | kubectl apply -f -  
 apiVersion: v1
 kind: Pod
 metadata:
@@ -34,6 +33,8 @@ spec:
   - name: my-init-container-2
     image: busybox
     command: ['sh', '-c', 'echo my-init-container-2 start; sleep 2;echo my-init-container-2 complete;']
+
+EOF
 ---
 kubectl create -f myInitPod-1.yaml 
 kubectl get po  
@@ -43,10 +44,11 @@ kubectl get po  # later on
 ##### check the logs
 
 ```sh
-kubectl logs pod/myapp-pod -c my-init-container-1 --timestamps=true
-kubectl logs pod/myapp-pod -c my-init-container-2 --timestamps=true
-kubectl logs pod/myapp-pod  --timestamps=true
-kubectl describe pod/myapp-pod 
+kubectl describe pod/myapp-pod
+kubectl logs po/myapp-pod -c my-init-container-1
+kubectl logs po/myapp-pod -c my-init-container-2
+logs po/myapp-pod -c myapp-container
+
 ```
 
 #####  Init Containers That Crash Forever
@@ -57,8 +59,8 @@ We specify imagePullPolicy: IfNotPresent in the Pod spec below.
 That causes the Pod to ONLY go pull our busybox image from the Internet if it is not present on the local server.
 
  ``````sh
-vi myInitPod-3.yaml
 
+cat << EOF | kubectl apply -f -
 apiVersion: v1
 kind: Pod
 metadata:
@@ -80,9 +82,10 @@ spec:
   - name: my-init-container-2
     image: busybox
     imagePullPolicy: IfNotPresent
-    command: ['sh', '-c', 'echo my-init-container-2 start; sleep 2;echo my-init-container-2 complete;']  
+    command: ['sh', '-c', 'echo my-init-container-2 start; sleep 2;echo my-init-container-2 complete;'] 
+
+EOF
 ---
-kubectl create -f myInitPod-3.yaml
 kubectl get po
 kubectl describe pod/myapp-pod 
 kubectl delete -f myInitPod-3.yaml --force --grace-period=0 
@@ -92,8 +95,9 @@ kubectl delete -f myInitPod-3.yaml --force --grace-period=0
 ##### Realistic Production Init Container Simulation
 This example defines a simple Pod that has two init containers. The first waits for myservice, and the second waits for mydb. Once both init containers complete, the Pod runs the app container from its spec section.
 ``````sh
-vi myapp-init.yaml
+
 ---
+cat << EOF | kubectl apply -f -
 apiVersion: v1
 kind: Pod
 metadata:
@@ -112,9 +116,9 @@ spec:
   - name: init-mydb
     image: busybox:1.28
     command: ['sh', '-c', "until nslookup mydb.$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace).svc.cluster.local; do echo waiting for mydb; sleep 2; done"]
-
+EOF
 --
-kubectl apply -f myapp-init.yaml 
+
 kubectl get pod
 kubectl describe myapp-init.yaml
 ``````

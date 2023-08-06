@@ -10,15 +10,14 @@ A ReplicationController has three essential parts:
 - A replica count: which specifies the desired number of pods that should be running
 - A pod template: which is used when creating new pod replicas
 
-##### Creating a replication controller]
+##### Creating a replication controller
 To get the kind and apiVersion of replication controller we will check list of api-resources
 Now we have the kind and apiVersion value needed to create our first replication controller.
 
 ``````sh
 kubectl api-resources
 ----
-
-[root@controller ~]# cat replication-controller.yml
+cat << EOF | kubectl apply -f -
 apiVersion: v1
 kind: ReplicationController
 metadata:
@@ -40,26 +39,22 @@ spec:
       containers:
       - name: nginx-container
         image: nginx
+EOF
 --
-kubectl create -f replication-controller.yml
 
 kubectl get pods
 kubectl get rc
 
 kubectl delete pod myapp-rc-c57qm
-
 kubectl get pods
-
 kubectl get pods -o wide
-
-kubectl describe rc myapp-rc
+kubectl describe rc/myapp-rc
 ``````
 
 ##### Changing the pod template
 change the value of replicas to 4 and save the template
 ``````sh
-kubectl edit rc myapp-rc
-
+kubectl edit rc/myapp-rc
 kubectl get pods
 kubectl get rc
 
@@ -84,10 +79,10 @@ ReplicaSet was introduced. It’s a new generation of ReplicationController and 
 we have the KIND value i.e. ReplicaSet, to get the apiVersion of this kind we will use kubectl explain
 ``````sh
 kubectl api-resources
-kubectl explain ReplicaSet | head -n 2
+kubectl explain ReplicaSet
 --
 
-[root@controller ~]# cat rs1.yml
+cat << EOF | kubectl apply -f -
 apiVersion: apps/v1
 kind: ReplicaSet
 metadata:
@@ -109,7 +104,7 @@ spec:
       containers:
       - name: frontend
         image: nginx
-
+EOF
 --
 kubectl apply -f rs1.yml
 kubectl get pods -o wide

@@ -3,6 +3,7 @@ https://kubernetes.io/docs/tasks/administer-cluster/dns-debugging-resolution/
 ###### Debugging DNS Resolution - Create a simple Pod to use as a test environment
 
 ``````sh
+cat << EOF | kubectl apply -f -
 apiVersion: v1
 kind: Pod
 metadata:
@@ -17,48 +18,34 @@ spec:
       - "infinity"
     imagePullPolicy: IfNotPresent
   restartPolicy: Always
+EOF
 --------
-kubectl apply -f https://k8s.io/examples/admin/dns/dnsutils.yaml
 kubectl get pods dnsutils
-
-# Once that Pod is running, you can exec nslookup in that environment
 kubectl exec -it dnsutils -- nslookup kubernetes.default
+--
+Server:    10.0.0.10
+Address 1: 10.0.0.10
+Name:      kubernetes.default
+Address 1: 10.0.0.1
 ``````
 ###### Check the local DNS configuration first
-Take a look inside the resolv.conf file
-
+Take a look inside the resolv.conf file if the nslookup dns search path is failing
+tp resolve.
 ``````sh
+kubectl exec -i -t dnsutils -- nslookup kubernetes.default
 kubectl exec -it dnsutils -- cat /etc/resolv.conf
 
 ------ # the search path and name server are set up like the following
-search default.svc.cluster.local svc.cluster.local cluster.local google.internal c.gce_project_id.internal
-nameserver 10.0.0.10
-options ndots:5
-``````
-###### DNS common errors
-Errors such as the following indicate a problem with the CoreDNS (or kube-dns) add-on or with associated Services.
-``````sh
-kubectl exec -i -t dnsutils -- nslookup kubernetes.default
-
--------
 Server:    10.0.0.10
 Address 1: 10.0.0.10
 
 nslookup: can't resolve 'kubernetes.default'
-
-or 
-
-Server:    10.0.0.10
-Address 1: 10.0.0.10 kube-dns.kube-system.svc.cluster.local
-
-nslookup: can't resolve 'kubernetes.default'
 ``````
+
 ##### Check if the DNS pod is running
-Use the kubectl get pods command to verify that the DNS pod is running.
-If you see that no CoreDNS Pod is running or that the Pod has failed/completed, the DNS add-on may not be deployed by default in your current environment and you will have to deploy it manually.
 
 ``````sh
-kubectl get pods -n kube-system -owide
+kubectl get po -n kube-system -owide
 kubectl get pods --namespace=kube-system -l k8s-app=kube-dns
 -------
 coredns-7b96bf9f76-5hsxb   1/1       Running   0           1h
@@ -80,7 +67,7 @@ linux/amd64, go1.10.3, 2e322f6
 ##### Is DNS service up
 Verify that the DNS service is up by using the kubectl get service command
 ``````sh
-ubectl get svc --namespace=kube-system
+kubectl get svc --namespace=kube-system
 
 ``````
 #### Are DNS endpoints exposed
@@ -93,7 +80,7 @@ You can verify if queries are being received by CoreDNS by adding the log plugin
 Corefile is held in a ConfigMap named coredns. To edit it, use the command
 
 ``````sh
-kubectl -n kube-system edit configmap coredns
+kubectl edit cm coredns -n kube-system
 ``````
 Then add log in the Corefile section per the example below:
 ``````sh
@@ -173,5 +160,5 @@ kubectl exec -it dnsutils -- nslookup <service-name>
 ``````
 This query specifies the namespace:
 ``````sh
-kubectl exec -i -t dnsutils -- nslookup <service-name>.<namespace>
+kubectl exec -it ubuntu -- nslookup <service-name>.<namespace>
 ``````

@@ -36,6 +36,8 @@ The logging agent could run as a sidecar container as well. For example, Fluentd
 The journalctl command enables viewing and editing the systemd logs, making it a powerful tool for service and process debugging
 The journalctl command queries and manipulates the journal data collected by the journald daemon.
 ``````sh
+docker pull centos/systemd
+
 journalctl <options> <matches>
 
 journalctl  # to display all journal entries

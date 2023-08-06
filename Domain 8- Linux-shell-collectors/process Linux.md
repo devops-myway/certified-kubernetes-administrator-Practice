@@ -29,7 +29,8 @@ root – User name
 ``````sh
 root         1  0.0  0.0 225868  9760 ?        Ss   19:10   0:13 /sbin/init splash
 ``````
-
+##### Process Status
+Process Status”. ps command is used to list the currently running processes and their PIDs along with some other information depends on different options.
 ``````sh
 sudo ps -e
 ps -aux | more

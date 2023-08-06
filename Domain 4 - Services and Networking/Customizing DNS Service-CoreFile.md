@@ -1,4 +1,3 @@
-
 https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/
 
 https://www.alibabacloud.com/help/en/container-service-for-kubernetes/latest/service-discovery-dns-dns-troubleshooting?spm=a2c63.p38356.0.0.65de26a0UUlwGB
@@ -12,34 +11,53 @@ Cluster external domain names are resolved by authoritative DNS provided by thir
 Application pod:
 Pods other than the pods of system components in a Kubernetes cluster.
 Application pod that uses CoreDNS for DNS resolutions:
-Application pods that use CoreDNS to process DNS queries.
-Application pod that uses NodeLocal DNSCache for DNS resolutions:
-After you install NodeLocal DNSCache in your cluster, you can configure DNS settings by injecting DNSConfig to application pods. This way, DNS queries of these pods are first sent to NodeLocal DNSCache. If NodeLocal DNSCache fails to process the queries, the queries are sent to the kube-dns Service of CoreDNS.
 
 
 ###### Diagnose the DNS configurations of application pods
 
 ``````sh
-# Run the following command to query the YAML file of the foo pod. Then, check whether the dnsPolicy field in the YAML file is set to a proper value. 
-kubectl get pod foo -oyaml
+kubectl get cm -n kube-system
+kubectl describe cm/coredns -n kube-system
+--
+Name:         coredns
+Namespace:    kube-system
+Labels:       <none>
+Annotations:  <none>
 
-# If the dnsPolicy field is set to a proper value, check the DNS configuration file of the pod. 
-
-# Run the following command to log on to the containers of the foo pod by using bash. If bash does not exist, use sh. 
-kubectl exec -it foo bash
-
-# Run the following command to query the DNS configuration file. Then, check the DNS server addresses in the nameserver field. 
-cat /etc/resolv.conf
+Data
+====
+Corefile:
+----
+.:53 {
+    errors
+    health {
+       lameduck 5s
+    }
+    ready
+    kubernetes cluster.local in-addr.arpa ip6.arpa {
+       pods insecure
+       fallthrough in-addr.arpa ip6.arpa
+       ttl 30
+    }
+    prometheus :9153
+    forward . /etc/resolv.conf {
+       max_concurrent 1000
+    }
+    cache 30
+    loop
+    reload
+    loadbalance
+}
 
 ``````
 ##### Diagnose the status of the CoreDNS pod
 
 ``````sh
 # Run the following command to query information about the CoreDNS pod:
-kubectl -n kube-system get pod -o wide -l k8s-app=kube-dns
+kubectl get pod -n kube-system  -owide -l k8s-app=kube-dns
 
 #Run the following command to query the real-time resource usage of the CoreDNS pod:
-kubectl -n kube-system top pod -l k8s-app=kube-dns
+kubectl top pod -l k8s-app=kube-dns -n kube-system 
 
 ``````
 ##### Inspecting a service’s A and SRV records in DNS
@@ -79,10 +97,10 @@ The CoreDNS Corefile is held in a ConfigMap named coredns. To edit it, use the c
 ``````sh
 kubectl get cm -n kube-system
 kubectl get cm/coredns -n kube-system -o yaml # check the corefile
-kubectl -n kube-system edit configmap coredns
+kubectl  edit configmap/coredns -n kube-system
 
 ``````
-
+The structure of the coredns file for configuration
 ``````sh
 apiVersion: v1
 kind: ConfigMap

@@ -56,4 +56,16 @@ Kubernetes maintains a comprehensive history of all the events that occur in you
 ``````sh
 kubectl get events
 
+
+# kubelet config file
+root@node01:~# journalctl -u kubelet 
+.
+.
+.
+May 30 13:43:55 node01 kubelet[8858]: E0530 13:43:55.004939    8858 reflector.go:148] vendor/k8s.io/client-go/informers/factory.go:150: Failed to watch *v1.Node: failed to list *v1.Node: Get "https://controlplane:6553/api/v1/nodes?fieldSelector=metadata.name%3Dnode01&limit=500&resourceVersion=0": dial tcp 192.24.132.5:6553: connect: connection refused
+.
+Check the kubelet.conf file at /etc/kubernetes/kubelet.conf
+
+cat /etc/kubernetes/kubelet.conf
+
 ``````

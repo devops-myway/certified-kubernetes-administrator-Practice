@@ -13,12 +13,14 @@ A taint can produce three possible effects:
 
 ##### Dedicated Nodes
 ``````sh
-kubectl taint nodes nodename dedicated=groupName:NoSchedule
+kubectl taint nodes minikube application=example:NoSchedule
 
+kubectl taint nodes minikube application=example:NoSchedule-   # untaint node
 ``````
 ``````sh
+kubectl describe node minikube
 kubectl get nodes --show-labels
-kubectl label nodes <your-node-name> disktype=ssd
+kubectl label nodes minikube disktype=ssd
 kubectl get nodes --show-labels
 
 ``````
@@ -26,6 +28,7 @@ kubectl get nodes --show-labels
 ``````sh
 kubectl explain pod.spec   # To find the fileds for nodeSelector and nodeName
 
+cat << EOF | kubectl apply -f -
 apiVersion: v1
 kind: Pod
 metadata:
@@ -39,6 +42,7 @@ spec:
     imagePullPolicy: IfNotPresent
   nodeSelector:
     disktype: ssd
+EOF
 --
 Kubectl apply -f 
 kubectl get pods --output=wide
@@ -67,8 +71,7 @@ kubectl describe node/node01
 ``````
 
 ``````sh
-vi test-pod.yaml
-
+cat << EOF | kubectl apply -f -
 apiVersion: v1
 kind: Pod
 metadata:
@@ -85,6 +88,7 @@ spec:
     operator: "Equal"
     value: "value1"
     effect: "NoSchedule"
+EOF
 --
 kubectl apply -f test-pod.yaml
 kubectl get pod/nginx -owide # watch as it schedule with tolerations on the dedicated pod

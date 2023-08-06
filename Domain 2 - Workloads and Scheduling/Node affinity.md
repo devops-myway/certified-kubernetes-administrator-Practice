@@ -29,6 +29,7 @@ kubectl get nodes --show-labels
 This manifest describes a Pod that has a requiredDuringSchedulingIgnoredDuringExecution node affinity,disktype: hdd. This means that the pod will get scheduled only on a node that has a disktype=hdd label.
 
 ``````sh
+cat << EOF | kubectl apply -f -
 apiVersion: v1
 kind: Pod
 metadata:
@@ -47,7 +48,7 @@ spec:
   - name: nginx
     image: nginx
     imagePullPolicy: IfNotPresent
-
+EOF
 ------
 kubectl apply -f test.yaml
 kubectl get pods --output=wide

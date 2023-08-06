@@ -8,6 +8,7 @@ https://kubernetes.io/docs/concepts/workloads/pods/
 Then we cat the log file /var/log/out.log for the log-adapter, we see a Date prefixed to the output that was not in the original log /var/log/app.log
 
  ``````sh
+ cat << EOF | kubectl apply -f -
 apiVersion: v1
 kind: Pod
 metadata:
@@ -34,4 +35,19 @@ spec:
     - name: logs
       mountPath: /var/log
 
+EOF
+
+---
+kubectl exec -it adapter-pod -c app-container -- sh -c 'cat /var/log/app.log'
+-- # Results
+Sat Jul 15 11:10:07 UTC 2023
+Sat Jul 15 11:10:09 UTC 2023
+Sat Jul 15 11:10:11 UTC 2023
+
+kubectl exec -it adapter-pod -c log-adapter -- sh -c 'cat /var/log/out.log'
+-- # Results - Transformed output
+Date Sat Jul 15 11:10:07 UTC 2023
+Date Sat Jul 15 11:10:09 UTC 2023
+Date Sat Jul 15 11:10:11 UTC 2023
+Date Sat Jul 15 11:10:13 UTC 2023
 ``````

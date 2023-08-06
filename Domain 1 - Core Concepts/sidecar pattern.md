@@ -15,6 +15,7 @@ if you look at the manifest you’ll see we have two containers: app-container a
 
 run a port-forward on port 80, you should be able to access the logs using a browser.
 ``````sh
+cat << EOF | kubectl apply -f -
 apiVersion: v1
 kind: Pod
 metadata:
@@ -38,12 +39,19 @@ spec:
     volumeMounts:
     - name: logs
       mountPath: /usr/share/nginx/html
+EOF
+
+---
+kubectl exec -it po/sidecar-pod -c app-container -- sh -c 'cat /var/log/app.log'
+kubectl exec -it po/sidecar-pod -c log-exporter-sidecar -- sh -c 'ls -l /usr/share/nginx/html'
+kubectl exec -it po/sidecar-pod -c log-exporter-sidecar -- sh -c 'cat /usr/share/nginx/html/app.log'
 
 ``````
 ##### Example 2: multi-container pod with volumes
 The sidecar container with the image busybox puts the message “I am from sidecar container” in the index.html in the shared volume and we have the main container with the image nginx serving at the port 80 and read the index.html from the volume.
 
 ``````sh
+cat << EOF | kubectl apply -f -
 apiVersion: v1
 kind: Pod
 metadata:
@@ -58,15 +66,13 @@ spec:
   containers:
   - image: busybox
     command: ["/bin/sh"]
-    args: ["-c", "echo 'Hi I am from Side Car container' >> /var/log/index.html"]
+    args: ["-c", "while true; do echo 'Hi I am from Side Car container' >> /var/log/index.html; sleep 3600;done"]
     name: sidecar-container
-    resources: {}
     volumeMounts:
     - name: var-logs
       mountPath: /var/log
   - image: nginx
     name: main-container
-    resources: {}
     ports:
       - containerPort: 80
     volumeMounts:
@@ -75,57 +81,11 @@ spec:
   dnsPolicy: ClusterFirst
   restartPolicy: Never
 status: {}
-
+EOF
 -------
-kubectl create -f pod-with-volumes.yml
-kubectl exec -it multi-cont-pod -c main-container /bin/sh
 
-``````
-
-##### Example 3: multi-container pod with volumes
-
-``````sh
-metadata:
-  name: simple-webapp
-  labels:
-    app: webapp
-spec:
-  containers:
-    - name: main-application
-      image: nginx
-      volumeMounts:
-        - name: shared-logs
-          mountPath: /var/log/nginx
-    - name: sidecar-container
-      image: busybox
-      command: ["sh","-c","while true; do cat /var/log/nginx/access.log; sleep 30; done"]
-      volumeMounts:
-        - name: shared-logs
-          mountPath: /var/log/nginx
-  volumes:
-    - name: shared-logs
-      emptyDir: {}
-
----
-
-# Service Configuration
-# --------------------
-apiVersion: v1
-kind: Service
-metadata:
-  name: simple-webapp
-  labels:
-    run: simple-webapp
-spec:
-  ports:
-  - port: 80
-    protocol: TCP
-  selector:
-    app: webapp
-  type: NodePort
-
--------
-kubectl create -f sidecar-container.yaml
-kubectl logs -f simple-webapp sidecar-container
+kubectl exec -it po/multi-cont-pod -c sidecar-container -- sh -c 'cat /var/log/index.html'
+kubectl exec -it po/multi-cont-pod -c main-container -- sh -c 'ls -l /usr/share/nginx/html'
+kubectl exec -it po/multi-cont-pod -c main-container -- sh -c 'cat /usr/share/nginx/html/index.html'
 
 ``````

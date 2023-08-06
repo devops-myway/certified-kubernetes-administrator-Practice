@@ -5,14 +5,6 @@ https://kubernetes.io/docs/concepts/storage/persistent-volumes/
 Stateless applications — apps that don’t store or modify changeable data—this is perfect e.g deployments, etc.
 Containers are typically presumed to be ephemeral and immutable, which is to say that we expect any given container to be short-lived, replaceable, and unchanging in its contents.
 
-But most apps are Stateful: they change into different states as users or clients create, update, or delete data that may persist over time.
-
-Top of the pyramid of data persistence and reliability:
-- Volumes mounted to Pods: 
-Pod-mounted volumes are most suited to temporary caches and other short-term uses that you don’t expect to last any longer than a given Pod—for example, this technique can be used to mount a Secret to a Pod.
-- Volumes mounted to Nodes:
-If you need data to persist beyond the lifespan of a particular Pod, you might consider using a volume mounted at the Node level. Now persistent data can be made available to any Pod running on that Node, but the limitation should be immediately clear: Only Pods on that Node can access the data.
-
 #### Lifecycle of a volume and claim
 PersistentVolume (PV):
 is a system resource for storage in the same way that a node is a system resource for compute.
@@ -34,6 +26,18 @@ kilobyte	1000	K	kibibyte	1024	Ki
 megabyte	1000*2	M	mebibyte	1024*2	Mi
 gigabyte	1000*3	G	gibibyte	1024*3	Gi
 
+##### Types of Persistent Volumes
+PersistentVolume types are implemented as plugins. Kubernetes currently supports the following plugins:
+
+cephfs - CephFS volume
+csi - Container Storage Interface (CSI)
+fc - Fibre Channel (FC) storage
+hostPath - HostPath volume (for single node testing only; WILL NOT WORK in a multi-node cluster; consider using local volume instead)
+iscsi - iSCSI (SCSI over IP) storage
+local - local storage devices mounted on nodes.
+nfs - Network File System (NFS) storage
+rbd - Rados Block Device (RBD) volume
+
 ##### 1.2 Volume Mode
 Here you can specify whether you want a filesystem ("Filesystem") or raw storage ("Block"). If you don't specify volume mode, then the default is "Filesystem"
 
@@ -50,64 +54,23 @@ The reclaim policy determines what happens when a persistent volume claim is del
 - Delete: The associated storage asset, such as AWS EBS, GCE PD, Azure disk, or OpenStack Cinder volume, is deleted
 - Recycle: Delete content only (rm -rf /volume/*)
 
+##### Binding
+PersistentVolumeClaim binds are exclusive, regardless of how they were bound. A PVC to PV binding is a one-to-one mapping, using a ClaimRef which is a bi-directional binding between the PersistentVolume and the PersistentVolumeClaim.
+
+##### Class
+A PV can have a class, which is specified by setting the storageClassName attribute to the name of a StorageClass. A PV of a particular class can only be bound to PVCs requesting that class. A PV with no storageClassName has no class and can only be bound to PVCs that request no particular class.
+
 ##### 1. Create Persistent Volume
 
 ``````sh
-<<<<<<< HEAD
-vi emp-volume.yaml
-
-apiVersion: apps/v1
-kind: Deployment
-=======
 cat << EOF | kubectl apply -f -
 apiVersion: v1
 kind: PersistentVolume
->>>>>>> b1c1ba8 (updates)
 metadata:
   name: my-app
   labels:
     app: my-app
 spec:
-<<<<<<< HEAD
-  replicas: 1
-  selector:
-    matchLabels:
-      app: my-app
-  template:
-    metadata:
-      labels:
-        app: my-app
-    spec:
-      containers:
-      - name: my-app
-        image: busybox:1.28
-        command: ['sh', '-c'] 
-        args: 
-        - while true; do 
-            echo "$(date) INFO some app data" >> /var/log/myapp.log;
-            sleep 5;
-          done
-          volumeMounts:
-        - name: log
-          mountPath: /var/log   
-      - name: log-sidecar
-        image: busybox:1.28
-        command: ['sh', '-c'] 
-        args:
-        - tail -f /var/log/myapp.log 
-        volumeMounts:
-        - name: log
-          mountPath: /var/log
-        volumes: 
-      - name: log
-        emptyDir: {}
----
-kubectl apply -f emp-volume.yaml
-kubectl exec -it my-app-5d74b5cc88-7n474 -c my-app -- sh -c 'cat /var/log/myapp.log'
-kubectl exec -it my-app-5d74b5cc88-7n474 -c log-sidecar -- sh -c 'cat /var/log/myapp.log'
-
-
-=======
   capacity:
     storage: 1Gi
   volumeMode: Filesystem
@@ -124,7 +87,6 @@ kubectl exec -it my-app-5d74b5cc88-7n474 -c log-sidecar -- sh -c 'cat /var/log/m
 EOF
 --
 kubectl get pv
->>>>>>> b1c1ba8 (updates)
 ``````
 ##### 2. Claiming a PersistentVolume by creating a PersistentVolumeClaim
 

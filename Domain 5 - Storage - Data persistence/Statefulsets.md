@@ -131,8 +131,18 @@ Enter password: octoberfest
 
 mysql> USE todo_db;
 mysql> exit
-``````
+-- # test the headless service for replication
+kubectl run testpod --image=ubuntu -- sh -c 'sleep 3600'
+kubectl exec -it testpod -- sh
+kubectl get svc
+kubectl scale sts/todo-mysql --replicas=4
+---
+apt update && upgrade
+apt install dnsutils
 
+nslookup todo-mysql  # headless service 
+
+``````
 
 ##### Force Delete StatefulSet Pods
  The StatefulSet controller is responsible for creating, scaling and deleting members of the StatefulSet. It tries to ensure that the specified number of Pods from ordinal 0 through N-1 are alive and ready. StatefulSet ensures that, at any time, there is at most one Pod with a given identity running in a cluster.

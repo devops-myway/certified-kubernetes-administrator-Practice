@@ -80,4 +80,12 @@ kubectl get events --sort-by=.metadata.creationTimestamp
 
 ``````
 
+##### Explain
+kubectl explain RESOURCE
+Possible resource types include: pods (po), services (svc), replicationcontrollers (rc), nodes (no), events (ev), componentstatuses (cs), limitranges (limits), persistentvolumes (pv), persistentvolumeclaims (pvc), resourcequotas (quota), namespaces (ns), horizontalpodautoscalers (hpa) or endpoints (ep).
 
+``````sh
+kubectl explain persistentvolumes
+kubectl explain pod.spec
+
+``````

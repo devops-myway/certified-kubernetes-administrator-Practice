@@ -181,13 +181,13 @@ kubectl get pods
 kubectl exec -it busybox -- opkg-install curl
 kubectl exec -it busybox -- /bin/sh
 
-# and make sure that you are able to resolve kubernetes.default using CoreDNS.
+# and make sure that you are able to resolve kubernetes.default using CoreDNS/kube-dns.
  nslookup kubernetes.default
 
 ------- #Now let us try to access our API server using curl
 curl --insecure   https://kubernetes.default.svc/
 ``````
-#### Assign Role and RoleBinding for ServiceAccount
+#### Assign Role and RoleBinding for ServiceAccount - Autorization
 It is possible in some cases the ServiceAccount may not be able to access the API server due to RBAC restrictions.
 
 #### Create ServiceAccount
@@ -200,6 +200,7 @@ A Role resource defines what actions can be taken on which resources. I will cre
 ``````sh
 vi list-pods.yaml
 ---
+cat << EOF | kubectl apply -f -
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
@@ -212,7 +213,7 @@ rules:
     - pods
     verbs:
     - list
-
+EOF
 ---
 kubectl apply -f list-pods.yaml 
 kubectl get roles
@@ -224,6 +225,7 @@ To do that, you must bind the Role to a subject, which can be a user(real users)
 ``````sh
 cat list-pods-binding.yaml 
 ---
+cat << EOF | kubectl apply -f -
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
@@ -237,7 +239,7 @@ subjects:
   - kind: ServiceAccount
     name: user3
     namespace: default
-
+EOF
 ---
 kubectl apply -f list-pods-binding.yaml
 kubectl get rolebindings
@@ -248,13 +250,14 @@ We will create a new pod using user3 ServiceAccount
 ``````sh
 cat user3-busybox.yaml 
 ---
+cat << EOF | kubectl apply -f -
 apiVersion: v1
 kind: Pod
 metadata:
   name: user3-busybox
   namespace: default
 spec:
-  serviceAccountname: user3
+  serviceAccountName: user3
   containers:
   - name: busybox
     image: progrium/busybox
@@ -263,7 +266,7 @@ spec:
       - "3600"
     imagePullPolicy: IfNotPresent
   restartPolicy: Always
-
+EOF
 ---
 kubectl apply -f user3-busybox.yaml
 

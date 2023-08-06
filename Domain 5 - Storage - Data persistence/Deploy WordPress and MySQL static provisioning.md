@@ -62,6 +62,7 @@ metadata:
   labels:
     app: wordpress-mysql
 spec:
+  clusterIP: None
   ports:
   - port: 3306
   selector:

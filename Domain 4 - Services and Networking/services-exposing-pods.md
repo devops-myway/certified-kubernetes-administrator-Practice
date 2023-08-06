@@ -1,4 +1,5 @@
 https://kubernetes.io/docs/concepts/services-networking/service/
+https://minikube.sigs.k8s.io/docs/handbook/accessing/
 
 ##### Exposing Services to External Clients
 
@@ -7,6 +8,20 @@ A Kubernetes Service is a method for exposing a network application that is runn
 Add labels to Pod objects and specify the label selector in the Service object. The pods whose labels match the selector are part of the service registered service endpoints.
 
 - The shorthand for services is svc
+
+###### Service Pods
+
+In a Kubernetes Cluster there are three group of PODs present as following :
+
+Frontend PODs: [Pods which are running the frontend part of the web application on them]
+Backend PODs: [Pods which are running the backend part of the web application on them]
+Database PODs: [Pods which are running the database application instances on them]
+
+##### How do the pods communicate with eachother
+
+There are three sets of PODs [frontend, backend & database]
+
+We created two ClusterIP services (back-end & redis) to ease out the process of inter pod communication.
 
 #### Understanding different Kubernetes Service Types
 
@@ -153,6 +168,18 @@ On bear server:
 - Create Target Groups - register 2 worker nodes and manaully add the nodeport of 32000
 - Create application Loadbalancer - internet facing, register the target group with zones of the worker nodes
 - Then test the load balancer with DNS Name on browser - lb-svc-493868679.eu-west-1.elb.amazonaws.com
+
+---- using minikube to Test load balancer:
+
+# in separate terminal run
+minikube tunnel
+
+# working terminal run
+kubectl get svc
+NAME              TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)          AGE
+ hello-minikube1   LoadBalancer   10.96.184.178   127.0.0.1   8080:30791/TCP   40s
+http://REPLACE_WITH_EXTERNAL_IP:8080
+
 
 ``````
 ##### Endpoints object

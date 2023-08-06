@@ -5,6 +5,7 @@ https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/
 
 Similar to node affinity are two types of Pod affinity and anti-affinity as follows:
 
+Effects:
 requiredDuringSchedulingIgnoredDuringExecution - 
 The Pod affinity rule uses the "hard", to tell the scheduler to co-locate Pods of two services in the same cloud provider zone because they communicate with each other a lot
 
@@ -12,6 +13,7 @@ preferredDuringSchedulingIgnoredDuringExecution -
 anti-affinity rule uses the "soft" , anti-affinity to spread Pods from a service across multiple cloud provider zones.
 
 ``````sh
+cat << EOF | kubectl apply -f -
 apiVersion: v1
 kind: Pod
 metadata:
@@ -41,11 +43,12 @@ spec:
   containers:
   - name: with-pod-affinity
     image: registry.k8s.io/pause:2.0
-
+EOF
 
 ``````
 
 ``````sh
+cat << EOF | kubectl apply -f -
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -73,5 +76,5 @@ spec:
       containers:
       - name: redis-server
         image: redis:3.2-alpine
-
+EOF
 ``````

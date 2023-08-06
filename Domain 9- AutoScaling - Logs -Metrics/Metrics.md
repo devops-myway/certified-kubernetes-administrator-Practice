@@ -17,13 +17,18 @@ The first step is to clone the metrics server repository from GitHub:
 ``````sh
 kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
 kubectl get deploy -n kube-system
-# if you notice: couldn't get resource list for metrics.k8s.io/v1beta1: the server is currently unable to handle the request
+
 
 ``````
-
+###### ERROR on the metric deployment:
+Kubelet certificate needs to be signed by cluster Certificate Authority (or disable certificate validation by passing --kubelet-insecure-tls to Metrics Server).
+if you notice: couldn't get resource list for metrics.k8s.io/v1beta1: the server is currently unable to handle the request
 ``````sh
+kubectl logs deploy/metrics-server -n kube-system
 kubectl edit deploy/metrics-server -n kube-system
-Edit downloaded file and add - --kubelet-insecure-tls to args list:
+Edit downloaded file and add:
+ - --kubelet-insecure-tls
+ to args list below:
 
 ...
 labels:
@@ -41,7 +46,8 @@ spec:
 You can verify that the installation was successful by checking the status of the deployment:
 ``````sh
 kubectl get deploy/metrics-server -n kube-system
-
+# you will see the below:
+metrics-server   1/1     1            1           4m33s
 ``````
 Once the metrics server is up and running, you can query it for resource usage data using the kubectl top command
 ``````sh

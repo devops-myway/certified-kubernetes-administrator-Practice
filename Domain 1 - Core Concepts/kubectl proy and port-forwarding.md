@@ -6,7 +6,7 @@ https://kubernetes.io/docs/tasks/access-application-cluster/port-forward-access-
 kubectl port-forward:
 In the context of developing applications on Kubernetes, it is often useful to quickly access a service from your local environment without exposing it using, for example, a load balancer or an ingress resource. forwards connections to a local port to a port on a pod. is more generic as it can forward TCP traffic.
 
-kubectl port-forward <resource-type/resource-name> [local_port]:<pod_port>
+kubectl port-forward <resource-type/resource-name> [local_port_o_choice]:<pod_taregt_port>
 
 
 ##### Perform kubectl port-forward in background

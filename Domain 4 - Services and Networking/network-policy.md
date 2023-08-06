@@ -68,11 +68,14 @@ https://kubernetes.io/docs/concepts/extend-kubernetes/compute-storage-net/networ
 - ingress whitelist rules: allowed inbound traffic to the target pods whitelist rules - ingress:  - {} - Allow all ingress traffic
 - egress whitelist rules: allowed outbound traffic from the target pods whitelist rules - egress:  - {} - Allow all egress traffic
 - Pods policy applies to can be made from any IP within the CIDR block 172.17.0.0/16 (that's 65536 IP addresses, from 172.17.0.0 to 172.17.255.255)
+- empty selector: An empty selector means everything. If PodSelector:{} is mentioned, it will select all the pods in the namespace
+- Null selector: If the policy contains a Null selector [], means it is not selecting anything (so all traffic is blocked).
 
 #### Deny all traffic in the default namespace 
 Since this resource defines both policyTypes (ingress and egress), but doesn’t define any whitelist rules, it blocks all the pods in the default namespace from communicating with each other.
 
 ``````sh
+cat << EOF | kubectl apply -f -
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -83,10 +86,10 @@ spec:
   policyTypes:
   - Ingress
   - Egress
-
+EOF
 ---- ##### Test pods in deafult namespace
-kubectl run box1 --image=busybox --dry-run=client -oyaml --command -- sh -c "sleep 3600" --labels="app=box1" > box1.yaml
-kubectl run box2 --image=busybox --dry-run=client -oyaml --command -- sh -c "sleep 3600" --labels="app=box2" > box2.yaml
+kubectl run box1 --image=busybox --dry-run=client -oyaml --labels="app=box1" --command -- sh -c "sleep 3600" > box1.yaml
+kubectl run box2 --image=busybox --dry-run=client -oyaml --labels="app=box2"  --command -- sh -c "sleep 3600" > box2.yaml
 
 kubectl exec -it box1 -- sh
 ping 192.168.1.4  # notice traffic behavior
@@ -94,6 +97,7 @@ ping 192.168.1.4  # notice traffic behavior
 #### Allow Traffic in default namespace
 this resource defines both ingress and egress whitelist rules for all traffic, the pods in the default namespace can now communicate with each other.
 ``````sh
+cat << EOF | kubectl apply -f -
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -107,10 +111,10 @@ spec:
   policyTypes:
   - Egress
   - Ingress
-
+EOF
 ---- # Test Pods for traffic behavior
-kubectl run box1 --image=busybox --dry-run=client -oyaml --command -- sh -c "sleep 3600" --labels="app=box1" > box1.yaml
-kubectl run box2 --image=busybox --dry-run=client -oyaml --command -- sh -c "sleep 3600" --labels="app=box2" > box2.yaml
+kubectl run test1 --image=busybox --dry-run=client -oyaml --command -- sh -c "sleep 3600" --labels="app=box1" > box1.yaml
+kubectl run test2 --image=busybox --dry-run=client -oyaml --command -- sh -c "sleep 3600" --labels="app=box2" > box2.yaml
 
 kubectl get pods -owide --show-labels
 kubectl exec -it box1 -- sh
@@ -123,17 +127,16 @@ allow inbound traffic from pods in namespace default with the label test=out
 allow outbound traffic to pods in namespace default with the label test=in
 
 ``````sh
-kubectl run test1 --image=nginx --label='role=db' -n default
-kubectl run frontend --image=nginx --label='role=frontend' -n default
+kubectl run test1 --image=nginx --labels='role=db' -n default
+kubectl run frontend --image=nginx --labels='role=frontend' -n default
 kubectl create ns myproject
-kubectl run test2 --image=nginx -n myproject
+kubectl run test2 --image=ubuntu -- sh -c 'sleep 3600' -n myproject
 
 kubectl get po -owide --show-labels #copy ips and add on the ipblocks for default ns
 kubectl get po -owide -n myproject --show-labels
 
 
-vi netp1.yaml
-
+cat << EOF | kubectl apply -f -
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -149,7 +152,7 @@ spec:
   ingress:
     - from:
         - ipBlock:
-            cidr: 192.168.0.0/16
+            cidr: 10.0.0.0/16
         - namespaceSelector:
             matchLabels:
               project: myproject
@@ -159,13 +162,16 @@ spec:
   egress:
     - to:
         - ipBlock:
-            cidr: 192.168.0.0/16
+            cidr: 10.0.0.0/16
+EOF
 ``````
 #### Test Pods
 
 ``````sh
-kubectl exec -it boxin -- sh
-curl ips
+kubectl exec -it testpod -n myproject -- sh
+apt update && upgrade
+apt install ipuntils-ping
+ping 10.244.0.53   #ip of role-db
 ``````
 
 ###### A more realistic example To Test Network Policy
@@ -341,5 +347,47 @@ telnet db 3306
 kubectl exec -it frontend -- bash
 apt update && apt install telnet -y
 teclnet db 3306
+
+``````
+##### Example question
+Create a network policy to allow traffic from the Internal application only to the payroll-service and db-service.
+
+Policy Name: internal-policy
+Policy Type: Egress
+Egress Allow: payroll
+Payroll Port: 8080
+Egress Allow: mysql
+MySQL Port: 3306
+
+``````sh
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: internal-policy
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      name: Internal
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              name: payroll
+      ports:
+        - protocol: TCP
+          port: 8080
+          
+    - to:
+        - podSelector:
+            matchLabels:
+              name: mysql
+      ports:
+        - protocol: TCP
+          port: 3306
+
 
 ``````

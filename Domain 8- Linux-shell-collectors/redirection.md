@@ -51,3 +51,4 @@ printf "Sysadmin\nEnable\n" > myfile | sort myfile
 ---
 echo 'clock_hctosys="YES"' | sudo tee -a /etc/conf.d/hwclock >/dev/null
 ``````
+ appends  >> , > always overwrites/destroys the previous content.

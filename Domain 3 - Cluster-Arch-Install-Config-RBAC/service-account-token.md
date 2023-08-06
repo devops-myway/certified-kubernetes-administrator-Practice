@@ -146,6 +146,7 @@ kubectl get sa/demo-sa -oyaml
 ----
 vi demo-secret.yaml
 
+cat << EOF | kubectl apply -f -
 apiVersion: v1
 kind: Secret
 metadata:
@@ -153,6 +154,7 @@ metadata:
   annotations:
     kubernetes.io/service-account.name: demo-sa
 type: kubernetes.io/service-account-token
+EOF
 --
 kubectl apply -f demo-secret.yaml
 kubectl get sa/demo-sa -oyaml

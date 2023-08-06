@@ -29,11 +29,11 @@ echo -n '[username]' > [file1]
 echo -n '[password]' > [file2]
 
 touch secret1.txt
-echo -n 'jsmith' | base64 | ./username.txt
-echo -n 'mysecretpassword' | base64 | ./password.txt
+echo -n 'username1' | base64
+echo -n 'password1' | base64
 cat << EOF > secret1.txt
-username= username encoded
-password = password encoded
+username= dXNlcm5hbWUx    
+password = cGFzc3dvcmQx    
 EOF
 ---
 kubectl create secret generic -h
@@ -59,7 +59,7 @@ spec:
     image: nginx
     volumeMounts:
     - name: srt
-      mountPath: "/data/srt "
+      mountPath: "/opt"
       readOnly: true
   volumes:
   - name: srt
@@ -113,7 +113,7 @@ backend-admin
 kubectl create secret generic backend-user --from-literal=backend-username='backend-admin'
 kubectl create secret generic db-user --from-literal=db-username='db-admin'
 
-kubectl get secret secret
+kubectl get secret
 kubectl describe secret/backend-user
 kubectl describe secret/db-user
 
@@ -151,13 +151,16 @@ BACKEND_USERNAME=backend-admin
 ``````
 ### Configmap and secrets with deployments
 ``````sh
+cat << EOF | kubectl apply -f -
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: myapp-config
 data:
   db_host: mysql-service
+EOF
 ---
+cat << EOF | kubectl apply -f -
 apiVersion: v1
 kind: Secret
 metadata:
@@ -166,6 +169,7 @@ type: Opaque
 data:
   username: dXNlcm5hbWU=
   password: cGFzc3dvcmQ=
+EOF
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -180,7 +184,7 @@ spec:
       app: my-app
   template:
     metadata:
-          labels:
+      labels:
         app: my-app
     spec:
       containers:
@@ -203,9 +207,10 @@ spec:
             configMapKeyRef:
               name: myapp-config
               key: db_host
-
+---
 kubectl apply podsec.yaml
 kubectl get all
+kubectl exec -it my-app-5564479c67-nnl52 -- sh -c 'env | grep MYSQL'
 kubectl logs my-app-7d54f6bcd7-ksncn
 --
 MYSQL_SERVER=mysql-service

@@ -17,29 +17,6 @@ The main process inside the container has ended successfully: This is the most c
 2- You’re running a shell in a container, but you haven’t assigned a terminal: If you’re running a container with a shell (like bash) as the default command, then the container will exit immediately if you haven’t attached an interactive terminal.
 -  If there’s no terminal attached, then your shell process will exit, and so the container will exit. You can stop this by adding --interactive --tty (or just -it) to your docker run ... command, which will let you type commands into the shell.
 
-##### How to find out why a Docker container exits
-
-To find out what’s going on, you need to get more information about the container.
-
-1. Look at the logs
-using docker logs <container_id>:
-2. Check the state of the container
-You can view details about a container by using docker inspect <container_id>.
-Look at the container’s exit code. In this example, the container’s exit code was 0. An exit code or exit status of 0 generally means that the application successfully completed.
-
-##### How to prevent a container from stopping
-all of these are simply ways to keep a process alive:
-
-1- Add an artificial sleep or pause to the entrypoint:
-Containers are meant to run to completion. You need to provide your container with a task that will never finish.
-If your container is running a short-lived process, the container will stop when it completes.
-in bash, you can use this to create an infinite pause: while true; do sleep 1; done
-
-2- Change the entrypoint to an interactive shell:
-This is useful if you want to use a container like a virtual machine, and keep it running in the background.
-If you override the entrypoint to the container with a shell, like sh or bash, and run the container with the -itd switches.
-Effectively, you will have a container that stays running permanently. For example: docker run --entrypoint /bin/sh -itd mycontainer:latest
-
 ##### To Keep a Pod Running
 I have faced similar problems when I needed a POD just to run continuously without doing any useful operation. The following are the two ways those worked for me:
 args: is an array

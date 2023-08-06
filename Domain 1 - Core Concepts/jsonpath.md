@@ -153,7 +153,12 @@ kubectl -n my-namespace get pods -o jsonpath='{$.items[0].status.hostIP}'
 ``````
 ##### Get Single Field From Each Element in Array
 We’d like to get a plain list of IP addresses that, potentially, we could use to perform a further action
+
+Use JSON PATH query to retrieve the osImages of all the nodes and store it in a file /opt/outputs/nodes_os_x43kj56.txt.
 ``````sh
+kubectl get nodes -ojson
+kubectl get nodes -o jsonpath='{$.items[*].status.images}'
+kubectl get nodes -o jsonpath={$.items[0].status.images}
 kubectl -n my-namespace get pods -o jsonpath={$.items[*].status.hostIP}
 
 10.154.196.228 10.154.202.136 10.154.201.54

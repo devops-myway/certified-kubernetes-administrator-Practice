@@ -68,6 +68,11 @@ openssl req -nodes -newkey rsa:[bits] -keyout example.key -out example.csr -subj
 
 openssl req -newkey rsa:2048 -keyout example.key -out example.csr -subj "Company/OU=IT Department/CN=example.com"
 
+or 
+### View the certificate:
+openssl x509  -noout -text -in ./server.crt
+openssl x509 -in /etc/kubernetes/pki/etcd/server.crt -text
+
 ``````
 ##### Generate a CSR from an Existing Private Key
 

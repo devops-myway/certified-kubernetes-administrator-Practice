@@ -32,39 +32,42 @@ data:
     echo "Slim Shady"
 EOF
 ``````
-To run this script by using the configmap, let’s take a look at an example Kubernetes Job below and walk through it.
-Two things I would like to point out here:
-- Inside the volume, we must specify a defaultMode of atleast 0500 (read+execute to the user)
-- This defines the file permissions inside the container when the pod is run
-- If we do not set this, we get permission denied errors
-- This is because as a default the configmap will be mounted with 0644 and you will end up with an error like below
-  Warning  Failed     7s    kubelet            Error: failed to create containerd task: failed to create shim task: OCI runtime create failed: runc create failed: unable to start container process: exec: "/script/slim-shady.sh": permission denied: unknown 
-
+Inject the script into a pod with ubuntu image.
 ``````sh
-cat << EOF | kubectl apply -f -
-apiVersion: batch/v1
-kind: Job
+vi testpod.sh
+
+apiVersion: v1
+kind: Pod
 metadata:
-  name: chicka-chicka-slim-shady
+  creationTimestamp: null
+  labels:
+    run: testpod
+  name: testpod
 spec:
-  template:
-    spec:
-      containers:
-        - name: shady
-          image: ubuntu
-          command: ["/script/slim-shady.sh"]
-          volumeMounts:
-            - name: script
-              mountPath: "/script"
-      volumes:
-        - name: script
-          configMap:
-            name: slim-shady-configmap
-            defaultMode: 0500
-      restartPolicy: Never
-EOF
+  containers:
+  - args:
+    - sh
+    - -c
+    - sleep 3600
+    image: ubuntu
+    name: testpod
+    volumeMounts:
+    - name: script
+      mountPath: /opt
+  volumes:
+  - name: script
+    configMap:
+      name: slim-shady-configmap
+      defaultMode: 0500
+      items:
+      - key: slim-shady.sh
+        path: slim-shady.sh
 ----
-kubectl logs -f chicka-chicka-slim-shady-h7j5m
+kubectl apply -f testpod.yaml
+kubectl describe pod/testpod
+kubectl exec -it pod/testpod -- sh
+# use bash to run the script
+bash /opt/slim-shady.sh
 ``````
 ##### Create a ConfigMap
 The key is "my-script.sh" and the value is a Bash script that prints "Hello, World!" to the console.
@@ -76,32 +79,48 @@ metadata:
   name: my-script-configmap
 data:
   my-script.sh: |
-    #!/bin/bash
+    #! /bin/bash
     echo "Hello, World!"
+    echo "Wahala no de finish"
 EOF
+
 ``````
 ##### Define a Volume Mount
 ``````sh
-cat << EOF | kubectl apply -f -
+vi testpod2.yaml
+
 apiVersion: v1
 kind: Pod
 metadata:
-  name: my-pod
+  creationTimestamp: null
+  labels:
+    run: testpod2
+  name: testpod2
 spec:
   containers:
-  - name: my-container
-    image: alpine
+  - args:
+    - sh
+    - -c
+    - sleep 3600
+    image: ubuntu
+    name: testpod2
     volumeMounts:
-    - name: my-script-volume
-      mountPath: /script
-    command: ["/bin/sh","-c","/script/my-script.sh"]
+    - name: script2
+      mountPath: /opt
   volumes:
-  - name: my-script-volume
+  - name: script2
     configMap:
       name: my-script-configmap
-      defaultMode: 0744
-EOF
+      defaultMode: 0500
+      items:
+      - key: my-script.sh
+        path: my-script.sh
 
+---
+kubectl describe po/testpod2
+kubectl exec -it testpod2 -- sh
+ls -l /opt
+cat /opt/my-script.sh 
 ``````
 
 ##### stored as an env variable and call that variable to run the script.

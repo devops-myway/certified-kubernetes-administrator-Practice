@@ -20,7 +20,7 @@ helm –h
 ``````
 ##### Helm commands cheatsheet
 
-helm repo add	             Adds a Helm chart repository to the local cache list, after which we can reference it to pull charts from the repository
+helm repo add	       Adds a Helm chart repository to the local cache list, after which we can reference it to pull charts from the repository
 helm repo update	            Gets the latest information about chart repositories; the information is stored locally.
 helm search repo	              Searches for charts in the given repositories.
 helm pull	                     Downloads a given chart from the chart repository.
@@ -29,7 +29,7 @@ helm rollback                This will rollback a helm deployment to a specific 
 helm ls	                     Lists releases in the current namespace. If the -A flag is provided, it will list all the namespaces.
 helm history	                 Prints historical revisions for a given release: helm history <RELEASE NAME>
 helm template	                      Renders chart templates locally and displays the output.
-helm create	                  Creates a chart. This command will create the entire directory structure with all the files required to deploy e.g nginx
+helm create	         Creates a chart. This command will create the entire directory structure with all the files required to deploy e.g nginx
 helm lint	                           Validates a chart
 helm plugin	                         Installs, lists, updates, and uninstalls Helm plugins.
 helm install                        helm install <RELEASE NAME> <CHART NAME>
@@ -175,9 +175,9 @@ kubectl get ns
 
 helm install <RELEASE NAME> <CHART NAME>
 ``````sh
-helm install --dry-run nginx mychart/
+helm install nginx mychart/ --dry-run
 --
-heml install nginx mychart/
+heml install chart1 . --dry-run
 
 ``````
 ##### Helm Upgrade Install
@@ -185,9 +185,10 @@ whenever we make changes to our chart and want to deploy
 ``````sh
 helm upgrade <name of chart> .
 or 
-helm upgrade --install <name of chart> .
+helm upgrade --install <name of chart> . --dry-run
 
 helm list
+helm history chart_name
 
 ``````
 ##### 5.7 List all the resources deployed by chart
@@ -203,11 +204,7 @@ we had defined a Service with NodePort so we can use the same to access the ngin
 
 ``````sh
 kubectl get svc
-
-# Check the worker node on which our deployment pod is running on:
 kubectl get pods -owide
-
-# So we can use the worker-1.example IP with 31204 port from PORT(S) section of kubernetes service output to access the nginx server from nginx-mychart-7fd98b7fd-mmx62:
 
 ``````
 ##### 6. Debugging Helm Chart Templates
@@ -225,74 +222,300 @@ helm get manifest nginx
 ##### 6. Deleting/Un-installing a chart
 
 ``````sh
-
-helm uninstall mysite
+helm uninstall chart_name
 ``````
-##### 6. Using - With Statement for rendering repitition
+##### 6. Conditional flow control - if/else block
+Here the condition will be evaluated by the Pipeline to see whether the condition is true or false. The basic structure of if/else block is this:
 
 ``````sh
-
-{{ - with .Values.key }}
-
-template for labels, spec etc
-
+{{ if VALUE or PIPELINE }}  
+# Do something
+{{ else if OTHER VALUE or OTHER PIPELINE }}  
+# Do something else
+{{ else }}   
+# Default
 {{- end }}
 ``````
-##### 6. Reduce code repition using $ statement
+Here are our values.yaml and service.yaml:
 
 ``````sh
-values.yaml
+replicaCount: 1
+image:
+  repository: nginx
+  tag: 1.21.6
+  pullPolicy: Always
+env: uat
 
-service:
-  type:Nodeport
+---
+replicaCount: 1
+image:
+  repository: nginx
+  tag: 1.21.6
+  pullPolicy: Always
+env: sit
+``````
+templates/service.yaml:
+if in our values.yaml file environment variable will be there then the template will generate with the label env otherwise it will not
+``````sh
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}
+  {{- if .Values.env }}
   labels:
-    app: nginx
-  port:80
-  targetport:8080
-  
-# not under services and we use this $ sign to fix the repitition
-replicacount: 2
-imagenginx: nginx:1.16
------
-deployment.yaml
+    env: {{ .Values.env }}
+  {{- end }}
+spec:
+  selector:
+    app: myapp
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 9376
+``````
+The actual service.yaml file will be:
+``````sh
+apiVersion: v1
+kind: Service
+metadata:
+  name: myapp-service
+  labels:
+    env: uat
+spec:
+  selector:
+    app: myapp
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 9376
+``````
+##### Note:
+We add “-” sign next to the curly brackets to avoid extra whitespace/newlines in output.
 
-{{ - $replica := .Values.replicacount }}
-{{ - $image := .Values.imagenginx }}
-{{ - with .Values.service }}
+``````sh
+This means remove whitespaces/newlines from the left.
+{{-
 
-spec.templ;ate.spec.conatiners
-
-replicas: {{ $replicas }}
-image: {{ $image }}
+This means remove whitespaces/newlines from the right.
+-}}
+``````
+Now Suppose in our case if environment is “uat” or any other like cug/prod, we need to print env label as it is
+templates/service.yaml
+``````sh
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}
+  {{- if .Values.environment }}
+  labels:
+    env: {{ .Values.environment }}
+  {{- else if eq .Values.environment "sit" }}
+  labels:
+    env: dev
+  {{- end }}
+spec:
+  selector:
+    app: myapp
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 9376
+``````
+There are some other expressions in Helm that we can use in these types of situations:
+``````sh
+eq ---> equal
+ne ---> not equal
+lt ---> less than
+le ---> less than or equal to
+gt ---> greater than
+ge ---> greater than or equal to
+not ---> negation
+empty ---> value is empty
+``````
+##### 6. with
+with helps us to modify the scope. In the template, the current scope is “.”
+Here is the structure of with -
+``````sh
+{{ with PIPELINE }}
+  # restricted scope
+{{ end }}
 
 ``````
-##### 7. Range with $key $ value to iterate all over the values
+values.yaml file
+``````sh
+tags:
+  kafka:
+    uname: myKafka
+    topic: test
+  database:
+    uname: mongo
+    collection: users
+``````
+These data we need to pass in our configmap.yaml. So our configmap.yaml will be
+``````sh
+apiVersion: v1
+kind: ConfigMap
+metadata:
+   name: {{ .Release.Name }}
+data:
+   kafka-username: {{ .Values.tags.kafka.uname }}
+   kafka-topic: {{ .Values.tags.kafka.topic }}
+   database-username: {{ .Values.tags.database.uname }} 
+   database-collection: {{ .Values.tags.database.collection }}
+``````
+the duplication of .Values.tags, we’ve written this 4 times.
+And we can avoid this by setting up the scope using with block.
+
+change the scope and make our configmap.yaml more simple. The scope is .Values.tags
+``````sh
+apiVersion: v1
+kind: ConfigMap
+metadata:
+   name: {{ .Release.Name }}   # this release.name will throw an error as it is within the scope
+data:
+   {{- with .Values.tags }}
+   kafka-username: {{ .kafka.uname }}
+   kafka-topic: {{ .kafka.topic }}
+   database-username: {{ .database.uname }} 
+   database-collection: {{ .database.collection }}
+   {{- end }}
+
+``````
+But we can make it more simple by removing the duplication of kafka and database with the help of with block.
 
 ``````sh
-values.yaml
-
-config:
-  name: postgres-config
-  data:
-  - key: POSTGRES_DB
-    value: postgress
-  - key: POSTGRES_USER
-    value: shan
-  - key: POSTGRES_PASSWORD
-    value: secretpass
-  
-
------
-postgres-config.yaml
-
+apiVersion: v1
+kind: ConfigMap
 metadata:
-{{ .Values.postgres.config.name }}
-labels:
-  group: {{ .Values.postgres.group }}
-
+   name: {{ .Release.Name }}
 data:
-{{ - range .Values.postgres.config.data }}
-  {{ .key}}: {{ .value }}
-{{ - end }}
+   {{- with .Values.tags }}
+    {{- with .kafka }}
+     kafka-username: {{ .uname }}
+     kafka-topic: {{ .topic }}
+    {{- end }}
+    {{- with .database }
+     database-username: {{ .uname }} 
+     database-collection: {{ .collection }}
+    {{- end }}
+   {{- end }}
+
+``````
+If we just put it like this it will throw an error names nil pointer evaluating because we are currently in the scope .Values.tags and there is no Release object.
+Here Release object is in the root scope. Root scope is also represented by the $ sign. So we can use $ here before the . and it will take us to root scope.
+``````sh
+release: {{ .Release.Name }}
+
+release: {{ $.Release.Name }}
+``````
+##### 7. Range
+range is as similar to for/foreach loops in any other programming language. We can use range to iterate through a collection one by one.
+
+values.yaml file
+``````sh
+secrets:
+  - mongo-secret
+  - kafka-secret
+  - redis-secret
+  - vault-secret
+
+``````
+Now if we need to pass this data, our configmap.yaml looks like this:
+
+``````sh
+apiVersion: v1
+kind: ConfigMap
+metadata:
+   name: {{ .Release.Name }}
+data:
+   secrets:
+     - mongo-secret
+     - kafka-secret
+     - redis-secret
+     - vault-secret
+``````
+Let’s see how our configmap.yaml will look like using range:
+``````sh
+apiVersion: v1
+kind: ConfigMap
+metadata:
+   name: {{ .Release.Name }}
+data:
+   secrets:
+   {{- range .Values.secrets }}
+     - {{ . }}
+   {{- end }}
+``````
+##### Inbuilt Object
+Release: This object describes the release itself. It has several objects inside of it:
+``````sh
+Release.Name: The release name
+Release.Namespace: The namespace to be released into (if the manifest doesn’t override)
+
+``````
+###### Indent spaces
+The indent of 4 or 8 is dependent on the current indenting going on with the YAML file. If you need the output to be 4 spaces then you use 4, if you need the output to be 8 space (to align with the surrounding YAML, then you use 8)
+``````sh
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "anvil.fullname" . }}
+  labels:
+    {{- include "anvil.labels" . | nindent 4 }}
+spec:
+
+``````
+So in this example, the output is being indented 4 spaces. When the output is generated via helm template anvil you'll see this:
+Notice that the output from the template has 4 spaces before each line, so the output is clearly part of the labels: property.
+``````sh
+# Source: anvil/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: RELEASE-NAME-anvil
+  labels:
+    helm.sh/chart: anvil-0.1.0               # <<<--- From Template
+    app.kubernetes.io/name: anvil            # <<<--- From Template
+spec:
+``````
+If we changed the indent to 8 the syntax would look like this:
+``````sh
+# Source: anvil/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: RELEASE-NAME-anvil
+  labels:
+        helm.sh/chart: anvil-0.1.0               # <<<--- From Template
+        app.kubernetes.io/name: anvil            # <<<--- From Template
+
+spec:
+``````
+##### Include statement
+ include is a template-processing directive which tells helm to reference a template function defined elsewhere (usually _helpers.tpl).
+``````sh
+{{ include "toYaml" $value | indent 2 }}
+labels: {{- include "mylabels" . | nindent 4 }}
+
+``````
+##### _helpers.tpl
+A file named _helpers.tpl is usually used to define Go template helpers with this syntax:
+Th helpers is generally to reduce multiple labels, or objects used in a template.
+nindent: new line indentation. 
+``````sh
+{{- define "mylabels" -}}
+app: nginx
+location: frontend
+server: proxy
+{{- end -}}
+
+---
+{{- $v := include "sometpl" . | fromYaml }}
+some: {{- $v | toYaml | nindent 2 }}
+``````
+``````sh
+labels: {{- include "mylabels" . | nindent 4 }}
+``````
+``````sh
 
 ``````

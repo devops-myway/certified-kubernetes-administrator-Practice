@@ -14,8 +14,9 @@ CronJobs are useful when you want to run a task regularly at a specific interval
 #### Understand the YAML manifest for Kubernetes Jobs
 ``````sh
 kubectl create job echo-job --image=busybox --dry-run=client -oyaml -- sh -c "echo Hello K8s" > job1.yaml
-vi job1.yaml
+
 -----
+cat << EOF | kubectl apply -f -
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -31,6 +32,7 @@ spec:
         command: ['echo', 'Hello Kubernetes Jobs!']
       restartPolicy: Never
   backoffLimit: 4
+EOF
 -----
 kubectl get job
 kubectl describe job/echo-job
@@ -56,23 +58,30 @@ https://crontab.guru/
 
 
 ``````sh
-apiVersion: batch/v1beta1
+
+cat << EOF | kubectl apply -f -
+apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: simple-cron-job
+  creationTimestamp: null
+  name: my-job
 spec:
-  schedule: "* * * * *" # run every minute
   jobTemplate:
+    metadata:
+      creationTimestamp: null
+      name: my-job
     spec:
       template:
+        metadata:
+          creationTimestamp: null
         spec:
           containers:
-          - name: simple-cron-job
-            image: busybox
+          - image: busybox
+            name: my-job
             command:
             - "echo"
             - "This is a simple cron job."
           restartPolicy: OnFailure
-  concurrencyPolicy: Allow
-
+  schedule: '* * * * *'
+EOF
 ``````

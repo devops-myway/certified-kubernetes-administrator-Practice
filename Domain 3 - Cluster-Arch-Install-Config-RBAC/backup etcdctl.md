@@ -1,5 +1,15 @@
 https://kubernetes.io/docs/tasks/administer-cluster/configure-upgrade-etcd/
+https://etcd.io/docs/v3.4/dev-guide/interacting_v3/
+https://sysdig.com/blog/kubernetes-security-harden-kube-system/
 
+###### ETCD Version
+``````sh
+kubectl get ns
+kubectl get po -n kube-system
+kubectl describe po/etcd -n kube-system
+--
+image: registry.k8s.io/etcd:3.5.7-0
+``````
 ###### Working with ETCDCTL
 We need to pass the following three pieces of information to etcdctl to take an etcd snapshot.
 
@@ -72,8 +82,55 @@ ETCDCTL_API=3 etcdctl --write-out=table snapshot status /opt/backup/backup.db
 ##### Kubernetes etcd Restore Using Snapshot Backup
 ``````sh
 
-ETCDCTL_API=3 etcdctl snapshot restore --data-dir <data-dir-location> snapshotdb
+ETCDCTL_API=3 etcdctl snapshot restore <data-dir-location> --data-dir new_directory
 
-sudo ETCDCTL_API=3 etcdctl snapshot restore --data-dir /opt/backup backup.db
+sudo ETCDCTL_API=3 etcdctl snapshot restore /opt/backup/backup.db --data-dir /var/lib/etcd-from-backup
 ``````
+##### To a new localtion and next, update the /etc/kubernetes/manifests/etcd.yaml
+``````sh
+ETCDCTL_API=3 etcdctl snapshot restore /tmp/etcd-backup.db --data-dir /var/lib/etcd-backup
+
+ETCDCTL_API=3 etcdctl  --data-dir /var/lib/etcd-from-backup \
+snapshot restore /opt/snapshot-pre-boot.db
+
+``````
+###### the restored files are located at the new folder /var/lib/etcd-backup, so now configure etcd to use that directory:
+The YAML file, is to change the hostPath for the volume called etcd-data from old directory (/var/lib/etcd) to the new directory (/var/lib/etcd-from-backup).
+``````sh
+cat /etc/kubernetes/manifests/etcd.yaml   # to change the default directory of the etcd data store to the updated one
+  volumes:
+  - hostPath:
+      path: /var/lib/etcd-from-backup
+      type: DirectoryOrCreate
+    name: etcd-data
+
+``````
+###### kube-system security: Core components
+kube-apiserver: The central communications hub of the cluster. Provides REST endpoints to interact with the other cluster entities and stores the distributed state in the etcd backend.
+
+etcd: The database backend where the cluster configuration, state and related information persists.
+One of the easiest and most effective whitelist that you can configure is the list of allowed processes
+``````sh
+kubectl get po -n kube-system
+kubectl describe po/ -n kube-system
+kubectl exec -it etcd --namespace=kube-system sh
+
+``````
+``````sh
+kubectl exec -it kube-apiserver --namespace=kube-system sh
+
+``````
+
+###### What is the IP address of the External ETCD datastore used in cluster2
+cat /etc/kubernetes/manifests/kube-apiserver.yaml
+--etcd-servers=https://192.29.15.14:2379
+
+cat /etc/kubernetes/manifests/etcd.yaml
+--listen-client-urls=https://127.0.0.1:2379,https://192.29.15.21:2379
+
+--advertise-client-urls=https://192.29.15.21:2379
+
+ssh etcd_server or ssh 192.29.15.14
+
+-----
 
