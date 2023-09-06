@@ -1,5 +1,6 @@
 https://kubernetes.io/docs/concepts/workloads/controllers/deployment/
-https://kubernetes.io/docs/concepts/cluster-administration/manage-deployment/#canary-deployments
+https://kubernetes.io/blog/2020/04/two-phased-canary-rollout-with-gloo/
+https://earthly.dev/blog/canary-deployment-in-k8s/
 
 ##### Kubernetes Deployment Strategies
 Kubernetes deployment strategies are the way that pods are updated, downgraded or created into new versions of applications.
@@ -8,181 +9,234 @@ The main benefits of these Kubernetes deployment strategies are that it mitigate
 
 
 ###### canary deployment
-A canary deployment is an upgraded version of an existing deployment, with all the required application code and dependencies. It is used to test out new features and upgrades to see how they handle the production environment. This is done by creating a new replica set with the updated version of the software while keeping the original replica set running.
+A canary deployment is an improved iteration of an existing deployment that includes all the necessary dependencies and application code. It exists alongside the original deployment and allows you to compare the behavior of different versions of your application side by side. It helps you test new features on a small percentage of users with minimal downtime and less impact on user experience.
 
-Canary deployments are a valuable tool for minimizing risk and ensuring high availability in complex distributed systems, by allowing for controlled testing of changes before they are released to the entire system.
 
-#### Example 1.0 
-We created 3 replicas of Nginx pods for the Kubernetes cluster. All the pods have the label version: "1.0"
+#### How You Can Use Canary Deployments in Kubernetes
 
+At its core, a canary deployment implements a clone of your production environment with a load balancer routing user traffic between the available environments based on your parameters.
+
+Once added to your Kubernetes cluster, the canary deployment will be controlled by services using selectors and labels. This service provides or forwards traffic to the labeled Kubernetes environment or pod, making it simple to add or remove deployments.
+
+Initially, you can have a specific percentage of users test the modified application, compare both the application deployments, and increase the user percentage as your monitoring and user tests produce no errors. This percentage can be gradually increased until all the users have tested the newer version of the application, and then the older version can be taken offline.
+
+###### setWeight steps
+The Rollout makes a best effort attempt to achieve the percentage listed in the last setWeight step between the new and old version.
+- In the case where the setWeight is 15% or 25%, the Rollout attempts to get there by rounding up the calculation (i.e. the new ReplicaSet has 2 pods since 15% of 10 rounds up to 2 and the old ReplicaSet has 9 pods since 85% of 10 rounds up to 9).
+
+##### Example 1
+CNBC broadcasting team need to test stability of deployment for two different software image version.
+- Task 1-
+Create a namespace cnbc, and make sure pod count in the namespace is not more than 10
+Create a deployment (cnbc-1) with image nginx:1.14.2
+Create a cluster IP service, which will drive traffic to the deployment
+Update  deployment to (cnbc-2)with image nginx:latest , using canary deployment update strategy
+Add labels to deployment as upgrade=canary
+Redirect 60% of the incoming traffic to old deployment  and 40% of the incoming traffic to new deployment
 ``````sh
 vi pod1.yaml
 
-cat << EOF | kubectl apply -f -
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cnbc
+---
+vi dep1.yaml
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
- name: nginx
-spec:
- selector:
-  matchLabels:
-   app: nginx
-   version: "1.0"
- replicas: 3
- template:
-  metadata:
-   labels:
+  name: cnbc-1
+  namespace: cnbc
+  labels:
     app: nginx
-    version: "1.0"
-  spec:
-   containers:
-    - name: nginx
-      image: nginx:alpine
-      resources:
-      ports:
-      - containerPort: 80
-      volumeMounts:
-      - mountPath: /usr/share/nginx/html
-        name: indexhtml
-   volumes:
-   - name: indexhtml
-     hostPath:
-       path: /var/logs/Documents/nginx/v1
-EOF                                        
-----
-k apply -f pod1.yaml
-k get pods -o wide
+spec:
+  replicas: 6
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.14.2
+        ports:
+        - containerPort: 80
+
+kubectl apply -f dep1.yaml
 ``````
-##### Create the Service
-The type of service – nodeport. It instructs the service to balance workloads between pods with the labels app: nginx and version: "1.0".
+##### Create the Service Object
 
 ``````sh
-kubectl create svc nodeport -h
-kubectl create svc nodeport nginx-svc --tcp=8181:80 --dry-run=client -oyaml > svc1.yaml
+vi svc1.yaml
 
-cat << EOF | kubectl apply -f -
 apiVersion: v1
 kind: Service
 metadata:
-  creationTimestamp: null
-  labels:
-    app: nginx-svc1
-    version: "1.0"
-  name: nginx-svc
+  name: cnbc-svc
+  namespace: cnbc
 spec:
   ports:
-  - port: 8181
-    protocol: TCP
-    targetPort: 80
+    - port: 80
+      targetPort: 80
+      protocol: TCP
   selector:
     app: nginx
-    version: "1.0"
-  type: NodePort
-status:
-  loadBalancer: {}
-EOF
 ---
 kubectl apply -f svc1.yaml
 kubectl get svc
-kubectl port-forward svc/nginx-svc 8181:8181
-forwarding from 127.0.0.1:8181 -> 80
-paste on browser: 127.0.0.1:8181
+kubectl get all -n echo
 
 ``````
-##### Check First Version of Cluster
 
-``````sh
-kubectl get nodes -owide
-curl localhost:32436  # test the version of deployment1
-``````
 ##### Create a Canary Deployment
-With version 1 of the application in place, you deploy version 2, the canary deployment.
-The name in the metadata is nginx-canary-deployment.
-It has the label version: “2.0”.
-It is linked to a html file index.html which consists of:
 
 ``````sh
-cat << EOF | kubectl apply -f - 
 apiVersion: apps/v1
 kind: Deployment
 metadata:
- name: nginx-canary
-spec:
- selector:
-  matchLabels:
-   app: nginx
-   version: "2.0"
- replicas: 3
- template:
-  metadata:
-   labels:
+  name: cnbc-2
+  namespace: cnbc
+  labels:
     app: nginx
-    version: "2.0"
-  spec:
-   containers:
-    - name: nginx
-      image: nginx:alpine
-      resources:
-      ports:
-      - containerPort: 8282
-      volumeMounts:
-      - mountPath: /usr/share/nginx/html
-        name: indexhtml
-   volumes:
-   - name: indexhtml
-     hostPath:
-       path: /var/logs/Documents/nginx/v1
-EOF                                       
+    upgrade: canary
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: nginx
+      upgrade: canary
+  template:
+    metadata:
+      labels:
+        app: nginx
+        upgrade: canary
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+                                    
 ---
-k apply -f nginx-canary-deployment.yaml
+k apply -f dep2.yaml
 k get pods -o wide
+
 ``````
-###### create the Service file
-To test out the updated pods, you need to modify the service file and direct part of the traffic to version: "2.0".
-Find and remove the line version: “1.0”. The file should include the following:
+###### Example 2
+Implement canary deployment by running two instances of nginx marked as version=v1 and version=v2 so that the load is balanced at 75%-25% ratio
+
 ``````sh
 
-kubectl create svc nodeport nginx-svc-canary --tcp=8282:80 --dry-run=client -oyaml > svc2.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-app-v1
+  labels:
+    app: my-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: my-app
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: my-app
+        version: v1
+    spec:
+      containers:
+      - name: nginx
+        image: nginx
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: workdir
+          mountPath: /usr/share/nginx/html
+      initContainers:
+      - name: install
+        image: busybox:1.28
+        command:
+        - /bin/sh
+        - -c
+        - "echo version-1 > /work-dir/index.html"
+        volumeMounts:
+        - name: workdir
+          mountPath: "/work-dir"
+      volumes:
+      - name: workdir
+        emptyDir: {}
+``````
+##### Service Object
 
-cat << EOF | kubectl apply -f -
+
+``````sh
 apiVersion: v1
 kind: Service
 metadata:
-  creationTimestamp: null
+  name: my-app-svc
   labels:
-    app: nginx-svc-canary
-    version: "2.0"
-  name: nginx-svc2
+    app: my-app
 spec:
+  type: ClusterIP
   ports:
-  - port: 8383
-    protocol: TCP
-    targetPort: 8282
+  - name: http
+    port: 80
+    targetPort: 80
   selector:
-    app: nginx
-    version: "2.0"
-  type: NodePort
-status:
-  loadBalancer: {}
-EOF
---
-k apply -f svc2.yml
+    app: my-app
 ``````
-##### Roll Back Canary Deployment
-If you notice the canary is not performing as expected, you can roll back the deployment and delete the upgraded pods with:
+##### Canary Rollout
 
 ``````sh
-kubectl delete deployment.apps/nginx-canary-deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-app-v2
+  labels:
+    app: my-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: my-app
+      version: v2
+  template:
+    metadata:
+      labels:
+        app: my-app
+        version: v2
+    spec:
+      containers:
+      - name: nginx
+        image: nginx
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: workdir
+          mountPath: /usr/share/nginx/html
+      initContainers:
+      - name: install
+        image: busybox:1.28
+        command:
+        - /bin/sh
+        - -c
+        - "echo version-2 > /work-dir/index.html"
+        volumeMounts:
+        - name: workdir
+          mountPath: "/work-dir"
+      volumes:
+      - name: workdir
+        emptyDir: {}
+``````
+##### Test the Rollout
+``````sh
 
 ``````
-##### Roll Out Upgraded Deployment
-If you conclude the canary deployment is performing as expected, you can route all incoming traffic to the upgraded version. There are three ways to do so:
-
 ``````sh
-# Upgrade the first version by modifying the Docker image and building a new deployment
-kubectl delete deployment.apps/nginx-canary-deployment
-
-#  You can keep the upgraded pods and remove the ones with the version 1 label:
-kubectl delete deployment.apps/nginx
 
 ``````

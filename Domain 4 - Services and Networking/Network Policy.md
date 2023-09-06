@@ -4,43 +4,36 @@ https://snyk.io/blog/kubernetes-network-policy-best-practices/
 https://banzaicloud.com/blog/network-policy/
 
 ##### Anatomy of a network policy
-let’s isolate some pods. We’re going to isolate pods which have the label role=db
+- podSelector: This selects particular Pods in the same namespace as the NetworkPolicy which should be allowed as ingress sources or egress destinations.
+
+- namespaceSelector: This selects particular namespaces for which all Pods should be allowed as ingress sources or egress destinations.
+
+- namespaceSelector and podSelector: A single to/from entry that specifies both namespaceSelector and podSelector selects particular Pods within particular namespaces
+
+##### Single Element for Ingress, pods in same 
+This policy contains a single from element allowing connections from Pods with the label role=client in namespaces with the label user=alice
+- any pod in a namespace with the label user=alice
 ``````sh
-spec:
-  podSelector:
-    matchLabels:
-      role: db
-  policyTypes:
-  - Ingress
-  - Egress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          user: alice
+      podSelector:
+        matchLabels:
+          role: client
 ``````
-Add an ingress rule that allows connections to any pod labeled role=db in default namespace:
-we’ll be allowing all connections from ipblock 172.17.0.0/16 except ipblock 172.17.1.0/24
-
-- and from any pod in the namespace which has the label project= myproject
-
-- from any pod in default with the label role=frontend
-
-- and on TCP port 3306
+##### 2 Elements in the array Ingress
+It contains two elements in the from array, and allows connections from Pods in the local Namespace with the label role=client, or from any Pod in any namespace with the label user=alice.
 ``````sh
 ingress:
-    - from:
-        - ipBlock:
-            cidr: 172.17.0.0/16
-            except:
-              - 172.17.1.0/24
-----
-- namespaceSelector:
-    matchLabels:
-      project: myproject
----
-- podSelector:
-    matchLabels:
-      role: frontend
-----
-ports:
-  - protocol: TCP
-      port: 6379
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          user: alice
+    - podSelector:
+        matchLabels:
+          role: client
 
 ``````
 #### Adding Egree Rules

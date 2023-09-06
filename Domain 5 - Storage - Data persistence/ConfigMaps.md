@@ -16,6 +16,13 @@ arguments - specifies whether to use files or directories (--from-file), environ
 Key: is the filename or the key you provided on the command line
 Value: is the file content or the literal value you provided on the command line
 
+##### create a file for configmap
+``````sh
+echo -e "foo3=lili\nfoo4=lele" > config.txt
+
+cat config.txt
+``````
+
 #### Create a ConfigMap with manifest file
 
 ``````sh
@@ -66,7 +73,7 @@ kubectl exec -it cm-demo-pod -- sh -c 'env | grep _KEY'
 SPECIAL_TYPE_KEY=charm
 SPECIAL_LEVEL_KEY=very
 ``````
-#### Use a ConfigMap in a volume
+#### Use a ConfigMap in a Volume
 
 ``````sh
 vi cm1.yaml

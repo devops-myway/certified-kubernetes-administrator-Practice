@@ -71,3 +71,8 @@ spec:
 EOF
 
 ``````
+###### Grep Command parameters
+
+c: -c or -count will tell you how many lines the search term appears in, rather than returning each of those lines to you. For example, the grep command “grep -c “test” example.txt” will give you a count of how many lines “test” appears in.
+-l: If you want to know which files a certain search term was found in, use the option “-l” (lowercase L). The grep command “grep -l “test” \*.text” will output all the files that contain the word “test”.
+-i: You can use -i to make your search case insensitive. So “grep -i “test” example.txt” will return every line that contains either “test” or “Test”.

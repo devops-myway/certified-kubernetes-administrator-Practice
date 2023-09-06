@@ -2,51 +2,54 @@ https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-read
 
 
 ###### Liveness Probes:
-Liveness probes indicate if a container is running. Meaning, has the application within the container started running and is it still running? If you’ve configured liveness probes for your containers, you’ve probably still seen them in action. When a container gets restarted, it’s generally because of a liveness probe failing. This can happen if your container couldn’t startup, or if the application within the container crashed. The Kubelet will restart the container because the liveness probe is failing in those circumstances. In some circumstances though, the application within the container is not working, but hasn’t crashed. In that case, the container won’t restart unless you provide additional information as a liveness probe
-
-- initialDelaySeconds: 2 waits 2 seconds after container got created before probing starts
-- periodSeconds: 10 liveness probe probes every 10 seconds.
+The liveness probe is used to check whether a pod is alive.
 
 ###### Readiness Probes:
-A readiness probe indicates if the application running inside the container is “ready” to serve requests. As an example, assume you have an application that starts but needs to check on other services like a backend database before finishing its configuration. Or an application that needs to download some data before it’s ready to handle requests. A readiness probe tells the Kubelet that the application can now perform its function and that the Kubelet can start sending it traffic.
+The readiness probe is used to check whether a pod is ready. Only pods in the ready state provide external services and receive traffic from the access layer. When a pod is not in the ready state, the access layer bypasses traffic from the pod.
 
-###### Define a liveness command
+###### Application Health Status - 
 
-There are three different ways these probes can be checked.
+The liveness and readiness probes support three check methods.
 
-ExecAction: Execute a command within the container
-TCPSocketAction: TCP check against the container’s IP/port
-HTTPGetAction: An HTTP Get request against the container’s IP/Port
+1- HTTP GET: Sends an HTTP GET request to check the health of an application. The application is considered healthy when the return code ranges from 200 to 399.
+2- exec: Checks whether a service is normal by running a command in the container. The container is healthy when 0 is returned for the command.
+3- TCP Socket: Performs a TCP health check on a container by checking the IP address and port of the container. The container is healthy if a TCP connection is established.
 
-For the first 30 seconds of the container's life, there is a /tmp/healthy file. So during the first 30 seconds, the command cat /tmp/healthy returns a success code. After 30 seconds, cat /tmp/healthy returns a failure code.
+###### Check Results
+Check results are divided into three states:
 
-Within 30 seconds, view the Pod events:
-After 35 seconds, view the Pod events again:
+- Succeeded: Indicates that the container passed the health check and is considered normal by the liveness probe or readiness probe.
+- Failed: Indicates that the container fails to pass the health check. When the readiness probe determines that a pod is abnormal, the pod is removed from the service layer. When the liveness probe determines that a pod is abnormal, the pod is restarted or deleted.
+- Unknown: Indicates that the current mechanism is not fully executed probably because the mechanism times out or no response is returned promptly after script execution. In this case, the readiness probe or liveness probe waits for the following check mechanism, without performing any operations.
+
+##### Ex 1
+Create an nginx pod with a liveness probe that just runs the command 'ls'. Save its YAML in pod.yaml. Run it, check its probe status.
+Modify the pod.yaml file so that liveness probe starts kicking in after 5 seconds whereas the interval between probes would be 5 seconds. Run it, check the probe, delete it.
 ``````sh
-cat << EOF | kubectl apply -f -
 apiVersion: v1
 kind: Pod
 metadata:
+  creationTimestamp: null
   labels:
-    test: liveness
-  name: liveness-exec
+    run: nginx
+  name: nginx
 spec:
   containers:
-  - name: liveness
-    image: registry.k8s.io/busybox
-    args:
-    - /bin/sh
-    - -c
-    - touch /tmp/healthy; sleep 30; rm -f /tmp/healthy; sleep 600
+  - image: nginx
+    imagePullPolicy: IfNotPresent
+    name: nginx
+    resources: {}
     livenessProbe:
+      initialDelaySeconds: 5 # add this line
+      periodSeconds: 5 # add this line as well
       exec:
         command:
-        - cat
-        - /tmp/healthy
-      initialDelaySeconds: 5
-      periodSeconds: 5
-EOF
+        - ls
+  dnsPolicy: ClusterFirst
+  restartPolicy: Never
+status: {}
 ----
+kubectl
 kubectl describe pod liveness-exec
 
 ``````
@@ -85,8 +88,9 @@ kubectl describe pod liveness-http
 ``````
 
 ##### Define Readiness probes
-Readiness probes are configured similarly to liveness probes. The only difference is that you use the readinessProbe field instead of the livenessProbe field.
-You have to determine exactly what to test to ensure a readiness probe tests readiness.
+Readiness probes are configured similarly to liveness probes. The only difference is that you use the readinessProbe field instead of the livenessProbe field. You have to determine exactly what to test to ensure a readiness probe tests readiness.
+###### Question-
+Create an busybox pod (that includes port 80) with an HTTP readinessProbe on path /tmp/healthy on port 80. Again, run it, check the readinessProbe, delete it.
 
 ### Example2
 ``````sh
@@ -103,6 +107,9 @@ spec:
   containers:
   - name: readiness
     image: registry.k8s.io/busybox
+    ports:
+    - containerPorts: 80
+      name: http
     args:
     - /bin/sh
     - -c
@@ -117,5 +124,6 @@ spec:
 EOF
 ----
 kubectl get pod/readiness-exec
-kubectl describe pod/readiness-exec  # after 30 seconds the probe fails
+kubectl describe po nginx | grep -i readiness
+    Readiness:      http-get http://:80/ delay=0s timeout=1s period=10s #success=1 #failure=3
 ``````

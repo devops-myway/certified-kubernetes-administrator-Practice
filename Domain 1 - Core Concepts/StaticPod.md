@@ -6,19 +6,16 @@ Static Pods are managed directly by the kubelet daemon on a specific node, witho
 
 Choose a directory, say /etc/kubernetes/manifests and place a web server Pod definition there, for example /etc/kubernetes/manifests/static-web.yaml
 
-##### Example 1
+##### Filesystem-hosted static Pod manifest
 
 ``````sh
-sudo cat /var/lib/kubelet/config.yaml
-cd /etc/kubernetes/manifests
-ls
+ssh my-node1    # ssh into the host or node
+ ls -l /etc/kubernetes/manifests/
+vi /etc/kubernetes/manifests/static-web.yaml
 
 ``````
-ssh on the controlplane node
-``````sh
-sudo ls -l /etc/kubernetes/manifests/
 
-sudo cat <<EOF >/etc/kubernetes/manifests/static-web.yaml
+``````sh
 apiVersion: v1
 kind: Pod
 metadata:
@@ -33,9 +30,9 @@ spec:
         - name: web
           containerPort: 80
           protocol: TCP
-EOF
 ---
 kubectl get pods
 kubectl get pods -A -owide
 rm -rf static-web.yaml
+systemctl restart kubelet
 ``````

@@ -1,4 +1,5 @@
 https://kubernetes.io/docs/concepts/workloads/pods/
+https://www.pluralsight.com/cloud-guru/labs/aws/forwarding-port-traffic-with-an-ambassador-container
 
 ##### Ambassador Pattern - container + proxy(to networking outside)
 

@@ -13,6 +13,7 @@ apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: demo
+  namespace: kube-system
 spec:
   selector:
     matchLabels:

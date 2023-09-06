@@ -12,36 +12,24 @@ image: registry.k8s.io/etcd:3.5.7-0
 ``````
 ###### Working with ETCDCTL
 We need to pass the following three pieces of information to etcdctl to take an etcd snapshot.
-
-- etcd endpoint (–endpoints)
-- ca certificate (–cacert)
-- server certificate (–cert)
-- server key (–key)
-
-install the etcd client utility if not done
 ``````sh
 sudo apt install etcd-client
 etcdctl -h
---
-sudo ls -l /etc/
 sudo ls -l /etc/kubernetes/manifests
 sudo cat /etc/kubernetes/manifests/etcd.yaml
----
+
+or
+
 kubectl get po -n kube-system
 kubectl describe pod etcd-master-node -n kube-system
 
---- # grab the important keys
-- --advertise-client-urls=https://172.31.42.63:2379  # endpoint
-- --cert-file=/etc/kubernetes/pki/etcd/server.crt
-- --key-file=/etc/kubernetes/pki/etcd/server.key
-- --trusted-ca-file=/etc/kubernetes/pki/etcd/ca.crt
-
+- etcd endpoint (–endpoints)  - --advertise-client-urls=https://172.31.42.63:2379 
+- ca certificate (–cacert) - --trusted-ca-file=/etc/kubernetes/pki/etcd/ca.crt
+- server certificate (–cert) - --cert-file=/etc/kubernetes/pki/etcd/server.crt
+- server key (–key)  - --key-file=/etc/kubernetes/pki/etcd/server.key
 ``````
 
 #### Backing up an etcd cluster
-All Kubernetes objects are stored on etcd. Periodically backing up the etcd cluster data is important to recover Kubernetes clusters under disaster scenarios, such as losing all control plane nodes. 
-
-Backing up an etcd cluster can be accomplished in two ways: etcd built-in snapshot and volume snapshot.
 
 ##### Volume snapshot
 If etcd is running on a storage volume that supports backup, such as Amazon Elastic Block Store, back up etcd data by taking a snapshot of the storage volume.
@@ -56,10 +44,6 @@ sudo mv backup.db /opt/backup
 ls -l /opt/backup
 file location: /opt/backup/backup.db
 ---
-
-ETCDCTL_API=3 etcdctl --endpoints=https://127.0.0.1:2379 \
-  --cacert=<trusted-ca-file> --cert=<cert-file> --key=<key-file> \
-  snapshot save <backup-file-location>
 
 --
 sudo ETCDCTL_API=3 etcdctl --endpoints=https://172.31.42.63:2379 \
@@ -82,16 +66,11 @@ ETCDCTL_API=3 etcdctl --write-out=table snapshot status /opt/backup/backup.db
 ##### Kubernetes etcd Restore Using Snapshot Backup
 ``````sh
 
-ETCDCTL_API=3 etcdctl snapshot restore <data-dir-location> --data-dir new_directory
-
-sudo ETCDCTL_API=3 etcdctl snapshot restore /opt/backup/backup.db --data-dir /var/lib/etcd-from-backup
+sudo ETCDCTL_API=3 etcdctl snapshot restore /opt/backup/backup.db
 ``````
 ##### To a new localtion and next, update the /etc/kubernetes/manifests/etcd.yaml
 ``````sh
-ETCDCTL_API=3 etcdctl snapshot restore /tmp/etcd-backup.db --data-dir /var/lib/etcd-backup
-
-ETCDCTL_API=3 etcdctl  --data-dir /var/lib/etcd-from-backup \
-snapshot restore /opt/snapshot-pre-boot.db
+ETCDCTL_API=3 etcdctl snapshot restore /tmp/etcd-backup.db --data-dir /var/lib/etcd-backup.db
 
 ``````
 ###### the restored files are located at the new folder /var/lib/etcd-backup, so now configure etcd to use that directory:

@@ -2,12 +2,28 @@
 
 ##### https://thoughtbot.com/upcase/videos/onramp-to-vim-surviving-your-first-week
 
-#### Insert
+##### Normal Mode
+
+navigate the shell with:
+J - Downward arrow botton
+K - Top arrow botton
+L - Right arrow botton
+H - Left arrow botton
+
+#### Insert Mode
 i – switch to insert mode before the cursor
 Esc – exit insert mode; switch to command mode
 Ctrl + r – redo
 u – undo
 s – delete a character (and move into insert mode)
+
+##### Efficient Commands to use to make wor easier
+
+W - Word
+e - end of 
+b - back
+$ -  end of line
+0 - beginning
 
 ##### Delete a line in vim
 Press ESC to go to Normal mode.

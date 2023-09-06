@@ -34,14 +34,26 @@ LoadBalancer: Exposes the Service externally using a cloud provider's load balan
 ExternalName: which is a relatively new object that works on DNS names and redirection is happening at the DNS level.
 Service without selector: which is used for direct connections based on IP port combinations without an endpoint. And this is useful for connections to a database or between namespaces.
 
-#### Using kubectl expose
-The easiest way to create a service is through kubectl expose
+#### Using kubectl expose command
+Create a pod with image nginx called nginx and expose its port 80.
+Confirm that ClusterIP has been created. Also check endpoints
+Get service's ClusterIP, create a temp busybox pod and 'hit' that IP with wget.
+Convert the ClusterIP to NodePort for the same service and find the NodePort port. Hit service using Node's IP. Delete the service and the pod at the end.
 
 ``````sh
-kubectl create deployment nginx1 --image=nginx --replicas=3 --dry-run=client -o yaml > nginx1.yaml
+kubectl run nginx --image=nginx
+kubectl expose po/nginx --port=80 --name=svc-nginx --type=ClusterIP
+kubectl get svc/svc-nginx -owide
+kubectl get ep svc-nginx
+kubectl run testpod --image=busybox -- sh -c 'sleep 3600'
+kubectl exec -it testpod -- sh
+wget -O- 10.101.191.158
 
----- # modify few sections and following is my final template file to create a new deployment nginx1 with a label app=dev and 3 replicas.
-[root@controller ~]# cat nginx1.yaml
+``````
+
+``````sh
+
+vi nginx1.yaml
 
 apiVersion: apps/v1
 kind: Deployment
