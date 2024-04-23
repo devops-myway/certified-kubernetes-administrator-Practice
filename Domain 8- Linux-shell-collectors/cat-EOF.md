@@ -2,15 +2,30 @@
 
 ##### Cat EOF in Bash Script
 
-the CAT command is used to display the file, read a file, or Concatenate FILE(s), or standard input, to standard output.
-It takes a file standard inputs, reads its content or data, and then outputs the content of the files
-In CAT command, there is a term which is known as EOF. EOF means the end of the file.
-EOF indicates that the file that is read, created, or concentrated by the CAT command has ended.
+It can display a file, concatenate (combine) multiple files, takes standard input, echo text, and it can be used to create a new file.
 cat<<eof uses “here-document”. A here-document is a code block in Linux. It passes a form of Input/Output redirection to commands like cat.
 cat<<EOF” and “EOF” commands which tell the compiler to print the content from the “cat<<EOF” command at the end until “EOF” is reached
 use <<- (followed by a dash) to disable leading tabs
 
 Here's an example which will write the contents to a file at /tmp/yourfilehere
+``````sh
+echo "Dance, Dance" > cat_create #create a file
+cat cat_create
+
+#(Con)cat
+echo "This is how we do it" > test1 #create 1st file
+echo "*This is how we do it*" > test2 #create 2nd file
+cat test1 test2
+
+#Creating a File
+echo "File 1 Contents" > file1
+echo "File 2 Contents" > file2
+echo "File 3 Contents" > file3
+cat file1 file2 file3 > combined_file
+cat combined_file
+
+``````
+
 ``````sh
 mkdir /tmp/yourfilehere
 
@@ -82,5 +97,8 @@ echo [string]
 echo "$(<file.txt)"
 echo "Geeks for Geeks"
 echo "Welcome GFG" > output.txt
+
+#You can also pipe text to cat, in which case that text is echoed
+echo "Piping fun" | cat
 ``````
 
