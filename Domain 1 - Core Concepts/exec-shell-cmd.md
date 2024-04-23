@@ -6,14 +6,8 @@ execute bash or any shell commands using kubectl and exec any command into a con
 ##### Kubectl exec command syntax
  double dash (--), It is intentionally kept to separate the arguments you want to pass to the command from the kubectl arguments:
 
-kubectl exec (POD | TYPE/NAME) [-c CONTAINER] [flags] – COMMAND [args...] [options]
-Kubectl exec into pod - Executing commands inside POD
-
 As we have already mentioned If it is a single container pod, you do not have to mention the container name with -c
 If it is a multi-container pod. you need to mention which container, the command should be executed using -c
-
-tomcatinfra-7f58bf9cb8-bk654 - Single Container POD
-tomcat-nginx-78d457fd5d-446wx - Multi Container POD
 
 ``````sh
 kubectl exec -it po/sidecar-pod -c app-container -- sh -c 'cat /var/log/app.log'
