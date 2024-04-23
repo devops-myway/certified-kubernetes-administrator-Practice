@@ -56,6 +56,23 @@ greeting=Hello
 name=Tux
 echo $greeting $name
 ``````
+##### Export Command
+$ export : the command will generate or display all exported variables. Below is an example of the expected output
+``````sh
+#Viewing all exported variables on current shell
+$ export
+$ export -p
+
+#You can also assign a value before exporting a function as shown
+$ export name[=value]
+#For example, you can define a variable before exporting it as shown
+$ student=Divya
+$ export students
+$ printenv students
+#The above can be achieved in 2 simple steps by declaring and exporting the variable in one line as shown
+$ export student=Divya
+$ printenv student
+``````
 ##### Arithmetic Expressions
 +	addition
 -	subtraction
