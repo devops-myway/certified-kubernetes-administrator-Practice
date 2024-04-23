@@ -35,6 +35,10 @@ chmod 100 hello_world.sh
 --- #Run the script
 ./hello_world.sh
 bash hello_world.sh
+
+Using #!/usr/bin/env NAME makes the shell search for the first match of NAME in the $PATH environment variable. It can be useful if you aren't aware of the absolute path or don't want to search for it.
+#!/usr/bin/env bash #lends you some flexibility on different systems
+#!/usr/bin/bash     #gives you explicit control on a given system of what executable is called
 ``````
 ##### Copy a file to the root directory
 cp is copy. -p means to preserve the file owner and permissions.
