@@ -3,25 +3,6 @@
 
 execute bash or any shell commands using kubectl and exec any command into a container or pod.
 
-##### Create a single container, multi container deployments - For testing
-We have two deployments as represented in the following below:
-- tomcat-nginx -  multi container deployment ( sidecar)
-- tomcatinfra - single container deployment
-``````sh
-kubect create namespace test-ns
-
-kubectl create deployment tomcatinfra –-image=saravak/tomcat8 -n test-ns  # kubectl create deployment tomcat-nginx – image=saravak/tomcat8,nginx -n test-ns
-
-kubectl create deployment tomcat-nginx –-image=saravak/tomcat8,nginx -n test-ns  # Creating a Multi Container deployment
-----
-kubectl get deployment -n test-ns
-kubectl get pods -n test-ns
-``````
-``````sh
-#To get the list of containers in each pod with nice formatting
- kubectl get pod -o "custom-columns=PodName:.metadata.name,Containers:.spec.containers[*].name,Image:.spec.containers[*].image" -n test-ns
-
-``````
 ##### Kubectl exec command syntax
  double dash (--), It is intentionally kept to separate the arguments you want to pass to the command from the kubectl arguments:
 
