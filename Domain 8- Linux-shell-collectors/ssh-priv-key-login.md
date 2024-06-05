@@ -3,8 +3,6 @@ https://www.digitalocean.com/community/tutorials/ssh-essentials-working-with-ssh
 
 SSH (Secure Shell) is a secure protocol provides a safe and secure way of executing commands, making changes, and configuring services remotely.
 
-When you remote connect through SSH, you will be dropped into a shell session, which is a text-based interface where you can interact with your server.
-
 #### How SSH Authenticates Users
 
 The public key must be copied to a file within the user’s home directory at ~/.ssh/authorized_keys
