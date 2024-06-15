@@ -82,3 +82,25 @@ RUN useradd baeldung -u $HOST_UID
 ----
 sudo docker build --build-arg HOST_UID=$(id -u) --tag ubuntu-custom:latest .
 ``````
+##### How to Change Symbolic Links Ownership
+For example, if you try to change the owner and the group of the symbolic link symlink1 that points to /var/www/file1, chown will change the ownership of the file or directory the symlink points to:
+
+``````sh
+chown www-data: symlink1
+
+chown -h www-data symlink1     #To change the group ownership of the symlink itself, use the -h option
+
+``````
+##### How to Recursively Change the File Ownership
+To recursively operate on all files and directories under the given directory, use the -R (--recursive) option
+
+The following example will change the ownership of all files and subdirectories under the /var/www directory to a new owner and group named www-data:
+``````sh
+chown -R USER:GROUP DIRECTORY
+
+chown -R www-data: /var/www
+
+chown -hR www-data: /var/www  #If the directory contains symbolic links, pass the -h option:
+
+``````
+
