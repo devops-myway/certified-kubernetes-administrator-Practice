@@ -68,14 +68,57 @@ sudo chmod 400
 ``````
 ##### Change Ownership using the chown Command
 
-You can change the ownership of a file or folder using the chown command
+The chown command allows you to change the user and/or group ownership of a given file, directory, or symbolic link.
+
+USER is the user name or the user ID (UID) of the new owner.
+GROUP is the new group’s name or the group ID (GID).
+FILE(s) is the name of one or more files, directories, or links.
+Numeric IDs should be prefixed with the + symbol.
+
+USER - If only the user is specified, the specified user will become the owner of the given files. The group ownership is not changed
+USER: - When the username is followed by a colon :, and the group name is not given, the user will become the owner of the files, and the files group ownership is changed to the user’s login group.
+USER:GROUP - If both the user and the group are specified (with no space between them), the user ownership of the files is changed to the given user and the group ownership is changed to the given group.
+:GROUP - If the User is omitted and the group is prefixed with a colon :, only the group ownership of the files is changed to the given group.
+: If only a colon : is given, without specifying the user and the group, no change is made.
+``````sh
+chown [OPTIONS] USER[:GROUP] FILE(s)
+ls -l filename.txt
+
+chown USER FILE
+chown linuxize file1
+chown linuxize file1 dir1
+
+chown 1000 file2    #change the ownership of a file named file2 to a new owner with a UID of 1000
+
+``````
+##### Change the Owner and Group of a File
+``````sh
+chown USER:GROUP FILE
+
+chown linuxize:users file1    #change the ownership of a file named file1 to a new owner named linuxize and group users
+chown linuxize: file1        #the group of the file is changed to the specified user’s login group:
+
+chown :www-data file1      #change the owning group of a file named file1 to www-data
+
+``````
+##### How to Change Symbolic Links Ownership
+For example, if you try to change the owner and the group of the symbolic link symlink1 that points to /var/www/file1, chown will change the ownership of the file or directory the symlink points to:
 
 ``````sh
-chown user filename
---
-chown user:group filename
--- # How to change directory ownership
-chown -R admin /opt/script
--- # How to change group ownership
-chown :admins /opt/script
+chown www-data: symlink1
+
+chown -h www-data symlink1     #To change the group ownership of the symlink itself, use the -h option
+
+``````
+##### How to Recursively Change the File Ownership
+To recursively operate on all files and directories under the given directory, use the -R (--recursive) option
+
+The following example will change the ownership of all files and subdirectories under the /var/www directory to a new owner and group named www-data:
+``````sh
+chown -R USER:GROUP DIRECTORY
+
+chown -R www-data: /var/www
+
+chown -hR www-data: /var/www  #If the directory contains symbolic links, pass the -h option:
+
 ``````
