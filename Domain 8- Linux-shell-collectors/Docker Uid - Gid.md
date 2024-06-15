@@ -143,4 +143,15 @@ chown -R www-data: /var/www
 chown -hR www-data: /var/www  #If the directory contains symbolic links, pass the -h option:
 
 ``````
-
+``````sh
+FROM ubuntu
+RUN mkdir -p /home/user && \
+        useradd -l -u 1000 user
+RUN echo start
+RUN chown -R user:user /home/user && \
+        ls -lart /home
+RUN echo look again && \
+        ls -lart /home
+----
+docker build . -t delme
+``````
