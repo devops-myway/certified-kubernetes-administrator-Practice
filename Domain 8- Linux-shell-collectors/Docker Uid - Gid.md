@@ -155,3 +155,14 @@ RUN echo look again && \
 ----
 docker build . -t delme
 ``````
+#### COPY --chown --chmod
+https://docs.docker.com/reference/dockerfile/#copy---chown---chmod
+``````sh
+COPY [--chown=<user>:<group>] [--chmod=<perms> ...] <src-host> ... <dest-container>
+
+COPY --chown=55:mygroup files* /somedir/
+COPY --chown=bin files* /somedir/
+COPY --chown=1 files* /somedir/
+COPY --chown=10:11 files* /somedir/
+COPY --chown=myuser:mygroup --chmod=644 files* /somedir/
+``````
