@@ -1,17 +1,57 @@
+https://www.freecodecamp.org/news/linux-chmod-chown-change-file-permissions/
+
+#### Linux file ownership
+In Linux, there are three types of owners: user, group, and others .
+Linux User:
+A user is the default owner and creator of the file. So this user is called owner as well.
+
+Linux Group
+A user-group is a collection of users. Users that belonging to a group will have the same Linux group permissions to access a file/ folder.
+
+You can use groups to assign permissions in a bulk instead of assigning them individually. A user can belong to more than one group as well.
+
+Other
+Any users that are not part of the user or group classes belong to this class.
+``````sh
+#To create the dev-team group
+groupadd dev-team
+Verify: cat /etc/group | grep dev-team
+
+useradd creates a new user and adds to the specified group.
+
+useradd -G dev-team John
+useradd -G dev-team Bob
+
+Verify: cat /etc/group | grep dev-team
+
+passwd creates a password for users.
+passwd John
+passwd Bob
+
+mkdir creates a directory.
+mkdir /home/dev-team
+
+Change the group ownership of the folder dev-team to group dev-team
+chown :dev-team /home/dev-team/
+
+#Make sure the permissions of folder dev-team allow group members to create and delete files
+chmod g+w /home/dev-team/
+
+#Ensure that 'others' don't have any access to the files of dev-team folder.
+chmod o-rx dev-team
+
+#Exit the root session and switch to John
+su - John
+whoami
+
+
+``````
+
+
 ##### UID (user identifier)
-number assigned by Linux to each user on the system. UIDs are stored in the /etc/passwd file
+Enter groupadd dev-team to create the dev-team group
 
-root user has the UID of 0
-
-100 UIDs for system use
-
-New users are assigned UIDs starting from 500 or 1000, For example, new users in Ubuntu start from 1000
-
----------
-cat /etc/passwd
-
-sudo useradd john
-cat/etc/passwd | grep john
+Verify: cat /etc/group | grep dev-team
 
 -----
 
