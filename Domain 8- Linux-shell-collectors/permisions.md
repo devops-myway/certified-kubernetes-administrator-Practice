@@ -31,12 +31,13 @@ cat /etc/group
 
 ``````
 ##### View Ownerships and Permissions in Linux
-We can use long listing which is the ls command with flag -l
-File type:
-For regular files that contain simple data it is blank -
-For a directory which is a special file, it is d
+
+Run ls with the -l and -d flags to show this information about the current directory itself (or about a specific named directory):
 ``````sh
 ls -l
+
+ls -l
+drwxr-xr-x  2 owner group 4096 Aug 12 19:12 Desktop
 
 ``````
 ##### How to Read Symbolic Permissions
