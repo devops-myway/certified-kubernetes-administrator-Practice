@@ -27,13 +27,20 @@ tar -czf test.tar.gz test
 ls | grep test
 
 ``````
-##### How to extract a tar.gz compressed archive on Linux
+##### How to extract a tar.gz or Untar a compressed archive on Linux
 ``````sh
 tar -xzf tarfile
 tar -xvf file.tar.gz
 tar -xzvf file.tar.gz
 tar -xzvf projects.tar.gz
 
-tar -xzvf projects.tar.gz -C /tmp/   #One can extract files in a given directory such as /tmp/:
+``````
+##### Download, extract and move a tar.gz file
+``````sh
+cd /home/username/public_html/
+wget http://wordpress.org/latest.tar.gz
+tar xvfz latest.tar.gz
+mv /home/username/public_html/wordpress/* /home/username/public_html
+
 
 ``````
