@@ -49,13 +49,37 @@ printenv | grep NEW_VAR
 echo $NEW_VAR
 
 ``````
-##### The Difference between Login, Non-Login, Interactive, and Non-Interactive Shell Sessions
-One distinction between different sessions is whether the shell is being spawned as a login or non-login session.
+##### Environment Variable
+let’s use grep to display $PATH from the env command:
+#!/usr/bin/env bash is also a shebang line used in script files to execute commands with the Bash shell.
+It uses the env command to display the environment variables present in the system and then execute commands with the defined interpreter.
 
-A login shell is a shell session that begins by authenticating the user. If you are signing into a terminal session or through SSH and authenticate, your shell session will be set as a login shell.
- session started as a login session will read configuration details from the /etc/profile file first.
- It reads the first file that it can find out of ~/.bash_profile, ~/.bash_login, and ~/.profile and does not read any further files.
- 
+``````sh
+which env
+env
+env | grep PATH
+
+``````
+##### test Sample Bash
+sample.sh
+Running script files through /usr/bin/env has the advantage of automatically searching for the default version of the interpreter in the current environment. 
+
+#!/usr/bin/bash: Offers more security	
+#!/usr/bin/env bash: Offers more portability
+
+it’s recommended to use #!/usr/bin/bash when security is a priority and #!/usr/bin/env bash if we’re looking for portability.
+
+``````sh
+!/usr/bin/env bash
+./sample.sh
+Baeldung is Awesome!
+
+
+``````
+``````sh
+
+
+``````
 ``````sh
 
 
