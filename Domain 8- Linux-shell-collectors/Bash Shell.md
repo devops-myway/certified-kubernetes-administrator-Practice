@@ -10,9 +10,12 @@ If shell is running as root, the prompt is changed to #. The superuser shell pro
 
 Scripts start with a bash bang: Shebang is a combination of bash # and bang ! : #! /bin/bash
 
-##### How do we identify a Bash script
+##### Typical root inside a docker container with hostname and root user.
 ``````sh
-
+docker run -ti ubuntu
+root@123145:#
+echo "Example1" > /tmp/Example1.txt
+cat /tmp/Example1.txt
 
 ``````
 ##### Create Your First Bash Script
