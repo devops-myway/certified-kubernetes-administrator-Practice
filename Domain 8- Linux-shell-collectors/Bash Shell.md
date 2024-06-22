@@ -2,15 +2,19 @@ https://www.cyberciti.biz/faq/bash-while-loop/
 
 ###### Introduction to the Bash Shell
 
-A bash script is a series of commands written in a file. These are read and executed by the bash program. File extension of .sh
-When a shell is used interactively, it displays a $ when it is waiting for a command from the user.  shell prompt==  [username@host ~]$
+Shell scripting is the practice of writing scripts or programs using a shell's scripting language.
+Bash scripting, short for “Bourne Again SHell” is a subset of shell scripting language.
+
+shell prompt==  [username@host ~]$
 If shell is running as root, the prompt is changed to #. The superuser shell prompt looks like this: [root@host ~]#
 
 Scripts start with a bash bang: Shebang is a combination of bash # and bang ! : #! /bin/bash
 
-##### Execution rights
-An execution right is represented by x. In the example below, my user has the rwx (read, write, execute) rights for the file test_script.sh
+##### How do we identify a Bash script
+``````sh
 
+
+``````
 ##### Create Your First Bash Script
 
 ``````sh
