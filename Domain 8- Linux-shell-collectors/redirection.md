@@ -2,25 +2,25 @@
 
 There are three redirectors to work with: >, >>, and <. The following information describes each one:
 
-- Redirection with >
-command > file: Sends standard output to <file>
-
-- Append with >>
-command >> file: Appends standard output to a file
-command >> file 2>&1: Appends standard output and error output to a file
-
-Redirect with <
-command < input: Feeds a command input from <input>
-
-cmd1 > out1
-cmd2 < out1 > out2
-cmd3 < out2
+> character can be used to direct output into a file
+>> This command will append output to file or add the text provided to the end of a file.
 
 ``````sh
 ls -al > listings
 cat listing
+
+$ echo hello > world
+$ echo hello > world
+$ cat world
+hello
+
+$ echo "My Report" > report
+$ date >> report
+$ cat report
+My Report
+Sat Jul  8 11:49:48 AM EDT 2023
 ---
-cat music.mp3 > /dev/audio
+cat /dev/null > bigfile
 
 --
 $ echo "Enable Sysadmin" > myfile
