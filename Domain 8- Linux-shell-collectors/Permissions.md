@@ -4,15 +4,44 @@ There are two types of users: system users and regular users
 System users are responsible for running non-interactive and background processes on a system. For example: mail, daemon, syslog, and so on.
 Regular users are the users that actually log into the system and perform their designated tasks interactively.
 
-3 type OWNERSHIP
-1.user, 2.group, 3.other
+permission	on a file	on a directory
+r (read)	read file content (cat)	read directory content (ls)
+w (write)	change file content (vi)	create file in directory (touch)
+x (execute)	execute the file	enter the directory (cd)
 
-3 type PERMISSION
+there are Ten characters (-rw-rw-r--) before the user owner. We'll describe these ten characters here.
 
-1.Read, 2.Write, 3.Excute
+position	characters	ownership
+1	-	denotes file type
+2-4	rw-	permission for user
+5-7	rw-	permission for group
+8-10	r--	permission for other
+
+Octal Table:
+binary	octal	permissions
+000	0	---
+001	1	--x
+010	2	-w-
+011	3	-wx
+100 4	r--
+101	5	r-x
+110	6	rw-
+111	7	rwx
+
+Generally implemented options are:
+
+-R: It stands for recursive, i.e., add objects to subdirectories.
+-V: It stands for verbose, display objects modified (unmodified objects are not displayed).
+-c, --changes: It is similar to the verbose option, but the difference is that it is reported if a change has been made.
+
+The permission statement is represented in indicators such as u+x, u-x. Where 'u' stands for 'user,' '+' stands for add, '-' stands for remove, 'x' stands for executable (which).
 
 ``````sh
 # check details of users on a system by looking into the /etc/passwd file
+
+ls -lh
+chmod <options> <permissions> <file name>
+
 cat /etc/passwd
 
 ``````
@@ -32,14 +61,12 @@ cat /etc/group
 ``````
 ##### View Ownerships and Permissions in Linux
 
-Run ls with the -l and -d flags to show this information about the current directory itself (or about a specific named directory):
-``````sh
-ls -l
+All groups of three characters specify permissions for all classes:
 
-ls -l
-drwxr-xr-x  2 owner group 4096 Aug 12 19:12 Desktop
+rwx: The leftmost three characters specify permissions for the file owner (i.e., the User class).
+r-x: The three middle characters specify permissions for the group owning the file (i.e., the Group class).
+---: The three rightmost characters specify permissions for the Other class. Users who aren't the file owner and group members can't access the file.
 
-``````
 ##### How to Read Symbolic Permissions
 r stands for read. It is indicated in the first character of the triad.
 w stands for write. It is indicated in the second character of the triad.
