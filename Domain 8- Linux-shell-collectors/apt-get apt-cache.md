@@ -6,12 +6,11 @@
 
 apt-get is for installing, upgrading, and cleaning packages in Ubuntu-based Linux distribution.
 
-#### Using apt-get commands
+#### Package Management and Security
 apt-get basically works on a database of available packages.  If you don’t update this database, the system won’t know if there are newer packages available or not. Once you have updated the package database, you can upgrade the installed packages.
 
 ``````sh
 sudo apt-get update
-
 sudo apt-get upgrade
 
 sudo apt-get update && sudo apt-get upgrade -y
@@ -47,6 +46,50 @@ sudo apt-cache madison package_name
 sudo apt-cache showpkg google-chrome-stable
 sudo apt-cache madison google-chrome-stable
 
+``````
+##### The Basics of the dpkg Command in Linux
+this: “dpkg is a tool to install, build, remove and manage Debian packages.”
+We can install a deb package in Ubuntu or Debian using the dpkg -i command option.
+We can uninstall a program or service from our system using the dpkg -r option
+The dpkg --update-avail option has got you covered.
+
+``````sh
+dpkg [options] [.deb package name]
+sudo dpkg -i [package name]
+sudo dpkg -r [package name]
+sudo dpkg --update-avail
+
+``````
+
+``````sh
+sudo apt update
+sudo apt install dpkg
+sudo dpkg -i example.deb
+``````
+#### Installing Dpkg from Source Code
+``````sh
+# Download the dpkg source code
+wget http://deb.debian.org/debian/pool/main/d/dpkg/dpkg_1.20.5.tar.xz
+
+# Extract the tar.xz file
+tar -xvf dpkg_1.20.5.tar.xz
+
+# Navigate into the dpkg directory
+cd dpkg-1.20.5
+
+# Configure the source code
+./configure
+
+# Compile the source code
+make
+
+# Install dpkg
+sudo make install
+
+``````
+``````sh
+sudo apt update
+sudo apt install dpkg
 
 ``````
 
