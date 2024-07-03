@@ -35,3 +35,10 @@ COPY --chown=games:games gamefile /root
 COPY --chown=35:35 anothergame /root
 
 ``````
+##### Dockerfile example
+``````sh
+  mkdir /var/www/data; \
+    chown -R www-data:root /var/www; \
+    chmod -R g=u /var/www
+
+``````
