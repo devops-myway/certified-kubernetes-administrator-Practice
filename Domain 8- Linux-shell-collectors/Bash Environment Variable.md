@@ -4,16 +4,7 @@ When interacting with your server through a shell session, there are many pieces
 One way that the shell keeps track of all of these settings and details is through an area it maintains called the environment. The environment is an area that the shell builds every time that it starts a session that contains variables that define system properties.
 
 ##### How the Environment and Environmental Variables Work
-
-The keys in these scenarios are variables. They can be one of two types, environmental variables or shell variables.
-Environmental variables:
-are variables that are defined for the current shell and are inherited by any child shells or processes.
-Environmental variables are used to pass information into processes that are spawned from the shell.
-
-Shell variables:
-are variables that are contained exclusively within the shell in which they were set or defined.
-They are often used to keep track of ephemeral data, like the current working directory.
-
+$0: The filename of the current script.
 ``````sh
 KEY=value1:value2:...
 
