@@ -25,8 +25,13 @@ docker build --tag tutorial:demo --file Dockerfile  .
 
 
 ``````
-#####  
+#####  Example 2
 
 ``````sh
-
+ARG user=jenkins
+ARG group=jenkins
+ARG uid=1000
+ARG gid=1000
+ARG http_port=8080
+ARG agent_port=50000
 ``````
