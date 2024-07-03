@@ -3,15 +3,17 @@ To define an executable with its arguments that the container should run. In thi
 
 ##### The Exec Form of the CMD Directive
 The exec form invokes only the defined executable, without a shell
-
+The exec form is parsed as a JSON array, which means that you must use double-quotes (") around words not single-quotes (').
 ``````sh
+CMD "executable","param1","param2"
+CMD "param1","param2"
 CMD ["executable", "param1", "param2"]
 
 ``````
 ##### The Shell Form of the CMD Directive
 Unless we set a shell, like /bin/sh or /bin/bash, to be the executable, the container doesn’t start a shell. 
 ``````sh
-CMD ["executable", "param1", "param2"]
+CMD command param1 param2 (shell form)
 /bin/sh -c executable param1 param2
 
 ``````
@@ -79,8 +81,49 @@ docker build -t example3 .
 docker run -it example3
 
 ``````
+#####  Example 3- Now CMD using the Exec form:
+
+``````sh
+vi Dockerfile
+
+FROM alpine:3.8
+CMD ["/bin/echo","hello from CMD - using exec form"]
+--
+
+docker build --tag tutorial:demo --file Dockerfile  .
+docker run --name tutorial tutorial:demo
+
+# expected Output
+hello from CMD - using exec form
+``````
+#####  Now CMD using the shell form:
+
+``````sh
+FROM alpine:3.8
+CMD /bin/echo "hello from CMD using shell form"
+
+---
+docker build --tag tutorial:demo --file Dockerfile  .
+docker stop -t 0 tutorial ; docker container prune -f;docker ps -a
+docker run --name tutorial tutorial:demo
+
+---
+# Expected Output
+hello from CMD using shell form
+``````
 #####  
 
 ``````sh
+FROM alpine:3.8
+CMD /bin/echo $HOME
 
+docker build --tag tutorial:demo --file Dockerfile  .
+docker stop -t 0 tutorial
+docker container prune -f
+docker ps -a
+docker run --name tutorial tutorial:demo
+
+--
+Expected Output
+/root
 ``````
