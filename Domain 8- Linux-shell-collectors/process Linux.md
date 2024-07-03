@@ -16,18 +16,32 @@ RSS: Resident set size, the portion of RAM occupied by the process.
 STAT: The current process state.
 START: The time the process was started.
 
+###### Foreground Processes:
+By default, every process that you start runs in the foreground. It gets its input from the keyboard and sends its output to the screen
 ``````sh
-ps -aux
-sudo ps -a
-
+ls ch*.doc
 ``````
-The process ID (PID) is essential to kill or control process on Linux, with example below
-root – User name
-1 – PID (Linux process ID)
-19:10 – Process start time
-/sbin/init splash – Actual process or command
+###### Background Processes
+A background process runs without being connected to your keyboard. If the background process requires any keyboard input, it waits.
 ``````sh
-root         1  0.0  0.0 225868  9760 ?        Ss   19:10   0:13 /sbin/init splash
+ls ch*.doc &
+``````
+##### Listing Running Processes
+It is easy to see your own processes by running the ps (process status)
+One of the most commonly used flags for ps is the -f ( f for full) option
+
+UID: User ID that this process belongs to (the person running it)
+PID: Process ID
+TTY: Terminal type associated with the process
+TIME: CPU time taken by the process
+C: CPU utilization of process
+CMD: The command that started this process
+STIME: Process start time
+PPID: Parent process ID (the ID of the process that started it)
+
+``````sh
+ps
+ps -f
 ``````
 ##### Process Status
 Process Status”. ps command is used to list the currently running processes and their PIDs along with some other information depends on different options.
