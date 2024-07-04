@@ -1,7 +1,8 @@
 #####  Dockerfile LABEL
 https://docs.docker.com/reference/dockerfile/#label
 
-Images can have an unlimited number of labels. Those labels can be used to describe the image.
+The LABEL instruction is a key-value pair that allows you to add multiple labels and multi-line values.
+With this instruction, you can add additional information about your Docker image, such as the version, description, maintainer, etc.
 ``````sh
 vi Dockerfile
 
