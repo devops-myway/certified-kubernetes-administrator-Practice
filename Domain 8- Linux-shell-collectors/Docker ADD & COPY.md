@@ -2,7 +2,8 @@
 
 https://docs.docker.com/reference/dockerfile/#add
 
-ADD does Double Duty ... it adds and untars / unzips.
+- The ADD: instruction is used to copy files, directories, or remote files from URL to your Docker images, from the 'src' to the absolute path 'dest'. Also, you can set up the default ownership of your file. ADD does Double Duty ... it adds and untars / unzips.
+
 COPY does not automate untars tar files.
 
 Best Practice: only use ADD when you need this double duty functionality.
