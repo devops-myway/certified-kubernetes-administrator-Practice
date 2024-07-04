@@ -85,11 +85,11 @@ ssh -i ~/.ssh/id_rsa username@public_ip_of_remote_host
 
 ``````
 # Command and Option Summary
--p “Change the passphrase
--i "Input" When ssh-keygen is required to access an existing key, this option designates the file.
--f "File" Specifies name of the file in which to store the created key.
--c "Comment" Changes the comment for a keyfile.
--l "Fingerprint" Print the fingerprint of the specified public key.
--t “Type” This option specifies the type of key to be created. Commonly used values are: - rsa for RSA keys - dsa for DSA keys - ecdsa for elliptic curve DSA keys
+- -p “Change the passphrase
+- -i "Input" When ssh-keygen is required to access an existing key, this option designates the file.
+- -f "File" Specifies name of the file in which to store the created key.
+- -c "Comment" Changes the comment for a keyfile.
+- -l "Fingerprint" Print the fingerprint of the specified public key.
+- -t “Type” This option specifies the type of key to be created. Commonly used values are: - rsa for RSA keys - dsa for DSA keys - ecdsa for elliptic curve DSA keys
 
 
