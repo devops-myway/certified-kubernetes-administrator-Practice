@@ -1,37 +1,27 @@
 #### Note
-https://www.digitalocean.com/community/tutorials/ssh-essentials-working-with-ssh-servers-clients-and-keys
+https://unix.stackexchange.com/questions/23291/how-to-ssh-to-remote-server-using-a-private-key
 
 SSH (Secure Shell) is a secure protocol provides a safe and secure way of executing commands, making changes, and configuring services remotely.
 
-#### How SSH Authenticates Users
+#### How To Log Into SSH with Keys
 
-The public key must be copied to a file within the user’s home directory at ~/.ssh/authorized_keys
-The default location is in the top level directory of the user running the terminal session: ~/.ssh/
+it is faster and more secure to set up key-based authentication.
+Key-based authentication works by creating a pair of keys: a private key and a public key.
+- The private key is located on the client’s machine and is secured and kept secret.
+- The public key can be given to anyone or placed on any server or remote host you wish to access.
 
-ls -a /path/to/dir  for hidden .ssh folder
-ls ~/.ssh/
+The client computer then sends the appropriate response back to the server, which will tell the server that the client is legitimate.
 
-OpenSSH version of ssh-keygen:
-Ssh-keygen is a tool for creating new authentication key pairs for SSH. Such key pairs are used for automating logins, single sign-on, and for authenticating hosts. The below openSSH key format:
-
-~/.ssh/id_rsa: The private key. DO NOT SHARE THIS FILE!
-~/.ssh/id_rsa.pub: The associated public key. This can be shared freely without consequence.
-*.pub = Public Key
-known_hosts = machines that you trust or remote machine or ec2 instances or servers
-
-# Generating an SSH Key Pair
-
+# How To Create SSH Keys
+Your keys will be created at ~/.ssh/id_rsa.pub and ~/.ssh/id_rsa.
+Change into the .ssh directory by typing:
 ``````sh
-ssh-keygen --help     # Generating public/private rsa key pair.
-
-ssh-keygen -t rsa -C "azure-vm-key"    # Generating public/private rsa key pair, located in the .ssh hidden directory within your user’s home directory
-
--t : flag specifies the type of key to be generated
-
--C : allows you to provide a comment for the key
+ssh-keygen -t rsa
+ssh-keygen -t rsa -b 4096 -C "major.sampson@beqom.com"
+cd ~/.ssh
+ls -l
 
 ``````
-
 ##### Generate an SSH Key Pair with a Larger Number of Bits
 SSH keys are 2048 bits by default.  include the -b argument with the number of bits you would like
 ``````sh
@@ -45,22 +35,16 @@ ssh-keygen -p
 
 ``````
 
-##### Displaying the SSH Key Fingerprint
-Each SSH key pair share a single cryptographic “fingerprint” which can be used to uniquely identify the keys
-``````sh
-ssh-keygen -l
-
-# To see the fingerprint and comment for your keys you can run
-
-ssh-keygen -l -f ~/user/home/.ssh/id_rsa
-``````
-
 ##### Copying your Public SSH Key to a Server with SSH-Copy-ID
 To copy your public key to a server, allowing you to authenticate without a password, a number of approaches can be taken
-If you currently have password-based SSH access configured to your server, and you have the ssh-copy-id utility installed.
+Use ssh-copy-id on Server 1, assuming you have the key pair (generated with ssh-keygen):
+Now you should be able to ssh into Server 2 with ssh using the private key
 
 ``````sh
 ssh-copy-id username@remote_host
+ssh-copy-id -i ~/.ssh/id_rsa user@server2_hostname
+
+ssh -i ~/.ssh/id_rsa user@server2_hostname
 
 ``````
 ##### Copying your Public SSH Key to a Server Manually
@@ -79,14 +63,24 @@ echo public_key_string >> ~/.ssh/authorized_keys
 ##### Connecting to a Remote Server
 To connect to a remote server and open a shell session there, be sure to give access to the key directory
 chmod 400 file_name
+ ~/.ssh/id_rsa
+     Contains the private key for authentication.  These files contain
+     sensitive data and should be readable by the user but not acces-
+     sible by others (read/write/execute
 
+~/.ssh/id_rsa.pub
+     Contains the public key for authentication.  These files are not
+     sensitive and can (but need not) be readable by anyone
 ``````sh
+ssh [username]@[host_ip_address]
+ssh -i '/path/to/Private_keyfile' username@remote_server_ip
+
 ssh -i ~/.ssh/id_rsa username@public_ip_of_remote_host
 
 ``````
 # Command and Option Summary
 - -p “Change the passphrase
-- -i "Input" When ssh-keygen is required to access an existing key, this option designates the file.
+- -i "Input", 
 - -f "File" Specifies name of the file in which to store the created key.
 - -c "Comment" Changes the comment for a keyfile.
 - -l "Fingerprint" Print the fingerprint of the specified public key.
