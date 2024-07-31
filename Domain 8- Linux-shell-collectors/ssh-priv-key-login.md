@@ -37,8 +37,8 @@ ssh-keygen -p
 
 ##### Copying your Public SSH Key to a Server with SSH-Copy-ID
 To copy your public key to a server, allowing you to authenticate without a password, a number of approaches can be taken
-Use ssh-copy-id on Server 1, assuming you have the key pair (generated with ssh-keygen):
-Now you should be able to ssh into Server 2 with ssh using the private key
+- Use ssh-copy-id on Server 1, assuming you have the key pair (generated with ssh-keygen):
+- Now you should be able to ssh into Server 2 with ssh using the private key
 
 ``````sh
 ssh-copy-id username@remote_host
@@ -63,12 +63,12 @@ echo public_key_string >> ~/.ssh/authorized_keys
 ##### Connecting to a Remote Server
 To connect to a remote server and open a shell session there, be sure to give access to the key directory
 chmod 400 file_name
- ~/.ssh/id_rsa
+ - ~/.ssh/id_rsa
      Contains the private key for authentication.  These files contain
      sensitive data and should be readable by the user but not acces-
      sible by others (read/write/execute
 
-~/.ssh/id_rsa.pub
+- ~/.ssh/id_rsa.pub
      Contains the public key for authentication.  These files are not
      sensitive and can (but need not) be readable by anyone
 ``````sh
