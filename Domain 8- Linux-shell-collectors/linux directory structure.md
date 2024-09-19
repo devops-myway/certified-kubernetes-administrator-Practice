@@ -6,7 +6,6 @@
 cd /
 
 
-
 ###### Linux/Unix file system hierarchy
 
 /bin – binary or executable programs. contains core system administrators program e.g cat
