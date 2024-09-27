@@ -143,3 +143,39 @@ sudo usermod -u [new-UID] [username]
 sudo usermod -u 1401 mike
 getent passwd mike
 ``````
+##### Linux User Group Management Commands
+User groups in Linux streamline the management of permissions and access rules for a collection of user accounts.
+
+- Use the "getent" command to confirm the new group is in the Linux /etc/group file:
+- command displays the details of test_group, including its name and ID.
+``````sh
+sudo groupadd test_group
+getent group test_group
+
+sudo adduser test_account test_group    #add user to group
+``````
+##### How to Add or Remove Members From Group (usermod)
+Use the usermod command with the -a (append) and -G (groups) options to append a user to an existing group while keeping them in their current groups:
+``````sh
+sudo usermod –aG test_group test_account2
+groups test_account     #Confirm if the user has been added by using the groups command
+
+``````
+##### Delete user from Group
+To remove a user from a specific group, use the deluser command:
+``````sh
+sudo deluser test_account test_group
+
+``````
+##### Display All Groups a User Is a Member Of (id)
+Enter the id command to list the groups an individual user is a member of:
+The -n and -G options instruct id to only list group names instead of numeric IDs.
+``````sh
+id test_account
+id -nG test_account
+``````
+##### List all Groups and Members
+
+``````sh
+getent group
+``````
