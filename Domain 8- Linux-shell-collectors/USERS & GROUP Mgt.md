@@ -5,8 +5,8 @@ The "useradd" command provides various options, resulting in a comprehensive way
 
 Running the command creates a new user account or updates an existing user according to the values in:
 
-/etc/default/useradd - The default values for the useradd command.
-/etc/login.defs - Configuration control values for the login package.
+- /etc/default/useradd - The default values for the useradd command.
+- /etc/login.defs - Configuration control values for the login package.
 
 ``````sh
 useradd <options> <username>
@@ -29,9 +29,9 @@ cat /etc/passwd           # List all users
 
 ``````
 ##### Create User (useradd/adduser)
--u <uid>: --uid <uid>	: Unique numerical value ID.
--p <password>: --password <password>	: Sets the user's password (not recommended).
--g <name or number>: --gid <name or number>	: Establishes the user's initial login group.
+- -u <uid>: --uid <uid>	: Unique numerical value ID.
+- -p <password>: --password <password>	: Sets the user's password (not recommended).
+- -g <name or number>: --gid <name or number>	: Establishes the user's initial login group.
 
 ``````sh
 useradd <options> <username>
