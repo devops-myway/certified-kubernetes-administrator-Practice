@@ -6,9 +6,9 @@ The chown stands for change owner. In Linux, each file is associated with a corr
 
 chown [OPTION]... [OWNER][:[GROUP]] FILE...  
 
--c, --changes: It is used to display the detailed output like verbose, but it is reported when only a change is made
--v, --verbose: It is used to display a diagnostic for every processed file.
--R, --recursive: It is used to perform operations on files and directories recursively.
+- -c, --changes: It is used to display the detailed output like verbose, but it is reported when only a change is made
+- -v, --verbose: It is used to display a diagnostic for every processed file.
+- -R, --recursive: It is used to perform operations on files and directories recursively.
 
 The command adds an entry to the /etc/passwd, /etc/shadow, /etc/group, and /etc/gshadow files.
 
