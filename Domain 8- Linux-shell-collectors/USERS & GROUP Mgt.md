@@ -74,6 +74,17 @@ sudo useradd -u 1234 test1
 id test1
 
 ``````
+##### Change Your Own Password for Another user
+
+``````sh
+passwd             #chnage your current user password
+
+sudo passwd user1  # change another user password
+
+sudo passwd root   #change the root password
+
+sudo passwd -e user1   # force a pwssword Reset
+``````
 ##### Adding a User with Specific Group ID
 
 ``````sh
