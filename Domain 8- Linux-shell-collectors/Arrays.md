@@ -3,8 +3,8 @@ https://www.makeuseof.com/bash-script-array-usage/
 ##### Arrays
 There are two types of bash arrays:
 
-Indexed – the array is referred via integers or numbers starting from 0.
-Associative – the array is referred via strings or a set of characters and words. Store elements in key-value pair
+- Indexed – the array is referred via integers or numbers starting from 0.
+- Associative – the array is referred via strings or a set of characters and words. Store elements in key-value pair
 
 #####  standard bash array 
 You’ll need to prepend the dollar sign ($) to the variable name
