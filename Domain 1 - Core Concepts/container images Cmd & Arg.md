@@ -3,10 +3,10 @@ https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument
 ##### Stages of Container Lifecycle:
 A container is simply an isolated process running on your computer. A Docker container can be in one of several core states:
 
-Created - The Docker container has been created, but not started (e.g. after using docker create)
-Up - The Docker container is currently running. That is, the process inside the container is running. Can happen using docker start or docker run.
-Paused - The Docker container has been paused, usually with the command docker pause.
-Exited - The Docker container has exited, usually because the process inside the container has exited.
+- Created - The Docker container has been created, but not started (e.g. after using docker create)
+- Up - The Docker container is currently running. That is, the process inside the container is running. Can happen using docker start or docker run.
+- Paused - The Docker container has been paused, usually with the command docker pause.
+- Exited - The Docker container has exited, usually because the process inside the container has exited.
 
 ##### Why a Docker container terminates
 The main process inside the container has ended successfully: This is the most common reason for a Docker container to stop! When the process running inside your container ends, the container will exit.
