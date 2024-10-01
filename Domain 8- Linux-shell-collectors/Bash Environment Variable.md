@@ -1,70 +1,62 @@
 ##### How To Read and Set Environmental and Shell Variables on Linux
-When interacting with your server through a shell session, there are many pieces of information that your shell compiles to determine its behavior and access to resources. Some of these settings are contained within configuration settings and others are determined by user input.
- 
-One way that the shell keeps track of all of these settings and details is through an area it maintains called the environment. The environment is an area that the shell builds every time that it starts a session that contains variables that define system properties.
+- Variables usually are meant to convey information from one system to another. you can set them by defining a variable name, and then setting its value.
+- You can see the results for yourself with the echo command, recalling your variable by prepending it with a dollar sign ($)
+- To ensure that the variable is read exactly as you defined it, you can also wrap it in braces ${Variable_key} and quotes.
 
-##### How the Environment and Environmental Variables Work
-$0: The filename of the current script.
 ``````sh
 KEY=value1:value2:...
-
 KEY="value with spaces"
 
-``````
-##### Printing Shell and Environmental Variables
-We can see a list of all of our environmental variables by using the env or printenv commands.
-``````sh
+env | grep any_env_variable
 env
 env | grep any_env_variable
 env | grep PATH
-
 printenv
 printenv PATH
 
-``````
-##### Creating Shell Variables
-we only need to specify a name and a value
-
-``````sh
-TEST_VAR='Hello World!'
-set | grep TEST_VAR
-printenv | grep TEST_VAR
-env | grep TEST_VAR
-echo $TEST_VAR
+FOO="/home/seth/Documents"
+echo "${FOO}"
 
 ``````
-##### How do we identify a Bash script
+
+##### How to clear a variable using unset command
+You can clear a variable with the unset command:
+
 ``````sh
+unset FOO
+echo $FOO 
+``````
+##### Prepending variables
+You can prepend any number of variables before running a command.
+``````sh
+FOO=123 bash
+echo $FOO
+
+``````
+##### Exporting variables
+Another way to make variables available to a child process is the export keyword.
+
+``````sh
+FOO=123
+export FOO
+echo $FOO
+
 export NEW_VAR="Testing export"
 printenv | grep NEW_VAR
 echo $NEW_VAR
-
 ``````
-##### Environment Variable
-let’s use grep to display $PATH from the env command:
-#!/usr/bin/env bash is also a shebang line used in script files to execute commands with the Bash shell.
-It uses the env command to display the environment variables present in the system and then execute commands with the defined interpreter.
+
+##### Use env. to set commands in Bash
+- env FOO=BAR command. Note that the environment variables will be restored/unchanged again when command finishes executing.
 
 ``````sh
-which env
-env
-env | grep PATH
+$ export FOO=BAR
+$ env FOO=FUBAR bash -c 'echo $FOO'
+FUBAR
+$ echo $FOO
+BAR
 
 ``````
-##### test Sample Bash
-sample.sh
-Running script files through /usr/bin/env has the advantage of automatically searching for the default version of the interpreter in the current environment. 
-
-#!/usr/bin/bash: Offers more security	
-#!/usr/bin/env bash: Offers more portability
-
-it’s recommended to use #!/usr/bin/bash when security is a priority and #!/usr/bin/env bash if we’re looking for portability.
-
-``````sh
-!/usr/bin/env bash
-./sample.sh
-Baeldung is Awesome!
-
 
 ``````
 ``````sh
