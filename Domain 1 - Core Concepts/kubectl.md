@@ -11,8 +11,8 @@ kubectl run  <name> : command helps you to run container images on your Kubernet
 kubectl run nginx --image=nginx
 ``````
 ##### Using --Port and --dry-run
---port: You can control the port that the newly created instance will expose
---dry-run:  The dry-run option allows you to test the effects of a kubectl run call without actually running in on your live cluster - preview the manifest file
+- --port: You can control the port that the newly created instance will expose
+- --dry-run:  The dry-run option allows you to test the effects of a kubectl run call without actually running in on your live cluster - preview the manifest file
 
 ``````sh
 kubectl run nginx --image-nginx --port=5701
@@ -21,10 +21,10 @@ kubectl run nginx --image=nginx --dry-run=client -oyaml
 
 ``````
 ##### Interacting With Pods and Namespaces
--A – List pods, services, daemonsets, deployments, replicasets, statefulsets, jobs, and CronJobs in all namespaces, not custom resource types.
-Note the alias for --all-namespaces is -A
---namespace or -n 
--c argument if you have only one container running inside the pod
+- -A – List pods, services, daemonsets, deployments, replicasets, statefulsets, jobs, and CronJobs in all namespaces, not custom resource types.
+- Note the alias for --all-namespaces is -A
+- --namespace or -n 
+- -c argument if you have only one container running inside the pod
 ``````sh
 
 ``````
