@@ -3,10 +3,12 @@
 ##### ENV variables in Kubernetes
 
 ENV is an array. So every item under ENV property start with a dash (-) indicating an item in the array or list.
-
+``````sh
 env:
-  - name: VARIABLE1
-    value: TEST
+- name: VARIABLE1
+  value: TEST
+
+``````
 
 However there are other ways of setting the environment variables such as using config maps and secrets.
 The difference in this case is that instead of specifying the value, we say valueFrom and then specification.
