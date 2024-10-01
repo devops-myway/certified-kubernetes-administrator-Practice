@@ -13,7 +13,7 @@ The main process inside the container has ended successfully: This is the most c
 
 ##### To Keep a Pod Running
 I have faced similar problems when I needed a POD just to run continuously without doing any useful operation. The following are the two ways those worked for me:
-args: is an array
+- args: is an array
 
 - Running sleep command while running the container.
 - Running an infinite loop inside the container.
