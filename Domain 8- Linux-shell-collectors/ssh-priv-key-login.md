@@ -52,7 +52,6 @@ If you do not have password-based SSH access available, you will have to add you
 
 ``````sh
 cat ~/.ssh/id_rsa.pub
-
 # On the remote server, create the ~/.ssh directory if it does not already exist:
 mkdir -p ~/.ssh
 # Afterwards, you can create or append the ~/.ssh/authorized_keys file by typing
@@ -72,7 +71,8 @@ chmod 400 file_name
      Contains the public key for authentication.  These files are not
      sensitive and can (but need not) be readable by anyone
 ``````sh
-ssh [username]@[host_ip_address]
+mkdir -p ~/.ssh && ~/.ssh/
+chmod 400 file_name_or_~/.ssh
 ssh -i '/path/to/Private_keyfile' username@remote_server_ip
 
 ssh -i ~/.ssh/id_rsa username@public_ip_of_remote_host
@@ -80,7 +80,7 @@ ssh -i ~/.ssh/id_rsa username@public_ip_of_remote_host
 ``````
 # Command and Option Summary
 - -p “Change the passphrase
-- -i "Input", 
+- -i "Input" to the ~/.ssh/private_key_file, 
 - -f "File" Specifies name of the file in which to store the created key.
 - -c "Comment" Changes the comment for a keyfile.
 - -l "Fingerprint" Print the fingerprint of the specified public key.
