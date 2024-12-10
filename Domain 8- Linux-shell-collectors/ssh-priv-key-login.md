@@ -71,7 +71,7 @@ chmod 400 file_name
      Contains the public key for authentication.  These files are not
      sensitive and can (but need not) be readable by anyone
 ``````sh
-mkdir -p ~/.ssh && ~/.ssh/
+mkdir -p ~/.ssh && cd ~/.ssh && ssh-keygen -b 2048 -C "major.sampson@devopsmyway.com"
 chmod 400 file_name_or_~/.ssh
 ssh -i '/path/to/Private_keyfile' username@remote_server_ip
 
