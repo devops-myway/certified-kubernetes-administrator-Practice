@@ -4,35 +4,35 @@ There are two types of users: system users and regular users
 System users are responsible for running non-interactive and background processes on a system. For example: mail, daemon, syslog, and so on.
 Regular users are the users that actually log into the system and perform their designated tasks interactively.
 
-permission	on a file	on a directory
-r (read)	read file content (cat)	read directory content (ls)
-w (write)	change file content (vi)	create file in directory (touch)
-x (execute)	execute the file	enter the directory (cd)
+permission	on a file	on a directory:
+- r (read)	read file content (cat)	read directory content (ls)
+- w (write)	change file content (vi)	create file in directory (touch)
+- x (execute)	execute the file	enter the directory (cd)
 
 there are Ten characters (-rw-rw-r--) before the user owner. We'll describe these ten characters here.
 
-position	characters	ownership
-1	-	denotes file type
-2-4	rw-	permission for user
-5-7	rw-	permission for group
-8-10	r--	permission for other
+position	characters	ownership:
+- 1	-	denotes file type
+- 2-4	rw-	permission for user
+- 5-7	rw-	permission for group
+- 8-10	r--	permission for other
 
 Octal Table:
 binary	octal	permissions
-000	0	---
-001	1	--x
-010	2	-w-
-011	3	-wx
-100 4	r--
-101	5	r-x
-110	6	rw-
-111	7	rwx
+- 000	0	---
+- 001	1	--x
+- 010	2	-w-
+- 011	3	-wx
+- 100 4	r--
+- 101	5	r-x
+- 110	6	rw-
+- 111	7	rwx
 
 Generally implemented options are:
 
--R: It stands for recursive, i.e., add objects to subdirectories.
--V: It stands for verbose, display objects modified (unmodified objects are not displayed).
--c, --changes: It is similar to the verbose option, but the difference is that it is reported if a change has been made.
+- -R: It stands for recursive, i.e., add objects to subdirectories.
+- -V: It stands for verbose, display objects modified (unmodified objects are not displayed).
+- -c, --changes: It is similar to the verbose option, but the difference is that it is reported if a change has been made.
 
 The permission statement is represented in indicators such as u+x, u-x. Where 'u' stands for 'user,' '+' stands for add, '-' stands for remove, 'x' stands for executable (which).
 
@@ -63,29 +63,29 @@ cat /etc/group
 
 All groups of three characters specify permissions for all classes:
 
-rwx: The leftmost three characters specify permissions for the file owner (i.e., the User class).
-r-x: The three middle characters specify permissions for the group owning the file (i.e., the Group class).
----: The three rightmost characters specify permissions for the Other class. Users who aren't the file owner and group members can't access the file.
+- rwx: The leftmost three characters specify permissions for the file owner (i.e., the User class).
+- r-x: The three middle characters specify permissions for the group owning the file (i.e., the Group class).
+- ---: The three rightmost characters specify permissions for the Other class. Users who aren't the file owner and group members can't access the file.
 
 ##### How to Read Symbolic Permissions
-r stands for read. It is indicated in the first character of the triad.
-w stands for write. It is indicated in the second character of the triad.
-x stands for execution. It is indicated in the third character of the triad.
+- r stands for read. It is indicated in the first character of the triad.
+- w stands for write. It is indicated in the second character of the triad.
+- x stands for execution. It is indicated in the third character of the triad.
 
 - Symbolic mode: this method uses symbols like u, g, o to represent users, groups, and others. Permissions are represented as  r, w, x for read write and execute, respectively. You can modify permissions using +, - and =.
 - Absolute mode: this method represents permissions as 3-digit octal numbers ranging from 0-7.
-0=>No permission, 1=>Excute, 2=>Write, 3=>Execute + Write
+- 0=>No permission, 1=>Excute, 2=>Write, 3=>Execute + Write
 
-4=>Read, 5=>Read + Execute, 6=>Read +Write, 7=>Read + Write +Execute
+- 4=>Read, 5=>Read + Execute, 6=>Read +Write, 7=>Read + Write +Execute
 
 ``````sh
 ls -l
 
 ``````
 ##### Add permissions mode changes
-+	Adds a permission to a file or directory
-–	Removes the permission
-=	Sets the permission if not present before. Also overrides the permissions if set earlier.
+- +	Adds a permission to a file or directory
+- –	Removes the permission
+- =	Sets the permission if not present before. Also overrides the permissions if set earlier.
 
 ``````sh
 chmod u+x mymotd.sh
