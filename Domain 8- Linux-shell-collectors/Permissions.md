@@ -34,7 +34,8 @@ Generally implemented options are:
 - -V: It stands for verbose, display objects modified (unmodified objects are not displayed).
 - -c, --changes: It is similar to the verbose option, but the difference is that it is reported if a change has been made.
 
-The permission statement is represented in indicators such as u+x, u-x. Where 'u' stands for 'user,' '+' stands for add, '-' stands for remove, 'x' stands for executable (which).
+The permission statement is represented in indicators such as:
+- u+x, u-x. Where 'u' stands for 'user,' '+' stands for add, '-' stands for remove, 'x' stands for executable (which).
 
 ``````sh
 # check details of users on a system by looking into the /etc/passwd file
