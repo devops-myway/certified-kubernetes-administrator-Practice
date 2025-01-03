@@ -97,7 +97,7 @@ id test2
 uid=1000(test2) gid=1000(kb) groups=1000(kb)
 
 ``````
-##### Adding a System User
+##### Adding a System User or Service Account
 Programs and systems create service or system user accounts, which are different from regular users. Programs such as MySQL or Tomcat require a unique user account to work on the system, and daemons typically create system users during installation.
 
 ``````sh
