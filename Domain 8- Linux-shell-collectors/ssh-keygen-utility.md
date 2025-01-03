@@ -57,6 +57,8 @@ cat ~/.ssh/id_rsa.pub
 mkdir -p ~/.ssh
 # Afterwards, you can create or append the ~/.ssh/authorized_keys file by typing
 echo public_key_string >> ~/.ssh/authorized_keys
+# If you’re using the root account to set up keys for a user account, it’s also important that the ~/.ssh directory belongs to the user and not to root:
+chown -R sammy:sammy ~/.ssh #
 
 ``````
 
