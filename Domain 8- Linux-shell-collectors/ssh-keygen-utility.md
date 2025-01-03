@@ -83,7 +83,8 @@ ssh -i ~/.ssh/id_rsa username@public_ip_of_remote_host
 ``````
 # Command and Option Summary
 - -p “Change the passphrase
-- -i "Input" to the ~/.ssh/private_key_file, 
+- -i "Input" to the ~/.ssh/private_key_file,
+- -b argument with the number of bits default 2048
 - -f "File" Specifies name of the file in which to store the created key.
 - -c "Comment" Changes the comment for a keyfile.
 - -l "Fingerprint" Print the fingerprint of the specified public key.
