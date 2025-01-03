@@ -1,8 +1,8 @@
 
 ##### Users and Groups in Linux
-There are two types of users: system users and regular users
-System users are responsible for running non-interactive and background processes on a system. For example: mail, daemon, syslog, and so on.
-Regular users are the users that actually log into the system and perform their designated tasks interactively.
+There are two types of users: system users and regular users:
+- System users are responsible for running non-interactive and background processes on a system. For example: mail, daemon, syslog, and so on.
+- Regular users are the users that actually log into the system and perform their designated tasks interactively.
 
 permission	on a file	on a directory:
 - r (read)	read file content (cat)	read directory content (ls)
