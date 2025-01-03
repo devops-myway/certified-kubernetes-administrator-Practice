@@ -40,6 +40,8 @@ The permission statement is represented in indicators such as:
 - '+' stands for add,
 - '-' stands for remove,
 - 'x' stands for executable (which).
+- 0=>No permission, 1=>Excute, 2=>Write, 3=>Execute + Write
+- 4=>Read, 5=>Read + Execute, 6=>Read +Write, 7=>Read + Write +Execute
 
 ``````sh
 # check details of users on a system by looking into the /etc/passwd file
@@ -64,24 +66,12 @@ sudo -i  # simple way to switch to an interactive session as a root users
 cat /etc/group
 
 ``````
-##### View Ownerships and Permissions in Linux
-
-All groups of three characters specify permissions for all classes:
-
-- rwx: The leftmost three characters specify permissions for the file owner (i.e., the User class).
-- r-x: The three middle characters specify permissions for the group owning the file (i.e., the Group class).
-- ---: The three rightmost characters specify permissions for the Other class. Users who aren't the file owner and group members can't access the file.
 
 ##### How to Read Symbolic Permissions
-- r stands for read. It is indicated in the first character of the triad.
-- w stands for write. It is indicated in the second character of the triad.
-- x stands for execution. It is indicated in the third character of the triad.
+
 
 - Symbolic mode: this method uses symbols like u, g, o to represent users, groups, and others. Permissions are represented as  r, w, x for read write and execute, respectively. You can modify permissions using +, - and =.
 - Absolute mode: this method represents permissions as 3-digit octal numbers ranging from 0-7.
-- 0=>No permission, 1=>Excute, 2=>Write, 3=>Execute + Write
-
-- 4=>Read, 5=>Read + Execute, 6=>Read +Write, 7=>Read + Write +Execute
 
 ``````sh
 ls -l
@@ -103,16 +93,16 @@ sudo chmod 400
 
 The chown command allows you to change the user and/or group ownership of a given file, directory, or symbolic link.
 
-USER is the user name or the user ID (UID) of the new owner.
-GROUP is the new group’s name or the group ID (GID).
-FILE(s) is the name of one or more files, directories, or links.
-Numeric IDs should be prefixed with the + symbol.
+- USER is the user name or the user ID (UID) of the new owner.
+- GROUP is the new group’s name or the group ID (GID).
+- FILE(s) is the name of one or more files, directories, or links.
+- Numeric IDs should be prefixed with the + symbol.
 
-USER - If only the user is specified, the specified user will become the owner of the given files. The group ownership is not changed
-USER: - When the username is followed by a colon :, and the group name is not given, the user will become the owner of the files, and the files group ownership is changed to the user’s login group.
-USER:GROUP - If both the user and the group are specified (with no space between them), the user ownership of the files is changed to the given user and the group ownership is changed to the given group.
-:GROUP - If the User is omitted and the group is prefixed with a colon :, only the group ownership of the files is changed to the given group.
-: If only a colon : is given, without specifying the user and the group, no change is made.
+- USER - If only the user is specified, the specified user will become the owner of the given files. The group ownership is not changed
+- USER: - When the username is followed by a colon :, and the group name is not given, the user will become the owner of the files, and the files group ownership is changed to the user’s login group.
+- USER:GROUP - If both the user and the group are specified (with no space between them), the user ownership of the files is changed to the given user and the group ownership is changed to the given group.
+- :GROUP - If the User is omitted and the group is prefixed with a colon :, only the group ownership of the files is changed to the given group.
+- If only a colon : is given, without specifying the user and the group, no change is made.
 ``````sh
 chown [OPTIONS] USER[:GROUP] FILE(s)
 ls -l filename.txt
