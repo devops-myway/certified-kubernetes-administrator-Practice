@@ -1,5 +1,5 @@
 ##### SCP – Secure Copy Protocol
-- SCP – Secure Copy Protocol. While it’s a separate tool, it leverages the underlying SSH protocol to securely transfer files in an encrypted manner, in a way that can’t be intercepted by anyone en route.
+- SCP – Secure Copy Protocol. While it’s a separate tool, it leverages the underlying SSH protocol to securely transfer files in an encrypted manner, in a way that can’t be intercepted by anyone en route to remote server
 - SSH is a way to log into a remote server from your local machine, it’s not a way to transfer a file from your local computer to the remote server.
 
 ###### Transferring Files from Local to Remote via SCP
