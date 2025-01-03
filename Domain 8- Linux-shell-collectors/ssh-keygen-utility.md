@@ -1,14 +1,15 @@
 #### Note
 https://unix.stackexchange.com/questions/23291/how-to-ssh-to-remote-server-using-a-private-key
 
-SSH (Secure Shell) is a secure protocol provides a safe and secure way of executing commands, making changes, and configuring services remotely.
+- SSH (Secure Shell) is a secure protocol provides a safe and secure way of login to remote server, executing commands, making changes, and configuring services remotely.
+- The standard OpenSSH suite of tools contains the ssh-keygen utility, which is used to generate key pairs.
+- Run it on your local computer to generate a 2048-bit RSA key pair, which is fine for most uses.
 
 #### How To Log Into SSH with Keys
 
-it is faster and more secure to set up key-based authentication.
-Key-based authentication works by creating a pair of keys: a private key and a public key.
-- The private key is located on the client’s machine and is secured and kept secret.
-- The public key can be given to anyone or placed on any server or remote host you wish to access.
+It is faster and more secure to set up key-based authentication. Key-based authentication works by creating a pair of keys: a private key and a public key.
+- The private key: is located on the client’s machine and is secured and kept secret.
+- The public key: can be given to anyone or placed on any server or remote host you wish to access.
 
 The client computer then sends the appropriate response back to the server, which will tell the server that the client is legitimate.
 
