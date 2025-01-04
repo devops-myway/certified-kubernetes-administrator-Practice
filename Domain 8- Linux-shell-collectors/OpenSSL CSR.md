@@ -1,4 +1,5 @@
 https://kubernetes.io/docs/reference/access-authn-authz/certificate-signing-requests/
+https://stackoverflow.com/questions/10175812/how-to-generate-a-self-signed-ssl-certificate-using-openssl
 
 
 #### OPENSSL
@@ -42,13 +43,15 @@ cd priv-pub-keyfile
 
 openssl genrsa -out example.key [bits]
 openssl genrsa -out domain.pem 2048
+openssl genrsa -out server.key 2048
 ls
 cat private-key.pem
 
 ``````
-##### Print public key or modulus only:
+##### Print public key:
 ``````sh
 openssl rsa -in private-key.pem -pubout -out public-key.pem
+openssl rsa -in server.key -out server.key
 ls
 cat public-key.pem
 
@@ -59,50 +62,46 @@ cat public-key.pem
 - Whenever you generate a CSR, you will be prompted to provide information regarding the certificate. This information is known as a Distinguished Name (DN).
 - An important field in the DN is the Common Name (CN), which should be the exact Fully Qualified Domain Name (FQDN) of the host that you intend to use the certificate with.
 - CSRs can be used to request SSL certificates from a certificate authority.
-- If you want to non-interactively answer the CSR information prompt, you can do so by adding the -subj option to any OpenSSL commands that request CSR information.
+- Replace 'localhost' with whatever domain you require. You will need to run the first two commands one by one as OpenSSL will prompt for a passphrase.
 ``````sh
 -subj "/O=Example Brooklyn Company/CN=examplebrooklyn.com"
 ------
 openssl req -nodes -newkey rsa:[bits] -keyout example.key -out example.csr -subj "/C=UA/ST=Kharkov/L=Kharkov/O=Super Secure Company/OU=IT Department/CN=example.com"
 
 openssl req -newkey rsa:2048 -keyout example.key -out example.csr -subj "Company/OU=IT Department/CN=example.com"
-
+openssl req -sha256 -newkey server.key -out server.csr -subj '/CN=localhost'
 or 
 ### View the certificate:
 openssl x509  -noout -text -in ./server.crt
 openssl x509 -in /etc/kubernetes/pki/etcd/server.crt -text
 
 ``````
-##### Generate a CSR from an Existing Private Key
-
-``````sh
-openssl req \
-       -key domain.key \
-       -new -out domain.csr
-
-``````
-##### Generate a CSR from an Existing Certificate and Private Key
-
-``````sh
-openssl x509 \
-       -in domain.crt \
-       -signkey domain.key \
-       -x509toreq -out domain.csr
-
-``````
-
 #### Creating a CA-Signed Certificate With Our Own CA
 We can be our own certificate authority (CA) by creating a self-signed root CA certificate, and then installing it as a trusted certificate in the local browser
 
 - Create a Self-Signed Root CA:  create a private key (rootCA.key) and a self-signed root CA certificate (rootCA.crt) from the command line
+- https://security.stackexchange.com/questions/91913/why-is-it-fine-for-certificates-above-the-end-entity-certificate-to-be-sha-1-bas
+- using SHA-2 does not add any security to a self-signed certificate.
+- But I still recommend using it as a good habit of not using outdated / insecure cryptographic hash functions
 ``````sh
 # Create a self signed certificate using existing CSR and private key
-openssl x509 -req -in example.csr -signkey example.key -out example.crt -days 365  
+openssl req -x509 -sha256 -newkey rsa:2048 -keyout key.pem -out cert.pem -days XXX
 
-# Create self-signed certificate and new private key from scratch:
-openssl req -nodes -newkey rsa:2048 -keyout example.key -out example.crt -x509 -days 365
+openssl x509 -req -in example.csr -signkey example.key -out example.crt -days 365
+openssl x509 -req -sha256 -days 365 -in server.csr -signkey server.key -out server.crt
+
+# To combine the two into a .pem file:
+cat server.crt server.key > cert.pem
 
 ``````
+for the flag -subj | -subject empty values are permitted -subj "/C=/ST=/L=/O=/OU=web/CN=www.server.com", but you can sets more details as you like:
+
+- C - Country Name (2 letter code)
+- ST - State
+- L - Locality Name (eg, city)
+- O - Organization Name
+- OU - Organizational Unit Name
+- CN - Common Name - required!
 
 ##### View Certificates
 
@@ -119,3 +118,30 @@ openssl req -noout -modulus -in example.csr | openssl sha256
 openssl verify example.crt
 
 ``````
+##### 
+As of 2023 with OpenSSL ≥ 1.1.1, the following command serves all your needs, including: The following files are generated:
+
+- Private key: example.com.key
+- Certificate: example.com.crt
+
+Each of the below commands creates a certificate that is:
+
+- valid for the domain example.com (SAN),
+- also valid for the wildcard domain *.example.com (SAN),
+- also valid for the IP address 10.0.0.1 (SAN),
+- relatively strong (as of 2023) and
+- valid for 3650 days (~10 years).
+
+``````sh
+openssl req -x509 -newkey rsa:4096 -sha256 -days 3650 \
+  -nodes -keyout example.com.key -out example.com.crt -subj "/CN=example.com" \
+  -addext "subjectAltName=DNS:example.com,DNS:*.example.com,IP:10.0.0.1"
+``````
+##### Parameters
+-  Remark #1: Crypto parameters
+- Since the certificate is self-signed and needs to be accepted by users manually, it doesn't make sense to use a short expiration or weak cryptography.
+- In the future, you might want to use more than 4096 bits for the RSA key and a hash algorithm stronger than sha256, but as of 2023 these are sane values
+- Remark #2: Parameter "-nodes"
+- Theoretically you could leave out the -nodes parameter (which means "no DES encryption"), in which case example.key would be encrypted with a password. However, this is almost never useful for a server installation, because you would either have to store the password on the server as well, or you'd have to enter it manually on each reboot.
+
+
