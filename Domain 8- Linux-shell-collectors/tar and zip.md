@@ -4,11 +4,11 @@ The tar command on Linux is used to create and extract TAR archive files.
 
 tar -czvf (archive name).tar.gz (pathtofile)
 
--c: To "Create
--x: Extract
--v: Enables verbose mode, showing the progress of the command
--z: Uses gzip, omit this if you just have a .tar
--f: specifies file input, rather than STDIN
+- -c: To "Create
+- -x: Extract
+- -v: Enables verbose mode, showing the progress of the command
+- -z: Uses gzip, omit this if you just have a .tar
+- -f: specifies file input, rather than STDIN
 
 ##### Compress an Entire Directory or a Single File
 Use the following command to compress an entire directory or a single file on Linux.
