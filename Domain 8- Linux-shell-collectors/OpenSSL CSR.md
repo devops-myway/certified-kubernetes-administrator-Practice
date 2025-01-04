@@ -55,10 +55,11 @@ cat public-key.pem
 ``````
 
 #### Create certificate signing requests (CSR)
-If you would like to obtain an SSL certificate from a commercial certificate authority (CA), you must generate a certificate signing request (CSR).
-Whenever you generate a CSR, you will be prompted to provide information regarding the certificate. This information is known as a Distinguished Name (DN). An important field in the DN is the Common Name (CN), which should be the exact Fully Qualified Domain Name (FQDN) of the host that you intend to use the certificate with. CSRs can be used to request SSL certificates from a certificate authority.
-
-If you want to non-interactively answer the CSR information prompt, you can do so by adding the -subj option to any OpenSSL commands that request CSR information.
+- If you would like to obtain an SSL certificate from a commercial certificate authority (CA), you must generate a certificate signing request (CSR).
+- Whenever you generate a CSR, you will be prompted to provide information regarding the certificate. This information is known as a Distinguished Name (DN).
+- An important field in the DN is the Common Name (CN), which should be the exact Fully Qualified Domain Name (FQDN) of the host that you intend to use the certificate with.
+- CSRs can be used to request SSL certificates from a certificate authority.
+- If you want to non-interactively answer the CSR information prompt, you can do so by adding the -subj option to any OpenSSL commands that request CSR information.
 ``````sh
 -subj "/O=Example Brooklyn Company/CN=examplebrooklyn.com"
 ------
