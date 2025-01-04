@@ -5,7 +5,8 @@ https://www.warp.dev/terminus/curl-vs-wget
 - wget , on the other hand, is a simpler, more straightforward tool primarily designed for downloading files and mirroring websites efficiently.
 
 - wget  saves downloaded contents to local files, whereas curl  outputs the content to the terminal by default.
-- curl  supports a wide range of protocols, such as HTTP, HTTPS, FTP, FTPS, SCP, SFTP, TFTP, etc, whereas wget  only supports HTTP, HTTPS, and FTP.
+- curl  supports a wide range of protocols, such as HTTP, HTTPS, FTP, FTPS, SCP, SFTP, TFTP, etc,
+- whereas wget  only supports HTTP, HTTPS, and FTP.
 
 ``````sh
 # -O  flag (short for --remote-name )
