@@ -37,13 +37,28 @@ cat /etc/passwd           # List all users
 
 ``````
 ##### Create User (useradd/adduser)
-- -u <uid>: --uid <uid>	: Unique numerical value ID.
+- -u uid: Set the user’s ID to be uid. Unless you know what you’re doing, omit this option and accept the default
 - -p <password>: --password <password>	: Sets the user's password (not recommended).
-- -g <name or number>: --gid <name or number>	: Establishes the user's initial login group.
+- -g group: --gid <name or number>	: Set the user’s initial (default) group to group
+- -G group1,group2,: Make the user a member of the additional, existing groups group1, group2, and so on.
+- -d dir: Set the user’s home directory to be dir,
+- -m: Copy all files from your system skeleton directory, /etc/skel, into the newly created home directory
+- -k: to get new users started If you prefer to copy from a different directory (-k your_preferred_directory).
+- -M: create a user without a home directory
+- -e: To set an expiry date for a user account
+- -c: To add a comment or description for a user
+- -s shell: Set the user’s login shell to be shell
+- -p: To set an unencrypted password for the user
 
 ``````sh
 useradd <options> <username>
 sudo useradd test_account
+
+sudo useradd -d /home/test_user test_user
+sudo useradd -M test_user
+sudo useradd -e 2020-05-30 test_user
+sudo useradd -c "This is a test user" test_user
+sudo useradd -s /bin/sh test_user
 
 ``````
 ##### Creating New Users in Linux
