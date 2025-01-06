@@ -1,5 +1,13 @@
 https://phoenixnap.com/kb/usermod-linux#:~:text=The%20usermod%20command%20is%20one,%2C%20default%20shell%2C%20and%20more.
 
+##### File Permissions Understanding
+- By default, Linux uses the root user (UID 0) to run processes. This means that all files and directories created within the filssystem are owned by the root user.
+- By default, the root user has full access (read, write, and execute) to all files and directories within the filesystem.
+- it's generally considered a best practice to avoid running applications as the root user inside a filesystem.
+- Instead, you should create a non-root user and run your application with that user's permissions.
+- Linux chown command is used to change a file's ownership, directory, or symbolic link for a user or group.
+- The chown stands for change owner. In Linux, each file is associated with a corresponding owner or group.
+
 ##### How to Create/Add Users in Linux
 The "useradd" command provides various options, resulting in a comprehensive way to automate identity and access management.
 
