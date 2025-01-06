@@ -1,8 +1,12 @@
 https://linuxize.com/post/how-to-create-users-in-linux-using-the-useradd-command/
 
 ##### 
-Linux chown command is used to change a file's ownership, directory, or symbolic link for a user or group.
-The chown stands for change owner. In Linux, each file is associated with a corresponding owner or group.
+- By default, Linux uses the root user (UID 0) to run processes. This means that all files and directories created within the filssystem are owned by the root user.
+- By default, the root user has full access (read, write, and execute) to all files and directories within the filesystem.
+- it's generally considered a best practice to avoid running applications as the root user inside a filesystem.
+- Instead, you should create a non-root user and run your application with that user's permissions.
+- Linux chown command is used to change a file's ownership, directory, or symbolic link for a user or group.
+- The chown stands for change owner. In Linux, each file is associated with a corresponding owner or group.
 
 chown [OPTION]... [OWNER][:[GROUP]] FILE...  
 
