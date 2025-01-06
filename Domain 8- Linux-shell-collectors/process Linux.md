@@ -30,7 +30,7 @@ ls ch*.doc &
 It is easy to see your own processes by running the ps (process status)
 One of the most commonly used flags for ps is the -f ( f for full) option
 
-- UID: User ID that this process belongs to (the person running it), root, reguskar user or service account or system user.
+- UID: User ID that this process belongs to (the person running it), root, reguslar user or service account or system user.
 - PID: Process ID
 - TTY: Terminal type associated with the process
 - TIME: CPU time taken by the process
