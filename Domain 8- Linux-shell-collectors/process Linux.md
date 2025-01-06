@@ -4,7 +4,7 @@
 
 The procedure to monitor the running process in Linux using the command line is as follows:
 
-The ps command is a traditional Linux command to lists running processes.
+The ps command :(process status) is a traditional Linux command to lists running processes.
 
 The new categories of the expanded output include:
 
