@@ -10,12 +10,57 @@ https://www.warp.dev/terminus/curl-vs-wget
 -  -o  flag (short for --output ): Downloading and renaming files
 
 ``````sh
+curl --version
 Syntax: curl [options] [URL]
 
 curl -O https://download.oracle.com/java/21/latest/jdk-21_linux-x64_bin.tar.gz
 curl -kO https://download.oracle.com/java/21/latest/jdk-21_linux-x64_bin.tar.gz
 curl -sO https://download.oracle.com/java/21/latest/jdk-21_linux-x64_bin.tar.gz
 curl -o log.txt http://example.com/logs/20231003.txt
+``````
+##### Retrieving data from a server with cURL
+- the term “curl” is used as a verb to describe requesting a URL with cURL. you can use cURL to retrieve any URL
+- This is because the returned response to the cURL access will be the Google homepage in HTML.
+- The HTML source code will be directly displayed in the command-line window without any formatting
+``````sh
+# Curling the following website
+site="www.google.com"
+curl "$site"
+
+``````
+##### Retrieving data with cURL and saving it locally
+- The “-O” option (upper case o, not a zero) tells cURL to use the name of the file at the end of the URL
+- -o” option (lower case o) to assign the file a name yourself:
+``````sh
+# An image from the English version of Wikipedia
+file="https://en.wikipedia.org/static/images/project-logos/enwiki-2x.png"
+# Retrieving the image and saving it locally under the same name
+curl “$file" -O
+
+# But what if the URL does not contain a file name? Test the following code
+
+# Google homepage
+homepage="www.google.com"
+# Retrieving the homepage with the -O option
+curl "$homepage" -O
+
+# Assign a file name with -o
+
+# Google homepage
+homepage="www.google.com"
+# Name for the file to be created
+name="homepage-google.html"
+# Retrieving the homepage and saving it locally under the chosen name
+curl "$homepage" -o "$name"
+``````
+##### Using cURL to test whether a server is available
+- cURL command checks whether and how a server responds:
+``````sh
+# Testing whether a web server is available
+server="google.com"
+curl -I "$server"
+
+
 ``````
 
 ##### Downloading in a specific directory
