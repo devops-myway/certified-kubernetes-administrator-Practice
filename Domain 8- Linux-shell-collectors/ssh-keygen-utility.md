@@ -8,7 +8,7 @@ https://unix.stackexchange.com/questions/23291/how-to-ssh-to-remote-server-using
 #### How To Log Into SSH with Keys
 
 It is faster and more secure to set up key-based authentication. Key-based authentication works by creating a pair of keys: a private key and a public key.
-- The private key: is located on the client’s machine and is secured and kept secret.
+- The private key: is located on the client’s machine and is secured and kept secret. Stay within the host machine or local pc.
 - The public key: can be given to anyone or placed on any server or remote host you wish to access.
 
 The client computer then sends the appropriate response back to the server, which will tell the server that the client is legitimate.
