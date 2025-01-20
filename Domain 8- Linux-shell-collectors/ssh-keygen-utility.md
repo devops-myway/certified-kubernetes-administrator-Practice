@@ -80,6 +80,11 @@ ssh -i '/path/to/Private_keyfile' username@remote_server_ip
 
 ssh -i ~/.ssh/id_rsa username@public_ip_of_remote_host
 
+# Another alternative to avoid root user access on ssh keys, create a non-root user or team and give recurive access to the file
+mkdir -p ~/.ssh && cd ~/.ssh && ssh-keygen -b 2048 -C "major.sampson@devopsmyway.com"
+chown -R user:Devops file_name_or_~/.ssh && chmod 400 file_name_or_~/.ssh
+ssh -i '/path/to/Private_keyfile' username@remote_server_ip
+
 ``````
 # Command and Option Summary
 - -p “Change the passphrase
