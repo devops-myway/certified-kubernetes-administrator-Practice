@@ -1,23 +1,103 @@
 https://phoenixnap.com/kb/usermod-linux#:~:text=The%20usermod%20command%20is%20one,%2C%20default%20shell%2C%20and%20more.
 
-##### File Permissions Understanding
-- By default, Linux uses the root user (UID 0) to run processes. This means that all files and directories created within the filssystem are owned by the root user.
-- By default, the root user has full access (read, write, and execute) to all files and directories within the filesystem.
-- it's generally considered a best practice to avoid running applications as the root user inside a filesystem.
-- Instead, you should create a non-root user and run your application with that user's permissions.
-- Linux chown command is used to change a file's ownership, directory, or symbolic link for a user or group.
-- The chown stands for change owner. In Linux, each file is associated with a corresponding owner or group.
-
-##### How to Create/Add Users in Linux
-The "useradd" command provides various options, resulting in a comprehensive way to automate identity and access management.
-
-Running the command creates a new user account or updates an existing user according to the values in:
-
-- /etc/default/useradd - The default values for the useradd command.
-- /etc/login.defs - Configuration control values for the login package.
-
+##### Understanding Group
+- The idea of groups is central to the Linux operating system. All users are members of at least one group. These groups can be broadly classified into Primary and Secondary Groups.
+- Primary Group: Typically, the primary group shares the same name as the user, which dictates the group ownership of any files they create
+- Every user in the Linux system is assigned to a primary group, and the information about a user’s primary group can be found in the /etc/passwd file.
+- Secondary Group: Users have the flexibility to join multiple secondary groups or even opt not to be part of any
+- Secondary Group: These secondary groups are often created to handle permissions for certain software applications and files
+- Group members automatically inherit the read, write, and execute permissions admins set for that group
+- The /etc/group file contains the details about the secondary groups a user belongs to.
+- 
+##### How to Create a User Group
+- you can use the -g <GID> flag with the groupadd command
+- Options to provide GID or UID for different users:
+- 0 is reserved for root and assigned automatically.
+- 1-999 is for system or service accounts and services.
+- 1000 and above are for regular users.
+- When creating a new group, you can assign a unique group ID (GID) to distinguish it from other groups
+- If you’re creating a system group reserved for system accounts and services, you need to assign it a GID of less than 1000
+- For this, you can use the -r flag with the groupadd command:
 ``````sh
-useradd <options> <username>
+Syntax:
+groupadd <groupname>
+
+groupadd mynewgroup
+grep mynewgroup /etc/group   #This command uses the grep utility to extract information about the group from the /etc/group file.
+
+groupadd -g 1005 mynewgroup
+groupadd -r <systemgroupname>
+``````
+##### Add an Existing User to a Group
+- You can add an existing user to a group with the usermod or the gpasswd command
+- The -a flag tells the command to append the user to additional groups
+- The -G flag indicates the supplementary group(s) to add the user to.
+
+##### Add Existing Users to a Group with the usermod Command
+``````sh
+The syntax of the usermod command to add a user to a group is:
+# usermod -a -G <groupname> <username>
+
+ usermod -a -G sudo harry
+ 
+``````
+##### Add Existing Users to a Group with the gpasswd Command
+- The -a flag indicates that you wish to add the user to the group. Alternatively, you can use the — add user flag.
+``````sh
+# Add Existing Users to a Group with the gpasswd Command
+The gpasswd command offers another way of adding a user to a group. The typical syntax of the command is:
+
+# gpasswd -a <username> <groupname>
+
+gpasswd -a tom sudo
+``````
+##### Add a User to Several Groups at Once
+- You can use the usermod command with the -aG flag, followed by a list of groups separated by commas
+- Always use the -a option with usermod -G to append the user to groups so you don’t accidentally remove them from other groups they might already be a part of
+``````sh
+syntax of this command:
+# usermod -aG <group1>,<group2>,<group3> <username>
+
+usermod -aG developers,designers,admins john
+
+``````
+##### Create a New User and Add Them to a Group(s)
+- you can use the useradd command with the b flags.
+- new user account named Susan and add it to the developers group.
+- set a password for this new user
+- Use the useradd command with the -g flag, followed by the desired primary group name
+- Note that the lowercase -g flag is used for primary groups and the uppercase -G for secondary groups
+``````sh
+useradd -m -G <groupname> <newuser>
+sudo passwd <username>
+
+useradd -g <primary_groupname> <username>
+useradd -g admins johny
+
+#Change the Primary Group of an Existing User
+sudo usermod –g <group_name> <user_name>
+sudo usermod -g developers johny
+
+#Delete a User from a Group with the gpasswd Command
+gpasswd -d username groupname
+
+#How to Delete a Group
+groupdel <groupname>
+groupdel designers
+
+``````
+##### List All Groups on the System
+- listing the contents of the /etc/group file to see all the groups (and the associated user accounts) on the system
+``````sh
+cat /etc/group
+
+# List All Groups for a User Account
+groups <username>
+id <username>
+
+``````
+``````sh
+https://www.redswitches.com/blog/add-user-to-group-linux/
 
 ``````
 ##### Understanding User Management Files
@@ -28,14 +108,6 @@ The main files and directories for storing user data in Linux include:
 - /etc/login.defs. The login.defs file contains system-wide user account policy settings, like the password aging policy.
 - /etc/sudoers. The sudoers file specifies which users have elevated permissions, on which machines, and for which directories.
 
-##### Linux User Management Commands
-
-``````sh
-who                       #Check Currently Logged Users
-who -H                    # Display the header
-cat /etc/passwd           # List all users
-
-``````
 ##### Create User (useradd/adduser)
 - -u uid: Set the user’s ID to be uid. Unless you know what you’re doing, omit this option and accept the default
 - -p <password>: --password <password>	: Sets the user's password (not recommended).
@@ -66,9 +138,9 @@ Creating new users in Linux does the following:
 
 1. Provides a unique UID and GID.
 
-- 0 is reserved for root and assigned automatically.
-- 1-999 is for system or service accounts and services.
-- 1000 and above are for regular users.
+- 0 is reserved for root and assigned automatically. - ROOT USER
+- 1-999 is for system or service accounts and services. - SERVICE ACCOUNT USERS
+- 1000 and above are for regular users.  - REGULAR ACCOUNT
 
 2. Edits files that store account information
 - /etc/passwd - Lists all registered users on the system.
