@@ -14,6 +14,7 @@ The /root directory is the home directory of the root user. Instead of being loc
 /bin – Essential User Binaries:
 The /bin directory contains the essential user binaries (programs) that must be present when the system is mounted in single-user mode.
 Applications such as Firefox, if they aren't installed as Snaps, are stored in /usr/bin, while important system programs and utilities such as the bash shell are located in /bin.
+
 The /usr directory may be stored on another partition. Placing these files in the /bin directory ensures the system will have these important utilities even if no other file systems are mounted. The /sbin directory is similar: it contains essential system administration binaries.
 
 /boot – Static Boot Files :

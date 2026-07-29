@@ -245,10 +245,37 @@ echo "deb [signed-by=/etc/apt/keyrings/kubernetes-archive-keyring.gpg] https://a
 sudo apt-get update
 sudo apt-get install -y kubelet kubeadm kubectl
 sudo apt-mark hold kubelet kubeadm kubectl
+######### The below Errors will occur to changes and you should use the below steps
+E: Unable to locate package kubelet
+E: Unable to locate package kubeadm
+E: Unable to locate package kubectl
+E: Unable to locate package kubelet
+E: Unable to locate package kubeadm
+E: Unable to locate package kubectl
+###########
+#! /bin/bash
+#
+sudo rm -f /etc/apt/sources.list.d/kubernetes.list
+# If the key file is named differently (e.g. kubernetes-archive-keyring.gpg), you can optionally remove it too:
+# sudo rm -f /etc/apt/keyrings/kubernetes-archive-keyring.gpg
+sudo apt update
+sudo apt install -y apt-transport-https ca-certificates curl gpg
+sudo mkdir -p -m 755 /etc/apt/keyrings
+curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.35/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+
+echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.35/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
+sudo apt update
+sudo apt install -y kubelet kubeadm kubectl
+sudo apt-mark hold kubelet kubeadm kubectl   # Prevents accidental upgrades
+
+kubeadm version
+kubectl version --client
+kubelet --version
 
 ``````
 
 ##### Step8: Initializing your Master Node or Control-Plane Node - ONLY CONTROL PLANE
+https://kubernetes.io/docs/concepts/cluster-administration/addons/#networking-and-network-policy
 
 ``````sh
 
@@ -262,6 +289,15 @@ sudo chown $(id -u):$(id -g) $HOME/.kube/config
 
 kubectl cluster-info
 kubectl get nodes
+#####
+NAME     STATUS     ROLES           AGE   VERSION
+master   NotReady   control-plane   94s   v1.35.2
+######
+######
+
+sudo kubeadm join 10.166.0.4:6443 --token m5a3jv.eor1rxgp146jdqmj \
+        --discovery-token-ca-cert-hash sha256:fefa9494efadf79b46706eab1eaa6e3f70de6aae4efe5a41826fac130da97fab 
+####
 ``````
 
 ##### Step9: Installing a Pod Network add-on or Container Network Interface - CNI - ONLY CONTROL PLANE

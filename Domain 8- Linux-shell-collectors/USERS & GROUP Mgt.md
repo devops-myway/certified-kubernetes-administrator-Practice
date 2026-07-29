@@ -12,9 +12,9 @@ https://phoenixnap.com/kb/usermod-linux#:~:text=The%20usermod%20command%20is%20o
 ##### How to Create a User Group
 - you can use the -g <GID> flag with the groupadd command
 - Options to provide GID or UID for different users:
-- 0 is reserved for root and assigned automatically.
-- 1-999 is for system or service accounts and services.
-- 1000 and above are for regular users.
+- 0 is reserved for root and assigned automatically. /root user home directory
+- 1-999 is for system or service accounts and services. for applications e.g jenkins users, ubuntu etc
+- 1000 and above are for regular users. e.g sam2major etc.
 - When creating a new group, you can assign a unique group ID (GID) to distinguish it from other groups
 - If you’re creating a system group reserved for system accounts and services, you need to assign it a GID of less than 1000
 - For this, you can use the -r flag with the groupadd command:
@@ -114,13 +114,14 @@ The main files and directories for storing user data in Linux include:
 - -g group: --gid <name or number>	: Set the user’s initial (default) group to group
 - -G group1,group2,: Make the user a member of the additional, existing groups group1, group2, and so on.
 - -d dir: Set the user’s home directory to be dir,
-- -m: Copy all files from your system skeleton directory, /etc/skel, into the newly created home directory
+- -m: Copy all files from your system skeleton directory, /etc/skel, into the newly created home directory. 
 - -k: to get new users started If you prefer to copy from a different directory (-k your_preferred_directory).
 - -M: create a user without a home directory
 - -e: To set an expiry date for a user account
 - -c: To add a comment or description for a user
 - -s shell: Set the user’s login shell to be shell
 - -p: To set an unencrypted password for the user
+- -r: (system account), Used for services/daemons
 
 ``````sh
 useradd <options> <username>
@@ -131,7 +132,29 @@ sudo useradd -M test_user
 sudo useradd -e 2020-05-30 test_user
 sudo useradd -c "This is a test user" test_user
 sudo useradd -s /bin/sh test_user
+# you are only setting the home directory path in the user’s configuration — you are NOT actually creating the directory.
+# Why you don’t see it in /home. By default, useradd:
+# Registers the user in /etc/passwd
+# Sets /home/test_user as their home directory
+sudo useradd -d /home/test_user test_user
 
+#✅ Fix: create the home directory by Use the -m flag:
+#This will:
+#Create /home/test_user
+#Copy default files from /etc/skel (like .bashrc, etc.)
+
+sudo useradd -m -d /home/test_user test_user
+ls -l /home
+drwxr-x--- 2 test_user test_user 4096 Apr 12 23:56 test_user
+
+#If the user already exists , You can manually create it:
+mkdir /home/test_user
+chown test_user:test_user /home/test_user
+chmod 755 /home/test_user
+
+# Quick Test
+id test_user
+grep test_user /etc/passwd
 ``````
 ##### Creating New Users in Linux
 Creating new users in Linux does the following:
@@ -159,16 +182,7 @@ sudo cat /etc/passwd | grep <username>  : sudo cat /etc/passwd | grep test
 test:x:1001:1001::/home/test:/bin/sh
 username:password:UID:GID:info:/home/directory:shell/path
 ``````
-##### Adding a User with Specific User ID
 
-``````sh
-sudo useradd -u <uid> <username>
-id <username>                       #check id with id
-
-sudo useradd -u 1234 test1
-id test1
-
-``````
 ##### Change Your Own Password for Another user
 
 ``````sh
@@ -194,14 +208,36 @@ uid=1000(test2) gid=1000(kb) groups=1000(kb)
 ``````
 ##### Adding a System User or Service Account
 Programs and systems create service or system user accounts, which are different from regular users. Programs such as MySQL or Tomcat require a unique user account to work on the system, and daemons typically create system users during installation.
+To create a system user named ubuntu2, you should use useradd with the -r (system account) option.
 
 ``````sh
 sudo useradd -r <username>                 # To create a system user use -r option
 sudo cat /etc/passwd | grep <username>     # check the users information
 
-sudo useradd -r testsvc
+sudo useradd -r ubuntu2
 cat /etc/passwd | grep testsvc
+# 📁 If you also want a home directory
+#System users don’t get one by default, so add -m:
+sudo useradd -r -m ubuntu2
 
+#🔐 If you want to allow login (optional)
+#System users are usually non-login, but you can enable it:
+sudo useradd -r -m -s /bin/bash ubuntu2
+sudo passwd ubuntu2
+#✅ Option 1: Temporarily switch user (recommended)
+#If you just need to run commands as ubuntu2:
+sudo su -s /bin/bash ubuntu2
+#✅ Option 2: Enable login (if really needed)
+#If you actually want to log in as ubuntu2, you must:
+sudo usermod -s /bin/bash ubuntu2
+sudo passwd ubuntu2
+
+##### 👍 Best practice
+Use sudo su -s /bin/bash ubuntu2 for tasks
+Only enable login if you truly need it (e.g., testing)
+
+
+1. Set a shell
 # output
 testsvc:x:998:998::/home/testsvc:/bin/sh
 ``````

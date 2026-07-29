@@ -117,5 +117,32 @@ chown -R USER:GROUP DIRECTORY
 chown -R www-data: /var/www
 chown -hR www-data: /var/www
 
+sudo mkdir /home/test_user/.ssh
+sudo ls -lart /home/test_user/
+drwxr-xr-x 2 root      root      4096 Apr 13 00:54 .ssh
+
+# change ownership of the .ssh folder to the tes_user:test_user
+sudo chown test_user:test_user -R /home/test_user/.ssh
+sudo ssh-keygen -t rsa -b 4096 -C "test_user@instance-2" -f /home/test_user/.ssh/id_rsa -N ""
+sudo ls -lart /home/test_user/.ssh
+total 16
+#####
+drwxr-x--- 3 test_user test_user 4096 Apr 13 00:54 ..
+-rw------- 1 root      root      3389 Apr 13 00:59 id_rsa
+drwxr-xr-x 2 test_user test_user 4096 Apr 13 00:59 .
+-rw-r--r-- 1 root      root       746 Apr 13 00:59 id_rsa.pub
+######
+
+sudo chown -R test_user:test_user /home/test_user/.ssh
+sudo ls -lart /home/test_user/.ssh
+#######
+drwxr-x--- 3 test_user test_user 4096 Apr 13 00:54 ..
+-rw------- 1 test_user test_user 3389 Apr 13 00:59 id_rsa
+drwxr-xr-x 2 test_user test_user 4096 Apr 13 00:59 .
+-rw-r--r-- 1 test_user test_user  746 Apr 13 00:59 id_rsa.pub
+########
+sudo chmod 700 /home/dev/.ssh
+chmod 600 /home/dev/.ssh/id_rsa
+chmod 644 /home/dev/.ssh/id_rsa.pub
 
 ``````
